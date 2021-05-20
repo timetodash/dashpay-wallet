@@ -15,7 +15,7 @@
             </h1>
 
             <h3 v-else no-padding no-margin>
-              Success, you can now register a name.
+              Success, we can now finish the registration.
             </h3>
           </ion-col>
         </ion-row>
@@ -26,8 +26,8 @@
         <ion-button
           expand="block"
           color="primary"
-          @click="() => router.push('/registername')"
-          >Register Name</ion-button
+          @click="() => router.push('/finishregistration')"
+          >Finish</ion-button
         >
       </ion-toolbar>
     </ion-footer>
@@ -84,7 +84,7 @@ export default {
       console.log("Redeem invite to address: ", address);
 
       const reqs = [
-        axios.get(`http://127.0.0.1:5050/drip/${address}`),
+        axios.get(`${process.env.VUE_APP_AUTOFAUCET}${address}`),
         // this.$axios.get(`http://autofaucet-1.dashevo.io:5050/drip/${address}`),
         // this.$axios.get(`http://autofaucet-2.dashevo.io:5050/drip/${address}`),
       ];

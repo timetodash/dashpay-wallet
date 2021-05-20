@@ -33,8 +33,10 @@ const initClient = async function(clientOpts: any) {
 
   client = new Dash.Client(clientOpts);
 
+  console.log("client :>> ", client);
   client.account = await client.getWalletAccount();
 
+  console.log("client.account :>> ", client.account);
   return getClient();
 };
 

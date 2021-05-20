@@ -2,22 +2,31 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Create Wallet</ion-title>
+        <ion-title>Save your backup phrase</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true" class="ion-padding">
       <ion-item>
-        <ion-label position="floating">Your mnemonic</ion-label>
+        <ion-label position="floating">Backup phrase</ion-label>
         <ion-textarea readonly auto-grow :value="mnemonic"></ion-textarea>
       </ion-item>
-      <ion-card style="margin-top: 40px">
-        <ion-item> Your balance is: {{ balance }}</ion-item>
-      </ion-card>
+      <ion-item>
+        <ion-label>I securely stored my phrase</ion-label>
+        <ion-toggle
+          @ionChange="backupConfirmed = !backupConfirmed"
+          :checked="backupConfirmed"
+        >
+        </ion-toggle>
+      </ion-item>
     </ion-content>
     <ion-footer class="ion-no-border">
       <ion-toolbar>
-        <ion-button color="primary" expand="block" router-link="/redeeminvite"
-          >Redeem Invite</ion-button
+        <ion-button
+          :disabled="!backupConfirmed"
+          color="primary"
+          expand="block"
+          router-link="/redeeminvite"
+          >Next</ion-button
         >
       </ion-toolbar>
     </ion-footer>
@@ -38,9 +47,10 @@ import {
   IonFooter,
   IonLabel,
   IonTextarea,
+  IonToggle,
 } from "@ionic/vue";
 
-import { initClient, getClient } from "@/lib/DashClient";
+import { getClient } from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -56,9 +66,10 @@ export default {
     IonPage,
     IonButton,
     IonItem,
-    IonCard,
+    // IonCard,
     IonFooter,
     IonLabel,
+    IonToggle,
   },
   setup() {
     console.log(process.env.VUE_APP_DAPIADDRESSES);
@@ -79,21 +90,17 @@ export default {
 
     const balance = ref<number>();
 
+    const backupConfirmed = ref(false);
+
     onMounted(async () => {
-      await sleep(450); // Don't block the viewport
-      await initClient(clientOpts);
-
       client = getClient();
-      // if (!client.wallet) throw "Error";
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       mnemonic.value = client.wallet!.exportWallet().toString();
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       balance.value = client.account!.getTotalBalance();
     });
 
-    return { mnemonic, balance };
+    return { mnemonic, balance, backupConfirmed };
   },
 };
 </script>

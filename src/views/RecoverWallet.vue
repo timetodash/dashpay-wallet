@@ -1,5 +1,5 @@
 <template>
-  <ion-page>
+      <ion-page>
     <ion-header>
       <ion-toolbar>
         <ion-title>Import Wallet</ion-title>
@@ -82,10 +82,7 @@ export default {
     let client: Client;
 
     const mnemonic = ref(
-      // "quantum hover apart sausage ugly sail field circle hobby rug reduce winter"
-      // "melt legend track common dose kidney seat runway firm public tower market"
-      // "discover achieve ketchup zebra tooth tribe gain theme burst toilet more minor"
-      "agent bacon upper doctor own honey analyst where cause hold ripple comfort"
+      "strike health super useless much garment soon pride rebel club coast motor"
     );
 
     const balance = ref<number>();
@@ -100,12 +97,12 @@ export default {
       console.log("event :>> ", event);
       const clientOpts = {
         passFakeAssetLockProofForTests: true,
-        dapiAddresses: ["127.0.0.1:3000"],
+        dapiAddresses: JSON.parse(process.env.VUE_APP_DAPIADDRESSES!),
         wallet: {
           mnemonic: mnemonic.value,
         },
         apps: {
-          dpns: { contractId: "7vJjSQpo7t8B6iDDwaxa4LYi98Wu87eYcRp6E2CQNzAj" },
+          dpns: { contractId: process.env.VUE_APP_DPNSCONTRACTID },
         },
       };
 

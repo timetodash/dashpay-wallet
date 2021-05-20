@@ -62,6 +62,8 @@ import {
   IonRow,
   IonCol,
   IonFooter,
+  IonInput,
+  IonCard,
 } from "@ionic/vue";
 
 import { initClient, getClient } from "@/lib/DashClient";
@@ -80,9 +82,11 @@ export default {
     IonRow,
     IonCol,
     IonFooter,
-    // IonLabel,
+    IonLabel,
+    IonInput,
+    IonCard,
     // IonTextarea,
-    // IonItem,
+    IonItem,
   },
   setup() {
     // const router = useRouter();

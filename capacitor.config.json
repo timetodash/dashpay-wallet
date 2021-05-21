@@ -1,0 +1,13 @@
+{
+  "appId": "io.ionic.starter",
+  "appName": "dashpay-wallet",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  },
+  "cordova": {}
+}

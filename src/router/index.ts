@@ -1,39 +1,57 @@
-import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw } from 'vue-router';
-import Tabs from '../views/Tabs.vue'
+import { createRouter, createWebHistory } from "@ionic/vue-router";
+import { RouteRecordRaw } from "vue-router";
+
+import Welcome from "@/views/Welcome.vue";
+import CreateWallet from "@/views/CreateWallet.vue";
+import RecoverWallet from "@/views/RecoverWallet.vue";
+import RegisterName from "@/views/RegisterName.vue";
+import RedeemInvite from "@/views/RedeemInvite.vue";
+import Home from "@/views/Home.vue";
+import SendDash from "@/views/SendDash.vue";
+import ReceiveDash from "@/views/ReceiveDash.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/',
-    redirect: '/tabs/tab1'
+    path: "/",
+    redirect: "/welcome",
   },
   {
-    path: '/tabs/',
-    component: Tabs,
-    children: [
-      {
-        path: '',
-        redirect: '/tabs/tab1'
-      },
-      {
-        path: 'tab1',
-        component: () => import('@/views/Tab1.vue')
-      },
-      {
-        path: 'tab2',
-        component: () => import('@/views/Tab2.vue')
-      },
-      {
-        path: 'tab3',
-        component: () => import('@/views/Tab3.vue')
-      }
-    ]
-  }
-]
+    path: "/welcome",
+    component: Welcome,
+  },
+  {
+    path: "/createwallet",
+    component: CreateWallet,
+  },
+  {
+    path: "/recoverwallet",
+    component: RecoverWallet,
+  },
+  {
+    path: "/registername",
+    component: RegisterName,
+  },
+  {
+    path: "/redeeminvite",
+    component: RedeemInvite,
+  },
+  {
+    path: "/home",
+    component: Home,
+  },
+  {
+    path: "/senddash",
+    component: SendDash,
+  },
+  {
+    path: "/receivedash",
+    component: ReceiveDash,
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;

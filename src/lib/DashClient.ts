@@ -1,6 +1,5 @@
 import Dash from "dash";
 import { Client } from "dash/dist/src/SDK/Client/index";
-// import { Client } from "dash/dist/src/SDK/Client/index";
 import { strict as assert } from "assert";
 
 let client: Client | undefined;

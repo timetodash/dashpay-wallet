@@ -26,7 +26,7 @@
           <p>
             Have complete control and customize your wallet based on your needs.
           </p>
-          <ion-button color="primary" router-link="/createwallet"
+          <ion-button color="primary" router-link="/choosename"
             >Sign Up for Dash</ion-button
           ><br /><br />
           <router-link to="/recoverwallet">Import existing Wallet</router-link>
@@ -36,7 +36,7 @@
   </ion-page>
 </template>
 
-<script>
+<script lang="ts">
 import {
   IonSlides,
   IonSlide,
@@ -44,16 +44,27 @@ import {
   IonContent,
   IonButton,
 } from "@ionic/vue";
-import { defineComponent } from "vue";
+
+import { defineComponent, onMounted } from "vue";
+
+import { useRouter } from "vue-router";
+
+import { getAccounts } from "@/lib/helpers/AccountStorage";
 
 export default defineComponent({
   components: { IonSlides, IonSlide, IonPage, IonContent, IonButton },
   setup() {
-    // Optional parameters to pass to the swiper instance. See http://idangero.us/swiper/api/ for valid options.
+    const router = useRouter();
+
     const slideOpts = {
       initialSlide: 1,
       speed: 400,
     };
+
+    onMounted(async () => {
+      if (await getAccounts()) router.push("/login");
+    });
+
     return { slideOpts };
   },
 });

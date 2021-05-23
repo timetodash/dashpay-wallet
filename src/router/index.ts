@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "@ionic/vue-router";
 import { RouteRecordRaw } from "vue-router";
 
 import Welcome from "@/views/Welcome.vue";
+import Login from "@/views/Login.vue";
 import CreateWallet from "@/views/CreateWallet.vue";
 import RecoverWallet from "@/views/RecoverWallet.vue";
 import FinishRegistration from "@/views/FinishRegistration.vue";
@@ -21,6 +22,10 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/welcome",
     component: Welcome,
+  },
+  {
+    path: "/login",
+    component: Login,
   },
   {
     path: "/createwallet",

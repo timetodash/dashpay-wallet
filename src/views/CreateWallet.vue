@@ -84,7 +84,6 @@ export default {
       await initClient(clientOpts);
 
       client = getClient();
-      // if (!client.wallet) throw "Error";
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       mnemonic.value = client.wallet!.exportWallet().toString();

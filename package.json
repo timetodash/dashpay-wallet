@@ -2,6 +2,10 @@
   "name": "dashpay-wallet",
   "version": "0.0.1",
   "private": true,
+  "author": {
+    "name": "dashameter",
+    "email": "dashameter@gmail.com"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",

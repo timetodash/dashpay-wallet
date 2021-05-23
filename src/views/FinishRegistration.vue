@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import { onMounted, ref, unref } from "vue";
+import { ref } from "vue";
 import {
   IonPage,
   IonHeader,
@@ -60,7 +60,7 @@ import { getClient } from "@/lib/DashClient";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
-import { Client } from "dash/dist/src/SDK/Client/index";
+import { updateAccount, createAccountId } from "@/lib/helpers/AccountStorage";
 
 export default {
   name: "CreateWallet",
@@ -95,17 +95,14 @@ export default {
 
     const errorMessage = ref("");
 
-    // onMounted(async () => {});
-
     const registerName = async () => {
       showLoader.value = true;
       try {
         console.log("event :>> ", event);
 
-        // TODO renable identity check, sdk is broken
         let identity: any;
 
-        registrationMessage.value = "Connecting a series of tubes";
+        registrationMessage.value = "Many Duffs make a Dash";
 
         const [
           identityId,
@@ -133,6 +130,15 @@ export default {
         );
 
         store.commit("setAccountDPNS", nameRegistration.toJSON());
+
+        const accountId = createAccountId(
+          client.wallet!.exportWallet().toString()
+        );
+
+        await updateAccount({
+          accountDPNS: nameRegistration.toJSON(),
+          id: accountId,
+        });
 
         console.log("nameRegistration >> ", nameRegistration.toJSON());
 

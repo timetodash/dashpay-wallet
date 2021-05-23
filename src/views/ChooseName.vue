@@ -29,8 +29,8 @@
 </template>
 
 <script lang="ts">
-import { onMounted, ref, unref } from "vue";
-import Dash from "dash";
+import { onMounted, ref } from "vue";
+
 import {
   IonPage,
   IonHeader,
@@ -44,7 +44,7 @@ import {
   IonFooter,
 } from "@ionic/vue";
 
-import { initClient, getClient } from "@/lib/DashClient";
+import { initClient } from "@/lib/DashClient";
 
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
@@ -109,8 +109,6 @@ export default {
         checkMessage.value = "Username is taken.";
         console.log("formName is taken:>> ", formName.value);
       }
-
-      // router.push("/choosepassword").;
     };
 
     onMounted(async () => {

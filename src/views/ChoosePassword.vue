@@ -8,7 +8,7 @@
     <ion-content :fullscreen="true" class="ion-padding">
       <ion-item class="ion-margin-top">
         <ion-label position="floating">Choose a password</ion-label>
-        <ion-input v-model="formPassword"></ion-input>
+        <ion-input type="password" v-model="formPassword"></ion-input>
       </ion-item>
     </ion-content>
     <ion-footer class="ion-no-border">
@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-import { onMounted, ref, unref } from "vue";
+import { ref } from "vue";
 import {
   IonPage,
   IonHeader,
@@ -43,9 +43,7 @@ import { getClient } from "@/lib/DashClient";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
-import { Client } from "dash/dist/src/SDK/Client/index";
-
-import { Storage } from "@capacitor/storage";
+import { storeAccount, createAccountId } from "@/lib/helpers/AccountStorage";
 
 export default {
   name: "CreateWallet",
@@ -89,34 +87,17 @@ export default {
         formPassword.value
       );
 
-      let accounts = [];
+      const accountId = createAccountId(
+        client.wallet!.exportWallet().toString()
+      );
 
-      const readResult = await Storage.get({ key: "accounts" });
-
-      console.log("readResult :>> ", readResult);
-
-      if (readResult.value) accounts = JSON.parse(readResult.value!);
-
-      console.log("accounts :>> ", accounts);
-
-      accounts.push({ wishName: store.state.wishName, encMnemonic });
-
-      const result = await Storage.set({
-        key: "accounts",
-        value: JSON.stringify(accounts),
+      await storeAccount({
+        wishName: store.state.wishName,
+        id: accountId,
+        encMnemonic,
       });
 
-      console.log("result :>> ", result);
-
       checkMessage.value = "Wallet saved on device";
-
-      // const decMnemonic = client.account?.decrypt(
-      //   "aes",
-      //   read.mnemonic,
-      //   formPassword.value
-      // );
-
-      // console.log("decMnemonic :>> ", decMnemonic);
 
       setTimeout(() => router.push("/backupmnemonic"), 1200);
     };

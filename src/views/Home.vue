@@ -13,8 +13,7 @@
       <ion-title class="ion-margin-top">Transactions</ion-title>
       <ion-card>
         <ion-item v-for="(transaction, idx) in transactionHistory" :key="idx">
-          {{ transaction.id.substr(0, 6) }}
-          {{ transaction.outputs.map((output) => output._satoshis) }}
+          {{ transactionDisplay(transaction) }}
         </ion-item>
       </ion-card>
       <ion-button color="primary" @click="refreshData()">Refresh</ion-button>
@@ -66,11 +65,15 @@ import {
   IonCard,
 } from "@ionic/vue";
 
-import { initClient, getClient } from "@/lib/DashClient";
+import { initClient, getClient, getClientOpts } from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
+import { resolveTransaction, DIRECTION } from "@/lib/helpers/Transactions";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Dashcore = require("@dashevo/dashcore-lib");
 
 export default {
-  name: "CreateWallet",
+  name: "Home",
   components: {
     IonHeader,
     IonToolbar,
@@ -93,20 +96,47 @@ export default {
     const store = useStore(); //FIXME store type
 
     const client: Client = getClient();
-
-    // const account = client.account as any;
+    // let client: Client;
 
     const balance = ref<number>();
 
-    const transactionHistory = ref(client.account?.getTransactions());
+    const transactionHistory = ref();
+
+    const transactionDisplay = (transaction: any) => {
+      console.log("transaction :>> ", transaction);
+      let txDisplay = "";
+      switch (transaction.transferDirection) {
+        case DIRECTION.SENT:
+          txDisplay = `Sent ${transaction.transferSatoshis} to ${transaction.remoteAddress}`;
+
+          if (transaction.remoteAddress === "false")
+            txDisplay = `Identity TopUp of ${transaction.transferSatoshis}`;
+          break;
+        case DIRECTION.RECEIVED:
+          txDisplay = `Received ${transaction.transferSatoshis} from ${transaction.remoteAddress}`;
+          break;
+        case DIRECTION.MOVED:
+          txDisplay = `Internal transfer of ${transaction.transferSatoshis}`;
+          break;
+
+        default:
+          break;
+      }
+
+      return txDisplay;
+    };
 
     const refreshData = () => {
-      transactionHistory.value = client.account?.getTransactions();
-      console.log("unref(transactionHistory) :>> ", unref(transactionHistory));
-      console.log("transactionHistory :>> ", transactionHistory);
-      console.log("transactionHistory.value :>> ", transactionHistory.value);
+      const transactions = Object.entries(
+        client.account!.getTransactions()
+      ).map((el) => el[1]);
 
-      balance.value = client.account?.getTotalBalance();
+      console.log("transactions :>> ", transactions);
+
+      transactionHistory.value = transactions.map((tx: any) =>
+        resolveTransaction(client, tx)
+      );
+      console.log("transactionHistory.value :>> ", transactionHistory.value);
     };
 
     onMounted(async () => {
@@ -119,6 +149,7 @@ export default {
       identityId: computed(() => store.getters.identityId),
       name: computed(() => store.getters.name),
       refreshData,
+      transactionDisplay,
     };
   },
 };

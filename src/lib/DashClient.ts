@@ -24,6 +24,19 @@ const getClient = function() {
   return client;
 };
 
+const getClientOpts = function(mnemonic: string) {
+  return {
+    passFakeAssetLockProofForTests: true,
+    dapiAddresses: JSON.parse(process.env.VUE_APP_DAPIADDRESSES!),
+    wallet: {
+      mnemonic: mnemonic,
+    },
+    apps: {
+      dpns: { contractId: process.env.VUE_APP_DPNSCONTRACTID },
+    },
+  };
+};
+
 const initClient = async function(clientOpts: any) {
   // TODO handle errors
   assert(!client, "Error: Client already initialized!");
@@ -39,4 +52,4 @@ const initClient = async function(clientOpts: any) {
   return getClient();
 };
 
-export { initClient, getClient, disconnectClient };
+export { initClient, getClient, getClientOpts, disconnectClient };

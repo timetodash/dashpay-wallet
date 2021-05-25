@@ -13,7 +13,7 @@
 <script lang="ts">
 import { onMounted, ref } from "vue";
 
-import { IonList } from "@ionic/vue";
+import { IonList, IonListHeader } from "@ionic/vue";
 
 import { getAccounts } from "@/lib/helpers/AccountStorage";
 
@@ -24,6 +24,7 @@ export default {
   components: {
     IonList,
     AccountItem,
+    IonListHeader,
   },
   setup() {
     const accounts = ref([]);

@@ -1,5 +1,5 @@
 <template>
-      <ion-page>
+  <ion-page>
     <ion-header>
       <ion-toolbar>
         <ion-title>Import Wallet</ion-title>

@@ -40,7 +40,7 @@ import {
   IonTextarea,
 } from "@ionic/vue";
 
-import { initClient, getClient } from "@/lib/DashClient";
+import { initClient, getClient, getClientOpts } from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -62,16 +62,7 @@ export default {
   },
   setup() {
     console.log(process.env.VUE_APP_DAPIADDRESSES);
-    const clientOpts = {
-      passFakeAssetLockProofForTests: true,
-      dapiAddresses: JSON.parse(process.env.VUE_APP_DAPIADDRESSES!),
-      wallet: {
-        mnemonic: null,
-      },
-      apps: {
-        dpns: { contractId: process.env.VUE_APP_DPNSCONTRACTID },
-      },
-    };
+    const clientOpts = getClientOpts(null);
 
     let client: Client;
 

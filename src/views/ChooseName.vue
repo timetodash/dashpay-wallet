@@ -44,7 +44,7 @@ import {
   IonFooter,
 } from "@ionic/vue";
 
-import { initClient } from "@/lib/DashClient";
+import { getClientOpts, initClient } from "@/lib/DashClient";
 
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
@@ -70,16 +70,7 @@ export default {
   setup() {
     let client: Client;
 
-    const clientOpts = {
-      passFakeAssetLockProofForTests: true,
-      dapiAddresses: JSON.parse(process.env.VUE_APP_DAPIADDRESSES!),
-      wallet: {
-        mnemonic: null,
-      },
-      apps: {
-        dpns: { contractId: process.env.VUE_APP_DPNSCONTRACTID },
-      },
-    };
+    const clientOpts = getClientOpts(null);
 
     const router = useRouter();
 

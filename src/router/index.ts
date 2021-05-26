@@ -13,6 +13,7 @@ import ReceiveDash from "@/views/ReceiveDash.vue";
 import ChooseName from "@/views/ChooseName.vue";
 import ChoosePassword from "@/views/ChoosePassword.vue";
 import BackupMnemonic from "@/views/BackupMnemonic.vue";
+import ContactSearch from "@/views/ContactSearch.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -66,6 +67,10 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/backupmnemonic",
     component: BackupMnemonic,
+  },
+  {
+    path: "/contactsearch",
+    component: ContactSearch,
   },
 ];
 

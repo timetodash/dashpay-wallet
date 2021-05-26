@@ -24,12 +24,15 @@ const getClient = function() {
   return client;
 };
 
-const getClientOpts = function(mnemonic: string) {
+const getClientOpts = function(mnemonic: string | null) {
   return {
     passFakeAssetLockProofForTests: true,
     dapiAddresses: JSON.parse(process.env.VUE_APP_DAPIADDRESSES!),
     wallet: {
       mnemonic: mnemonic,
+      unsafeOptions: {
+        skipSynchronizationBeforeHeight: 506776,
+      },
     },
     apps: {
       dpns: { contractId: process.env.VUE_APP_DPNSCONTRACTID },

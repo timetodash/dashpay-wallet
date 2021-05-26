@@ -17,8 +17,31 @@
         </ion-item>
       </ion-card>
       <ion-button color="primary" @click="refreshData()">Refresh</ion-button>
+      <ion-fab
+        vertical="bottom"
+        horizontal="end"
+        edge
+        slot="fixed"
+        style="margin-bottom: 50px"
+      >
+        <ion-fab-button>
+          <ion-icon :icon="listCircle" />
+        </ion-fab-button>
+        <ion-fab-list side="top">
+          <ion-fab-button router-link="/contactsearch">
+            <ion-icon color="secondary" :icon="personAdd" />
+          </ion-fab-button>
+          <ion-fab-button router-link="/receivedash"
+            ><ion-icon color="secondary" :icon="download" />
+          </ion-fab-button>
+          <ion-fab-button router-link="/senddash"
+            ><ion-icon color="secondary" :icon="send" />
+          </ion-fab-button>
+        </ion-fab-list>
+      </ion-fab>
     </ion-content>
-    <ion-footer class="ion-no-border">
+    <ion-footer></ion-footer>
+    <!-- <ion-footer class="ion-no-border">
       <ion-toolbar>
         <ion-grid>
           <ion-row>
@@ -38,7 +61,7 @@
           </ion-row>
         </ion-grid>
       </ion-toolbar>
-    </ion-footer>
+    </ion-footer> -->
   </ion-page>
 </template>
 
@@ -63,7 +86,12 @@ import {
   IonFooter,
   IonInput,
   IonCard,
+  IonFab,
+  IonFabList,
+  IonFabButton,
+  IonIcon,
 } from "@ionic/vue";
+import { listCircle, personAdd, send, download } from "ionicons/icons";
 
 import { initClient, getClient, getClientOpts } from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
@@ -81,15 +109,19 @@ export default {
     IonContent,
     IonPage,
     IonButton,
-    IonGrid,
-    IonRow,
-    IonCol,
+    // IonGrid,
+    // IonRow,
+    // IonCol,
     IonFooter,
     IonLabel,
     IonInput,
     IonCard,
     // IonTextarea,
     IonItem,
+    IonFab,
+    IonFabList,
+    IonFabButton,
+    IonIcon,
   },
   setup() {
     // const router = useRouter();
@@ -150,6 +182,10 @@ export default {
       name: computed(() => store.getters.name),
       refreshData,
       transactionDisplay,
+      listCircle,
+      personAdd,
+      send,
+      download,
     };
   },
 };

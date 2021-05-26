@@ -57,7 +57,7 @@ import {
   IonFooter,
 } from "@ionic/vue";
 
-import { initClient, getClient } from "@/lib/DashClient";
+import { initClient, getClient, getClientOpts } from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
 
 export default {
@@ -95,16 +95,7 @@ export default {
 
     const recoverWallet = async (event: any) => {
       console.log("event :>> ", event);
-      const clientOpts = {
-        passFakeAssetLockProofForTests: true,
-        dapiAddresses: JSON.parse(process.env.VUE_APP_DAPIADDRESSES!),
-        wallet: {
-          mnemonic: mnemonic.value,
-        },
-        apps: {
-          dpns: { contractId: process.env.VUE_APP_DPNSCONTRACTID },
-        },
-      };
+      const clientOpts = getClientOpts(mnemonic.value);
 
       await initClient(clientOpts);
 

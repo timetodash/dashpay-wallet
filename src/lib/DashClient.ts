@@ -26,16 +26,16 @@ const getClient = function() {
 
 const getClientOpts = function(mnemonic: string | null) {
   return {
-    passFakeAssetLockProofForTests: true,
+    // passFakeAssetLockProofForTests: true,
     dapiAddresses: JSON.parse(process.env.VUE_APP_DAPIADDRESSES!),
     wallet: {
       mnemonic: mnemonic,
-      unsafeOptions: {
-        skipSynchronizationBeforeHeight: 506776,
-      },
+      // unsafeOptions: {
+      //   skipSynchronizationBeforeHeight: 506776,
+      // },
     },
     apps: {
-      dpns: { contractId: process.env.VUE_APP_DPNSCONTRACTID },
+      dpns: { contractId: process.env.VUE_APP_DPNS_CONTRACT_ID },
     },
   };
 };
@@ -46,9 +46,16 @@ const initClient = async function(clientOpts: any) {
 
   assert(clientOpts.wallet, "Error: clientOpts is missing wallet config!");
 
+  console.log("clientOpts :>> ", clientOpts);
+
   client = new Dash.Client(clientOpts);
 
   console.log("client :>> ", client);
+
+  Object.entries((client.getApps() as any).apps).forEach(([name, entry]) =>
+    console.log(name, (entry as any).contractId.toString())
+  );
+
   client.account = await client.getWalletAccount();
 
   console.log("client.account :>> ", client.account);

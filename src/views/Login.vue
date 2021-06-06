@@ -103,7 +103,7 @@ export default {
           identityId
         );
 
-        console.log("dpnsDoc :>> ", dpnsDoc.toJSON());
+        console.log("dpnsDoc :>> ", dpnsDoc?.toJSON());
 
         if (dpnsDoc) {
           store.commit("setAccountDPNS", dpnsDoc.toJSON());

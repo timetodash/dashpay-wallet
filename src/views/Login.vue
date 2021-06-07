@@ -11,7 +11,7 @@
     </ion-content>
     <ion-footer class="ion-no-border">
       <ion-toolbar v-if="selectedAccount">
-        <ion-button color="primary" @click="decryptMnemonic()" expand="block"
+        <ion-button color="tertiary" @click="decryptMnemonic()" expand="block"
           >Login</ion-button
         >
         <ion-button
@@ -23,7 +23,7 @@
         >
       </ion-toolbar>
       <ion-toolbar v-else>
-        <ion-button color="primary" router-link="/choosename" expand="block"
+        <ion-button color="tertiary" router-link="/choosename" expand="block"
           >Sign Up</ion-button
         >
       </ion-toolbar>

@@ -16,7 +16,7 @@
         <ion-title>{{ checkMessage }}</ion-title>
       </ion-toolbar>
       <ion-toolbar>
-        <ion-button expand="block" color="primary" @click="checkPassword()"
+        <ion-button expand="block" color="tertiary" @click="checkPassword()"
           >Pick Password</ion-button
         >
       </ion-toolbar>

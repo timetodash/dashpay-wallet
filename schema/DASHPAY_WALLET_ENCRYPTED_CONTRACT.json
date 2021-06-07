@@ -1,0 +1,40 @@
+{
+  "chat": {
+    "indices": [
+      {
+        "properties": [
+          {
+            "$createdAt": "desc"
+          }
+        ]
+      },
+      {
+        "properties": [
+          {
+            "$ownerId": "asc"
+          }
+        ]
+      },
+      {
+        "properties": [
+          {
+            "toOwnerId": "asc"
+          }
+        ]
+      }
+    ],
+    "required": ["toOwnerId", "$createdAt", "payload"],
+    "properties": {
+      "payload": {
+        "type": "string"
+      },
+      "toOwnerId": {
+        "type": "string",
+        "pattern": "^$|^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{42,44}$",
+        "maxLength": 44,
+        "minLength": 42
+      }
+    },
+    "additionalProperties": false
+  }
+}

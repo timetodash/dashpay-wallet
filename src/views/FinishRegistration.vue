@@ -27,7 +27,7 @@
     </ion-content>
     <ion-footer class="ion-no-border">
       <ion-toolbar>
-        <ion-button expand="block" color="primary" @click="registerName()"
+        <ion-button expand="block" color="tertiary" @click="registerName()"
           >Register Name</ion-button
         >
       </ion-toolbar>

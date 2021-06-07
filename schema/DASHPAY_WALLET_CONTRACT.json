@@ -1,0 +1,70 @@
+{
+  "chat": {
+    "indices": [
+      {
+        "properties": [
+          {
+            "$createdAt": "desc"
+          }
+        ]
+      },
+      {
+        "properties": [
+          {
+            "$ownerId": "asc"
+          }
+        ]
+      },
+      {
+        "properties": [
+          {
+            "toOwnerId": "asc"
+          }
+        ]
+      },
+      {
+        "properties": [
+          {
+            "replyToChatId": "asc"
+          }
+        ]
+      },
+      {
+        "properties": [
+          {
+            "txId": "asc"
+          }
+        ]
+      }
+    ],
+    "required": ["replyToChatId", "txId", "toOwnerId", "$createdAt", "text"],
+    "properties": {
+      "text": {
+        "type": "string"
+      },
+      "request": {
+        "type": "string",
+        "$comment": "open | accept | reject"
+      },
+      "toOwnerId": {
+        "type": "string",
+        "pattern": "^$|^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{42,44}$",
+        "maxLength": 44,
+        "minLength": 42
+      },
+      "replyToChatId": {
+        "type": "string",
+        "pattern": "^$|^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{42,44}$",
+        "maxLength": 44,
+        "minLength": 0
+      },
+      "txId": {
+        "type": "string",
+        "pattern": "^$|^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{42,44}$",
+        "maxLength": 44,
+        "minLength": 0
+      }
+    },
+    "additionalProperties": false
+  }
+}

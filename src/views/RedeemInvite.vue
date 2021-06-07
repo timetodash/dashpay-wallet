@@ -25,7 +25,7 @@
       <ion-toolbar>
         <ion-button
           expand="block"
-          color="primary"
+          color="tertiary"
           @click="() => router.push('/finishregistration')"
           >Finish</ion-button
         >

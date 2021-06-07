@@ -23,7 +23,7 @@
       <ion-toolbar>
         <ion-button
           :disabled="!backupConfirmed"
-          color="primary"
+          color="tertiary"
           expand="block"
           router-link="/redeeminvite"
           >Next</ion-button

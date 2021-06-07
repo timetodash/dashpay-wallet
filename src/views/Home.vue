@@ -159,6 +159,8 @@ export default {
     };
 
     const refreshData = () => {
+      balance.value = client.account!.getTotalBalance();
+
       const transactions = Object.entries(
         client.account!.getTransactions()
       ).map((el) => el[1]);

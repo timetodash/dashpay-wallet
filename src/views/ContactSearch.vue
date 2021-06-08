@@ -2,6 +2,9 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-back-button></ion-back-button>
+        </ion-buttons>
         <ion-searchbar
           placeholder="Find your friends"
           animated
@@ -18,7 +21,12 @@
           All Friends
         </ion-list-header>
 
-        <ion-item v-for="contact in contacts" :key="contact.$id">
+        <ion-item
+          v-for="contact in contacts"
+          :key="contact.$id"
+          button
+          @click="router.push(`/conversation/${contact.$ownerId}`)"
+        >
           <ion-avatar slot="start">
             <img :src="avatarUrl(contact)" />
           </ion-avatar>
@@ -71,9 +79,16 @@ import {
   IonListHeader,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonButtons,
+  IonBackButton,
 } from "@ionic/vue";
 
-import { getClientOpts, initClient, getClient } from "@/lib/DashClient";
+import {
+  getClientOpts,
+  initClient,
+  getClient,
+  getClientIdentity,
+} from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
 import { resolveContacts } from "@/lib/helpers/Contacts";
 
@@ -107,9 +122,12 @@ export default {
     IonListHeader,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
+    IonButtons,
+    IonBackButton,
   },
   setup() {
     const client = getClient();
+    const clientIdentity = getClientIdentity();
     // let client: Client;
     // const clientOpts = getClientOpts(
     //   "blanket color tiny word cabbage stem ahead logic veteran either reflect affair" // local
@@ -149,10 +167,18 @@ export default {
         queryOpts
       );
 
+      result.forEach((dpnsDoc: any) => {
+        store.commit("setDPNS", dpnsDoc);
+      });
+
+      console.log("store.state.dpns :>> ", store.state.dpns);
+
       // Newer data was loaded, so don't display stale results
       if (thisData != mostRecentData.value) return;
 
-      const resultJson = result.map((x: any) => x.toJSON());
+      const resultJson = result
+        .map((x: any) => x.toJSON())
+        .filter((x: any) => x.$ownerId !== clientIdentity.getId().toString());
 
       resultJson.forEach((el: any) => {
         contacts.value.push(el);
@@ -242,6 +268,7 @@ export default {
       publicMessage,
       loadScrollData,
       disableInfiniteScroll,
+      router,
     };
   },
 };

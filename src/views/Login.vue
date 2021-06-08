@@ -107,6 +107,7 @@ export default {
 
         if (dpnsDoc) {
           store.commit("setAccountDPNS", dpnsDoc.toJSON());
+          store.commit("setDPNS", dpnsDoc);
           router.push("/home");
         } else {
           router.push("/finishregistration");

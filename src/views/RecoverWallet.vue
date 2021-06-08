@@ -119,6 +119,7 @@ export default {
         name.value = dpnsDoc?.data.label ?? "No Name registered";
 
         store.commit("setAccountDPNS", dpnsDoc.toJSON());
+        store.commit("setDPNS", dpnsDoc);
       } else {
         identityId.value = " No Identity registered.";
       }

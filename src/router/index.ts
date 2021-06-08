@@ -14,6 +14,7 @@ import ChooseName from "@/views/ChooseName.vue";
 import ChoosePassword from "@/views/ChoosePassword.vue";
 import BackupMnemonic from "@/views/BackupMnemonic.vue";
 import ContactSearch from "@/views/ContactSearch.vue";
+import Conversation from "@/views/Conversation.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -71,6 +72,12 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/contactsearch",
     component: ContactSearch,
+  },
+  {
+    path: "/conversation/:ownerId",
+    component: Conversation,
+    name: "Conversation",
+    props: true,
   },
 ];
 

@@ -56,7 +56,7 @@ import {
   IonLoading,
 } from "@ionic/vue";
 
-import { getClient } from "@/lib/DashClient";
+import { getClient, setClientIdentity } from "@/lib/DashClient";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
@@ -117,6 +117,7 @@ export default {
           registrationMessage.value = "Creating new identity";
 
           identity = await client.platform?.identities.register();
+          setClientIdentity(identity);
         }
 
         console.log("identity :>> ", identity.toJSON());
@@ -130,6 +131,7 @@ export default {
         );
 
         store.commit("setAccountDPNS", nameRegistration.toJSON());
+        store.commit("setDPNS", nameRegistration);
 
         const accountId = createAccountId(
           client.wallet!.exportWallet().toString()

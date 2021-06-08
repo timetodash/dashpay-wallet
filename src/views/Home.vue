@@ -10,6 +10,18 @@
         <ion-label position="floating">Balance</ion-label>
         <ion-input :value="balance"></ion-input>
       </ion-item>
+      <ion-title class="ion-margin-top">Friends</ion-title>
+      <ion-list>
+        <ion-item
+          v-for="friend in friendList"
+          :key="friend.id.toString()"
+          @click="
+            router.push(`/conversation/${friend.data.toUserId.toString()}`)
+          "
+        >
+          {{ getUserLabel(friend.data.toUserId.toString()) }}
+        </ion-item>
+      </ion-list>
       <ion-title class="ion-margin-top">Transactions</ion-title>
       <ion-card>
         <ion-item v-for="(transaction, idx) in transactionHistory" :key="idx">
@@ -90,10 +102,16 @@ import {
   IonFabList,
   IonFabButton,
   IonIcon,
+  IonList,
 } from "@ionic/vue";
 import { listCircle, personAdd, send, download } from "ionicons/icons";
 
-import { initClient, getClient, getClientOpts } from "@/lib/DashClient";
+import {
+  initClient,
+  getClient,
+  getClientOpts,
+  getClientIdentity,
+} from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
 import { resolveTransaction, DIRECTION } from "@/lib/helpers/Transactions";
 
@@ -116,6 +134,7 @@ export default {
     IonLabel,
     IonInput,
     IonCard,
+    IonList,
     // IonTextarea,
     IonItem,
     IonFab,
@@ -124,15 +143,18 @@ export default {
     IonIcon,
   },
   setup() {
-    // const router = useRouter();
+    const router = useRouter();
     const store = useStore(); //FIXME store type
 
     const client: Client = getClient();
+    const clientIdentity = getClientIdentity();
     // let client: Client;
 
     const balance = ref<number>();
 
     const transactionHistory = ref();
+
+    const friendList = ref<any>([]);
 
     const transactionDisplay = (transaction: any) => {
       console.log("transaction :>> ", transaction);
@@ -171,6 +193,21 @@ export default {
         resolveTransaction(client, tx)
       );
       console.log("transactionHistory.value :>> ", transactionHistory.value);
+
+      client?.platform?.documents
+        .get("dashpay.contactRequest", {
+          where: [["$ownerId", "==", clientIdentity.getId()]],
+        })
+        .then((result: any) => {
+          friendList.value = result;
+
+          result.forEach((contactRequest: any) =>
+            store.dispatch(
+              "fetchDPNSDoc",
+              contactRequest.data.toUserId.toString()
+            )
+          );
+        });
     };
 
     onMounted(async () => {
@@ -188,6 +225,9 @@ export default {
       personAdd,
       send,
       download,
+      getUserLabel: store.getters.getUserLabel,
+      friendList,
+      router,
     };
   },
 };

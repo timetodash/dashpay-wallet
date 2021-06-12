@@ -36,8 +36,8 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
-import AccountList from "@/components/login/AccountList.vue";
-import PasswordPrompt from "@/components/login/PasswordPrompt.vue";
+import AccountList from "@/components/Login/AccountList.vue";
+import PasswordPrompt from "@/components/Login/PasswordPrompt.vue";
 
 import {
   IonPage,
@@ -139,14 +139,6 @@ export default {
     }
 
     const decryptMnemonic = function() {
-      console.log("password", password.value);
-      console.log(selectedAccount.value);
-      console.log(
-        "        aes        selectedAccount.value.encMnemonic,        password.value :>>",
-        "aes",
-        selectedAccount.value.encMnemonic,
-        password.value
-      );
       const mnemonic = decrypt(
         "aes",
         selectedAccount.value.encMnemonic,

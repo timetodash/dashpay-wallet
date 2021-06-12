@@ -3,7 +3,7 @@ source ~/.evoenv
 
 export VUE_APP_ENV_RUN="local"
 
-export VUE_APP_USERMNEMONIC="flavor alien feature laugh pen way six pitch nuclear eagle ticket art"
+export VUE_APP_USERMNEMONIC='knock sustain rebuild hurt aunt hospital you dynamic iron mean dream sword'
 
 node ./scripts/registerContracts.js
 

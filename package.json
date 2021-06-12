@@ -9,7 +9,9 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "local": "./scripts/runLocal.sh",
+    "local2": "./scripts/runLocal2.sh",
     "testnet": "./scripts/runTestnet.sh",
+    "generate:local": "./scripts/generateTestDataLocal.sh",
     "build-testnet": "./scripts/runBuildTestnet.sh",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",

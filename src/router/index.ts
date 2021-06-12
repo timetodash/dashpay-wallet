@@ -15,6 +15,9 @@ import ChoosePassword from "@/views/ChoosePassword.vue";
 import BackupMnemonic from "@/views/BackupMnemonic.vue";
 import ContactSearch from "@/views/ContactSearch.vue";
 import Conversation from "@/views/Conversation.vue";
+import ChatLegacyPayment from "@/components/Chat/ChatLegacyPayment.vue";
+
+import Autologin from "@/views/Autologin.vue"; // TODO deploy: remove, this is for dev only
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -78,6 +81,14 @@ const routes: Array<RouteRecordRaw> = [
     component: Conversation,
     name: "Conversation",
     props: true,
+  },
+  {
+    path: "/legacy",
+    component: ChatLegacyPayment,
+  },
+  {
+    path: "/autologin",
+    component: Autologin,
   },
 ];
 

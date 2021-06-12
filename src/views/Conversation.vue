@@ -15,7 +15,9 @@
         a friendship connection.
       </h1>
       <ion-list>
-        <ion-item v-for="msg in chatMsgs" :key="msg.id.toString()"
+        <ion-item
+          v-for="msg in store.state.chats.msgsByOwnerId[ownerId]"
+          :key="msg.id.toString()"
           >{{ getUserLabel(msg.ownerId.toString()) }}: {{ msg.data.text }} -
           {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes() }}
         </ion-item>
@@ -72,6 +74,7 @@ import {
 
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
+import useChats from "@/composables/chats";
 
 import { Client } from "dash/dist/src/SDK/Client/index";
 
@@ -116,6 +119,8 @@ export default {
 
     const route = useRoute();
 
+    const chatMsgs = useChats();
+
     const ownerId = route.params.ownerId; // read parameter id (it is reactive)
 
     const store = useStore();
@@ -131,7 +136,7 @@ export default {
     const existingContactRequest = ref({});
 
     const sendChat = async () => {
-      console.log("Sending chat", chatText.value);
+      // console.log("Sending chat", chatText.value);
       const platform = client.platform;
 
       const docProperties = {
@@ -176,11 +181,11 @@ export default {
 
       // DashPay Incoming Funds Derivation Path
       // https://github.com/dashpay/dips/blob/feat/dashpay/dip-0015.md#dashpay-incoming-funds-derivation-path
-      console.log(
-        senderHdPrivateKey,
-        clientIdentity.getId().toString(),
-        receiverIdentity.id.toString()
-      );
+      // console.log(
+      //   senderHdPrivateKey,
+      //   clientIdentity.getId().toString(),
+      //   receiverIdentity.id.toString()
+      // );
       const publicKeyDIP15 = dashpaycrypto.deriveExtendedPublicKeyDIP15(
         senderHdPrivateKey,
         clientIdentity.getId().toString(),
@@ -210,7 +215,7 @@ export default {
       // end contactRequest
       //
 
-      console.log(contactRequest);
+      // console.log(contactRequest);
 
       const contactRequestDocument = await client?.platform?.documents.create(
         "dashpay.contactRequest",
@@ -218,15 +223,21 @@ export default {
         contactRequest
       );
 
+      // console.log("contactRequestDocument :>> ", contactRequestDocument);
+
       const documentBatch = {
         create: [document], // Document(s) to create
         replace: [], // Document(s) to update
         delete: [], // Document(s) to delete
       };
 
+      // console.log("documentBatch :>> ", documentBatch);
+
       if (!existingContactRequest.value) {
         documentBatch.create.push(contactRequestDocument);
       }
+
+      // console.log("sending broadcast", { documentBatch, clientIdentity });
 
       // Sign and submit the document(s)
       const result = await platform?.documents.broadcast(
@@ -234,15 +245,15 @@ export default {
         clientIdentity
       );
 
+      // console.log("sendChat result :>> ", result);
+
       if (result.transitions[1])
         existingContactRequest.value = {
           ...result.transitions[1],
           ownerId: result.ownerId,
         };
 
-      console.log("sendChat result :>> ", result);
-
-      console.dir(result.transitions[0].toJSON(), { depth: 100 });
+      // console.dir(result.transitions[0].toJSON(), { depth: 100 });
 
       const chatSent = result.transitions[0];
 
@@ -264,7 +275,7 @@ export default {
         }
       );
 
-      console.log("chatMsgsSent.value :>> ", chatMsgsSent.value);
+      // console.log("chatMsgsSent.value :>> ", chatMsgsSent.value);
 
       chatMsgsReceived.value = await client?.platform?.documents.get(
         "dashpayWallet.chat",
@@ -275,7 +286,7 @@ export default {
           ],
         }
       );
-      console.log("chatMsgsReceived.value :>> ", chatMsgsReceived.value);
+      // console.log("chatMsgsReceived.value :>> ", chatMsgsReceived.value);
     };
 
     const loopFetchChatMsgs = async () => {
@@ -294,7 +305,7 @@ export default {
         })
       )[0];
 
-      console.log("contactRequest.value :>> ", existingContactRequest.value);
+      // console.log("contactRequest.value :>> ", existingContactRequest.value);
     };
 
     onMounted(async () => {
@@ -304,7 +315,7 @@ export default {
 
       clientIdentity = getClientIdentity();
 
-      console.log("clientIdentity :>> ", clientIdentity);
+      // console.log("clientIdentity :>> ", clientIdentity);
 
       store.dispatch("fetchDPNSDoc", ownerId);
 
@@ -312,13 +323,7 @@ export default {
 
       checkedExistingContactRequest.value = true;
 
-      loopFetchChatMsgs();
-    });
-
-    const chatMsgs = computed(() => {
-      return [...chatMsgsSent.value, ...chatMsgsReceived.value].sort(
-        (a: any, b: any) => a.createdAt - b.createdAt
-      );
+      // loopFetchChatMsgs();
     });
 
     return {
@@ -329,6 +334,7 @@ export default {
       checkedExistingContactRequest,
       existingContactRequest,
       getUserLabel: store.getters.getUserLabel,
+      store,
     };
   },
 };

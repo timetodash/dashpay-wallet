@@ -3,7 +3,7 @@ source ~/.evoenv
 
 export VUE_APP_ENV_RUN="local"
 
-export VUE_APP_USERMNEMONIC="proud group frequent erase retire approve produce race wealth picnic alert pear"
+export VUE_APP_USERMNEMONIC='now tourist leopard scorpion inside nation bitter click wide razor say drastic'
 
 node ./scripts/registerContracts.js
 

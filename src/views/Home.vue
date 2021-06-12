@@ -1,84 +1,44 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-toolbar>
-        <ion-title>{{ name }}</ion-title>
+      <ion-toolbar class="app-header"
+        ><HomeHeader
+          :name="name"
+          :walletBalance="walletBalance"
+          :fiatBalance="fiatBalance"
+        ></HomeHeader>
       </ion-toolbar>
     </ion-header>
-    <ion-content :fullscreen="true" class="ion-padding">
-      <ion-item>
-        <ion-label position="floating">Balance</ion-label>
-        <ion-input :value="balance"></ion-input>
-      </ion-item>
-      <ion-title class="ion-margin-top">Friends</ion-title>
-      <ion-list>
-        <ion-item
-          v-for="friend in friendList"
-          :key="friend.id.toString()"
-          @click="
-            router.push(`/conversation/${friend.data.toUserId.toString()}`)
-          "
-        >
-          {{ getUserLabel(friend.data.toUserId.toString()) }}
-        </ion-item>
-      </ion-list>
-      <ion-title class="ion-margin-top">Transactions</ion-title>
-      <ion-card>
-        <ion-item v-for="(transaction, idx) in transactionHistory" :key="idx">
-          {{ transactionDisplay(transaction) }}
-        </ion-item>
-      </ion-card>
-      <ion-button color="primary" @click="refreshData()">Refresh</ion-button>
-      <ion-fab
-        vertical="bottom"
-        horizontal="end"
-        edge
-        slot="fixed"
-        style="margin-bottom: 50px"
-      >
-        <ion-fab-button>
-          <ion-icon :icon="listCircle" />
+
+    <ion-content :fullscreen="true">
+      <ion-toolbar class="searchbar">
+        <ion-searchbar></ion-searchbar>
+      </ion-toolbar>
+
+      <ChatList></ChatList>
+
+      <ion-fab horizontal="end" vertical="bottom" slot="fixed">
+        <ion-fab-button class="compose" @click="router.push(`/contactSearch`)">
+          <ion-icon :icon="add"></ion-icon>
         </ion-fab-button>
-        <ion-fab-list side="top">
-          <ion-fab-button router-link="/contactsearch">
-            <ion-icon color="secondary" :icon="personAdd" />
-          </ion-fab-button>
-          <ion-fab-button router-link="/receivedash"
-            ><ion-icon color="secondary" :icon="download" />
-          </ion-fab-button>
-          <ion-fab-button router-link="/senddash"
-            ><ion-icon color="secondary" :icon="send" />
-          </ion-fab-button>
-        </ion-fab-list>
+      </ion-fab>
+
+      <ion-fab
+        horizontal="end"
+        vertical="bottom"
+        slot="fixed"
+        style="margin-bottom: 74px"
+      >
+        <ion-fab-button class="capture" @click="router.push(`/senddash`)">
+          <ion-icon :icon="scan" color="tertiary"> </ion-icon>
+        </ion-fab-button>
       </ion-fab>
     </ion-content>
-    <ion-footer></ion-footer>
-    <!-- <ion-footer class="ion-no-border">
-      <ion-toolbar>
-        <ion-grid>
-          <ion-row>
-            <ion-col col-6>
-              <ion-button color="primary" expand="block" router-link="/senddash"
-                >Send</ion-button
-              >
-            </ion-col>
-            <ion-col col-6>
-              <ion-button
-                color="primary"
-                expand="block"
-                router-link="/receivedash"
-                >Receive</ion-button
-              >
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-toolbar>
-    </ion-footer> -->
   </ion-page>
 </template>
 
 <script lang="ts">
-import { onMounted, ref, unref, computed } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
@@ -86,25 +46,25 @@ import {
   IonPage,
   IonHeader,
   IonToolbar,
-  IonTitle,
   IonContent,
-  IonButton,
-  IonLabel,
-  IonTextarea,
-  IonItem,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonFooter,
-  IonInput,
-  IonCard,
   IonFab,
-  IonFabList,
   IonFabButton,
+  IonSearchbar,
   IonIcon,
-  IonList,
 } from "@ionic/vue";
-import { listCircle, personAdd, send, download } from "ionicons/icons";
+import {
+  listCircle,
+  personAdd,
+  send,
+  download,
+  scan,
+  add,
+} from "ionicons/icons";
+import HomeHeader from "@/components/HomeHeader.vue";
+import ChatList from "@/components/Chat/ChatList.vue";
+import useWallet from "@/composables/wallet";
+import useContacts from "@/composables/contacts";
+import useChats from "@/composables/chats";
 
 import {
   initClient,
@@ -113,7 +73,6 @@ import {
   getClientIdentity,
 } from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
-import { resolveTransaction, DIRECTION } from "@/lib/helpers/Transactions";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Dashcore = require("@dashevo/dashcore-lib");
@@ -123,112 +82,93 @@ export default {
   components: {
     IonHeader,
     IonToolbar,
-    IonTitle,
     IonContent,
     IonPage,
-    IonButton,
-    // IonGrid,
-    // IonRow,
-    // IonCol,
-    IonFooter,
-    IonLabel,
-    IonInput,
-    IonCard,
-    IonList,
-    // IonTextarea,
-    IonItem,
+    IonSearchbar,
     IonFab,
-    IonFabList,
     IonFabButton,
     IonIcon,
+    HomeHeader,
+    ChatList,
   },
   setup() {
     const router = useRouter();
-    const store = useStore(); //FIXME store type
 
-    const client: Client = getClient();
-    const clientIdentity = getClientIdentity();
-    // let client: Client;
+    const store = useStore();
 
-    const balance = ref<number>();
+    const { startRefreshWalletDataLoop, balance } = useWallet();
+    const { startSyncContactRequests } = useContacts();
+    const { startSyncChats } = useChats();
 
-    const transactionHistory = ref();
+    startSyncChats();
+    startRefreshWalletDataLoop();
+    startSyncContactRequests();
 
-    const friendList = ref<any>([]);
-
-    const transactionDisplay = (transaction: any) => {
-      console.log("transaction :>> ", transaction);
-      let txDisplay = "";
-      switch (transaction.transferDirection) {
-        case DIRECTION.SENT:
-          txDisplay = `Sent ${transaction.transferSatoshis} to ${transaction.remoteAddress}`;
-
-          if (transaction.remoteAddress === "false")
-            txDisplay = `Identity TopUp of ${transaction.transferSatoshis}`;
-          break;
-        case DIRECTION.RECEIVED:
-          txDisplay = `Received ${transaction.transferSatoshis} from ${transaction.remoteAddress}`;
-          break;
-        case DIRECTION.MOVED:
-          txDisplay = `Internal transfer of ${transaction.transferSatoshis}`;
-          break;
-
-        default:
-          break;
-      }
-
-      return txDisplay;
-    };
-
-    const refreshData = () => {
-      balance.value = client.account!.getTotalBalance();
-
-      const transactions = Object.entries(
-        client.account!.getTransactions()
-      ).map((el) => el[1]);
-
-      console.log("transactions :>> ", transactions);
-
-      transactionHistory.value = transactions.map((tx: any) =>
-        resolveTransaction(client, tx)
-      );
-      console.log("transactionHistory.value :>> ", transactionHistory.value);
-
-      client?.platform?.documents
-        .get("dashpay.contactRequest", {
-          where: [["$ownerId", "==", clientIdentity.getId()]],
-        })
-        .then((result: any) => {
-          friendList.value = result;
-
-          result.forEach((contactRequest: any) =>
-            store.dispatch(
-              "fetchDPNSDoc",
-              contactRequest.data.toUserId.toString()
-            )
-          );
-        });
-    };
-
-    onMounted(async () => {
-      refreshData();
-    });
+    // onMounted(() => {
+    // });
 
     return {
-      balance,
-      transactionHistory,
       identityId: computed(() => store.getters.identityId),
       name: computed(() => store.getters.name),
-      refreshData,
-      transactionDisplay,
+      walletBalance: computed(() => `${balance.value} Dash`),
+      fiatBalance: computed(() => `${(balance.value || 0) * 178} USD`),
       listCircle,
       personAdd,
       send,
       download,
       getUserLabel: store.getters.getUserLabel,
-      friendList,
       router,
+      scan,
+      add,
     };
   },
 };
 </script>
+
+<style scoped>
+ion-header {
+  padding-top: 16px;
+  padding-left: 16px;
+  background: #f7f7f7;
+  border: 1px solid #e3e3e3;
+  /* --background-color: #f7f7f7; */
+}
+.app-header {
+  --background-color: #f7f7f7;
+}
+/* removes the shadow below the header */
+.header-md::after {
+  height: 0px;
+  border-style: solid 2px;
+}
+/* ion-toolbar {
+  --background: primary;
+} */
+
+.searchbar {
+  padding-left: 16px;
+  padding-right: 16px;
+  --background: white;
+}
+.compose {
+  --background: linear-gradient(38.82deg, #6a67fb 13.64%, #8d71ff 86.36%);
+}
+.capture {
+  --background: #ffffff;
+}
+ion-searchbar {
+  --background: #f3f3f3;
+  --border-radius: 8px;
+  --box-shadow: 0;
+  --icon-color: #9c9c9c;
+  --placeholder-color: #9c9c9c;
+  width: 100%;
+  /* width: 334px; width in mobile with padding */
+  height: 31px;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+ion-toolbar {
+  --background: #f7f7f7;
+}
+</style>

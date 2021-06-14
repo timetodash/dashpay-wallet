@@ -1,6 +1,6 @@
 <template>
   <ion-avatar slot="start" class="userAvatar"
-    ><img src="/assets/avatars/H.png"
+    ><img :src="store.getters.myAvatar"
   /></ion-avatar>
   <ion-buttons slot="end">
     <ion-button
@@ -20,6 +20,8 @@
 <script lang="ts">
 import { IonAvatar, IonButtons, IonButton, IonIcon } from "@ionic/vue";
 import { ellipsisVertical, eyeOutline } from "ionicons/icons";
+import { useStore } from "vuex";
+import { computed } from "vue";
 
 export default {
   // props: [walletBalance: { type: string, default: "" }],
@@ -32,9 +34,12 @@ export default {
   },
 
   setup() {
+    const store = useStore();
+
     return {
       ellipsisVertical,
       eyeOutline,
+      store,
     };
   },
 };

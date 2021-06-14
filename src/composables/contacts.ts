@@ -38,13 +38,8 @@ export default function useContacts() {
     isRefreshLoopActive = false;
   }
 
-  const chatList = computed(() =>
-    Object.values(store.state.contactRequests.sent)
-  );
-
   return {
     startSyncContactRequests,
     stopSyncContactRequestsLoop,
-    chatList,
   };
 }

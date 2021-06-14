@@ -10,6 +10,8 @@ const resolveContacts = async function(client: Client, contacts: any) {
     })
   );
 
+  console.log("profilePromises :>> ", profilePromises);
+
   return (await Promise.all(profilePromises)).map((x: any) => x[0]?.toJSON());
 };
 

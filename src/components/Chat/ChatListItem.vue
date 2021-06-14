@@ -1,35 +1,35 @@
 <template>
   <ion-item>
     <ion-avatar slot="start" class="avatar">
-      <img
-        v-if="contact.type === 'legacy'"
-        :src="require('/public/assets/avatars/dash.png')"
-        :class="{ squareborder: contact.type === 'legacy' }"
-      />
-      <img :src="require('/public/assets/defaults/avataaar.png')" />
+      <img :src="store.getters.getUserAvatar(chatListItem.friendOwnerId)" />
     </ion-avatar>
     <ion-label
       :class="{
-        messagebold: contact.direction === 'Received',
+        messagebold: chatListItem.direction === 'RECEIVED',
       }"
     >
       <h1>
-        {{ getUserLabel(otherOwnerId) }}
+        <ion-icon
+          v-if="chatListItem.friendshipState === 'UNLINKED'"
+          :src="unlink"
+        ></ion-icon>
+        {{ getUserLabel(chatListItem.friendOwnerId) }}
+
         <div class="message-time">
-          {{ contact.createdAt.getHours() }}:{{
-            contact.createdAt.getMinutes()
+          {{ chatListItem.lastMessage.createdAt.getHours() }}:{{
+            chatListItem.lastMessage.createdAt.getMinutes()
           }}
         </div>
       </h1>
       <p>
-        {{ mostRecentMsg }}
+        {{ chatListItem.lastMessage.data.text }}
         <ion-chip
           v-if="true"
           :class="{
             received: true,
             sent: false,
           }"
-          >{{ contact.amount }} Dash
+          >{{ chatListItem.amount }} Dash
           <ion-icon
             class="sent-receive-icon"
             v-if="true"
@@ -62,9 +62,9 @@ import {
   IonIcon,
 } from "@ionic/vue";
 
-import { useStore } from "vuex";
+import { unlink } from "ionicons/icons";
 
-import { computed } from "vue";
+import { useStore } from "vuex";
 
 export default {
   components: {
@@ -75,27 +75,19 @@ export default {
     IonLabel,
     IonIcon,
   },
-  props: ["contact"],
+  props: ["chatListItem"],
   setup(props) {
     console.log("props :>> ", props);
-
+    console.log("props :>> ", props.chatListItem);
+    console.log("props :>> ", props.chatListItem.friendOwnerId);
     const store = useStore();
-
-    const otherOwnerId = props.contact.data.toUserId.toString();
-
-    const mostRecentMsg = computed(() => {
-      const chatMsgs = store.state.chats.msgsByOwnerId[otherOwnerId];
-      if (!chatMsgs) return "";
-
-      const lastIdx = chatMsgs.length - 1;
-
-      return chatMsgs[lastIdx].data.text;
-    });
+    const { getUserLabel, getUserAvatar } = store.getters;
 
     return {
-      getUserLabel: store.getters.getUserLabel,
-      mostRecentMsg,
-      otherOwnerId,
+      getUserLabel,
+      getUserAvatar,
+      unlink,
+      store,
     };
   },
 };

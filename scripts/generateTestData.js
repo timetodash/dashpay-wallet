@@ -13,21 +13,41 @@ const users = [
     mnemonic:
       'access glad stomach deal tray entire mean grunt boy shoot want shrimp',
     label: 'Alice', // + Date.now(),
+    dashpayProfile: {
+      "avatarUrl": "http://127.0.0.1:8100/assets/avatars/A.png",
+      "publicMessage": "Alice in Wonderland",
+      "displayName": "Alice Attenborough"
+    }
   },
   {
     mnemonic:
       'now tourist leopard scorpion inside nation bitter click wide razor say drastic',
     label: 'Charlie', // + Date.now(),
+    dashpayProfile: {
+      "avatarUrl": "http://127.0.0.1:8100/assets/avatars/Chen.png",
+      "publicMessage": "Chen is here, what's up?",
+      "displayName": "Chen Fullerton"
+    }
   },
   {
     mnemonic:
       'together tail kingdom daughter sight airport vivid uphold nothing ball lazy panther',
-    label: 'Dan', // + Date.now(),
+    label: 'Dave', // + Date.now(),
+    dashpayProfile: {
+      "avatarUrl": "http://127.0.0.1:8100/assets/avatars/Matt.png",
+      "publicMessage": "It's like crypto Dash.0",
+      "displayName": "Dave Matthews Band"
+    }
   },
   {
     mnemonic:
       'vibrant couple breeze someone input march sample fix oblige enact humor main',
     label: 'Edward', // + Date.now(),
+    dashpayProfile: {
+      "avatarUrl": "http://127.0.0.1:8100/assets/avatars/clove.png",
+      "publicMessage": "To Dash, or not to Dash",
+      "displayName": "Edward Eeeeee....."
+    }
   },
 ]
 
@@ -98,6 +118,34 @@ const registerName = async ({ client, identity, name }) => {
 }
 
 
+const generateDashpayProfile = async (user) => {
+  console.log("generateDashpayProfile for user", user.label);
+  if (!user.dashpayProfile) return
+  console.log("generateDashpayProfile with profile", user.dashpayProfile);
+
+    const platform = userState[user.label].client.platform;
+
+    const docProperties = user.dashpayProfile 
+
+    const document = await platform.documents.create(
+        "dashpay.profile",
+        userState[user.label].identity,
+        docProperties
+    );
+
+  const documentBatch = {
+    create: [document], // Document(s) to create
+    replace: [], // Document(s) to update
+    delete: [], // Document(s) to delete
+  };
+
+  // Sign and submit the document(s)
+  const result = await platform.documents.broadcast(
+    documentBatch,
+    userState[user.label].identity
+  );
+    console.log('result :>> ', result);
+}
     
 const generateChatMessage = async (chatMessage) => {
     console.log("Sending chat", chatMessage);
@@ -216,6 +264,12 @@ async function fundWallets() {
       await fundWallet(address)
     }
 }
+async function generateDashpayProfiles() {
+    for (let idx = 0; idx < users.length; idx++) {
+      const user = users[idx];
+      await generateDashpayProfile(user)
+    }
+}
 
 async function initIdentities() {
     for (let idx = 0; idx < users.length; idx++) {
@@ -230,11 +284,15 @@ async function main() {
     // await initWallets()
     // await fundWallets()
     
+    // console.log('Waiting 10s to mature wallet funds..')
+    // await sleep(10000)
+    
   // Once the funding matured, run the rest:
     await initWallets()
     await initIdentities()
     await generateUsers()
     await generateChatMessages()
+    await generateDashpayProfiles()
 }
 
 main()

@@ -1,15 +1,18 @@
 <template>
-  <div v-for="contact in chatList" :key="contact.id.toString()">
+  <div
+    v-for="chatListItem in store.state.chatList"
+    :key="chatListItem.friendOwnerId"
+  >
     <ChatListItemLegacy
-      v-if="contact.id === 'legacy'"
-      :contact="contact"
+      v-if="chatListItem.id === 'legacy'"
+      :chatListItem="chatListItem"
       @click="router.push(`/legacy`)"
     >
     </ChatListItemLegacy>
     <ChatListItem
       v-else
-      :contact="contact"
-      @click="router.push(`/conversation/${contact.data.toUserId.toString()}`)"
+      :chatListItem="chatListItem"
+      @click="router.push(`/conversation/${chatListItem.friendOwnerId}`)"
     >
     </ChatListItem>
   </div>
@@ -35,7 +38,7 @@ export default defineComponent({
 
     const clientIdentity = getClientIdentity();
 
-    const { chatList } = useContacts();
+    const { chatList } = store.state;
 
     // client?.platform?.documents
     // .get("dashpay.contactRequest", {
@@ -58,6 +61,7 @@ export default defineComponent({
     return {
       chatList,
       router,
+      store,
     };
   },
 });

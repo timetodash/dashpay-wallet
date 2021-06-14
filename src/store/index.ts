@@ -1,16 +1,12 @@
 import { createStore } from "vuex";
-import {
-  getClientOpts,
-  initClient,
-  getClient,
-  getClientIdentity,
-} from "@/lib/DashClient";
+import { getClient } from "@/lib/DashClient";
 
 const state = {
   accountDPNS: null,
   balance: null,
   wishName: null,
   dpns: {},
+  dashpayProfiles: {},
   contactRequests: {
     received: {},
     sent: {},
@@ -21,13 +17,66 @@ const state = {
     msgsByOwnerId: {},
     lastTimestamp: 0,
   },
+  chatList: [{ id: "legacy" }],
 };
-interface ChatMsgsMutation {
-  chatMsgs: [];
-  ownerId: string;
-}
 
 const mutations = {
+  sortChatList(state: any) {
+    console.log("sortChatList start");
+    const chatList: any = [];
+    Object.entries(state.chats.msgsByOwnerId).forEach((entry) => {
+      const friendOwnerId = entry[0];
+      console.log("friendOwnerId :>> ", friendOwnerId);
+
+      const chatMsgs = entry[1] as [];
+
+      const lastMessage: any = chatMsgs[chatMsgs.length - 1];
+      console.log("entry[1] :>> ", entry[1]);
+      console.log("lastMessage :>> ", lastMessage);
+
+      const direction =
+        lastMessage.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
+
+      const contactRequestReceived =
+        state.contactRequests.received[friendOwnerId];
+
+      const contactRequestSent = state.contactRequests.sent[friendOwnerId];
+
+      const friendshipState =
+        contactRequestReceived && contactRequestSent ? "LINKED" : "UNLINKED";
+
+      const chatListItem = {
+        id: lastMessage.id.toString(),
+        friendOwnerId,
+        lastMessage,
+        direction,
+        friendshipState,
+        contactRequestReceived,
+        contactRequestSent,
+      };
+
+      console.log("chatListItem :>> ", chatListItem);
+
+      // Only add items with existing contactRequests
+      if (
+        chatListItem.contactRequestReceived ||
+        chatListItem.contactRequestSent
+      ) {
+        chatList.push(chatListItem);
+      }
+    });
+
+    const chatListSorted = chatList.sort(
+      (a: any, b: any) => b.lastMessage.createdAt - a.lastMessage.createdAt
+    );
+
+    console.log("sortChatList chatListSorted :>> ", chatListSorted);
+    // debugger;
+
+    chatListSorted.push({ id: "legacy" });
+
+    state.chatList = chatListSorted;
+  },
   setAccountDPNS(state: any, accountDPNS: any) {
     state.accountDPNS = accountDPNS;
   },
@@ -38,14 +87,14 @@ const mutations = {
     state.wishName = wishName;
   },
   setContactRequestReceived(state: any, contactRequest: any) {
-    const contactOwnerId = contactRequest.ownerId.toString();
+    const friendOwnerId = contactRequest.ownerId.toString();
 
-    state.contactRequests.received[contactOwnerId] = contactRequest;
+    state.contactRequests.received[friendOwnerId] = contactRequest;
   },
   setContactRequestSent(state: any, contactRequest: any) {
-    const contactOwnerId = contactRequest.data.toUserId.toString();
+    const friendOwnerId = contactRequest.data.toUserId.toString();
 
-    state.contactRequests.sent[contactOwnerId] = contactRequest;
+    state.contactRequests.sent[friendOwnerId] = contactRequest;
   },
   setContactRequestReceivedLastTimestamp(state: any, timestamp: Date) {
     state.contactRequests.lastTimestampReceived = timestamp;
@@ -55,18 +104,18 @@ const mutations = {
     state.contactRequests.lastTimestampSent = timestamp;
   },
   setChatMsgs(state: any, chatMsgs: any) {
-    // Collate the chats by the otherOwnerId
+    // Collate the chats by the friendOwnerId
     const myOwnerId = state.accountDPNS.$ownerId;
 
     chatMsgs.forEach((chatMsg: any) => {
-      let otherOwnerId: string;
+      let friendOwnerId: string;
 
       if (chatMsg.ownerId.toString() === myOwnerId)
-        otherOwnerId = chatMsg.data.toOwnerId;
-      else otherOwnerId = chatMsg.ownerId.toString();
+        friendOwnerId = chatMsg.data.toOwnerId;
+      else friendOwnerId = chatMsg.ownerId.toString();
 
-      state.chats.msgsByOwnerId[otherOwnerId] = (
-        state.chats.msgsByOwnerId[otherOwnerId] || []
+      state.chats.msgsByOwnerId[friendOwnerId] = (
+        state.chats.msgsByOwnerId[friendOwnerId] || []
       ).concat(chatMsg);
     });
 
@@ -75,9 +124,46 @@ const mutations = {
   setChatMsgsLatTimestamp(state: any, timestamp: Date) {
     state.chats.lastTimestamp = timestamp;
   },
+  setDashpayProfiles(state: any, dashpayProfiles: any) {
+    console.log("setDashpayProfiles", dashpayProfiles);
+    dashpayProfiles.forEach((profile: any) => {
+      console.log("profile :>> ", profile);
+      state.dashpayProfiles[profile.ownerId.toString()] = profile;
+    });
+  },
 };
 
 const actions = {
+  async fetchDashpayProfiles(context: any, ownerIds: any) {
+    console.log("fetchDashpayProfiles", ownerIds);
+
+    const client = getClient();
+
+    const profilePromises = ownerIds
+      .filter(
+        (ownerId: any) => !(ownerId.toString() in context.state.dashpayProfiles)
+      )
+      .map((ownerId: any) =>
+        client?.platform?.documents.get("dashpay.profile", {
+          where: [["$ownerId", "==", ownerId.toString()]],
+        })
+      );
+
+    console.log("profilePromises :>> ", profilePromises);
+
+    const results = (await Promise.all(profilePromises))
+      .map((x: any) => x[0])
+      .filter((x) => !!x);
+
+    console.log("results :>> ", results);
+
+    context.commit("setDashpayProfiles", results);
+
+    console.log(
+      "context.state.dashpayProfiles :>> ",
+      context.state.dashpayProfiles
+    );
+  },
   async syncChats(context: any) {
     const client = getClient();
     const myOwnerId = context.state.accountDPNS.$ownerId;
@@ -125,6 +211,7 @@ const actions = {
         "setChatMsgsLatTimestamp",
         results[results.length - 1].createdAt.getTime()
       );
+      context.commit("sortChatList");
     }
   },
   async syncContactRequests(context: any) {
@@ -177,6 +264,12 @@ const actions = {
       context.dispatch("fetchDPNSDoc", contactRequest.data.toUserId.toString());
     });
 
+    const resultSentFriendOwnerIds = resultSent.map((contactRequest: any) =>
+      contactRequest.data.toUserId.toString()
+    );
+
+    context.dispatch("fetchDashpayProfiles", resultSentFriendOwnerIds); // use identifier and 'in' operator
+
     resultReceived.forEach((contactRequest: any) => {
       context.commit("setContactRequestReceived", contactRequest);
 
@@ -187,6 +280,15 @@ const actions = {
 
       context.dispatch("fetchDPNSDoc", contactRequest.ownerId.toString());
     });
+
+    const resultReceivedFriendOwnerIds = resultReceived.map(
+      (contactRequest: any) => contactRequest.ownerId.toString()
+    );
+
+    context.dispatch("fetchDashpayProfiles", resultReceivedFriendOwnerIds); // use identifier and 'in' operator
+
+    if (resultReceived.length > 0 || resultSent.length > 0)
+      context.commit("sortChatList");
   },
   async fetchDPNSDoc(context: any, ownerId: string) {
     // If dpnsDoc is already cached, don't hit DAPI again
@@ -209,6 +311,19 @@ const getters = {
   getUserLabel: (state: any) => (ownerId: any) => {
     console.log("getUserLabel ownerId :>> ", ownerId);
     return (state.dpns as any)[ownerId]?.data.label ?? ownerId.substr(0, 6);
+  },
+  getUserAvatar: (state: any) => (ownerId: any) => {
+    console.log("getUserAvatar ownerId :>> ", ownerId);
+    return (
+      (state.dashpayProfiles as any)[ownerId.toString()]?.data.avatarUrl ??
+      "/assets/defaults/avataaar.png"
+    );
+  },
+  myAvatar: (state: any) => {
+    return (
+      (state.dashpayProfiles as any)[state.accountDPNS.$ownerId]?.data
+        .avatarUrl ?? "/assets/defaults/avataaar.png"
+    );
   },
 };
 

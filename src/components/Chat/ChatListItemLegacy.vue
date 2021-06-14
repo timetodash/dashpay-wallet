@@ -8,28 +8,28 @@
     </ion-avatar>
     <ion-label
       :class="{
-        messageBold: contact.direction === 'Received',
+        messageBold: chatListItem.direction === 'Received',
       }"
     >
       <h1>
         Legacy Payments
-        <div class="messageTime">{{ contact.createdAt }}</div>
+        <div class="messageTime">{{ chatListItem.createdAt }}</div>
       </h1>
       <p>
         <ion-chip
           v-if="true"
           :class="{
-            received: true === 'Received',
-            sent: false === 'Sent',
+            received: true,
+            sent: false,
           }"
-          >{{ contact.amount }} Dash
+          >{{ chatListItem.amount }} Dash
           <ion-icon
             class="sentReceiveIcon"
-            v-if="true === 'Received'"
+            v-if="true"
             :src="require('/public/assets/icons/receiveDash.svg')"
           />
           <ion-icon
-            v-if="false === 'Sent'"
+            v-if="false"
             class="sentReceiveIcon"
             :src="require('/public/assets/icons/sendDash.svg')"
           />
@@ -66,7 +66,7 @@ export default {
     IonLabel,
     IonIcon,
   },
-  props: ["contact"],
+  props: ["chatListItem"],
   setup() {
     const store = useStore();
 

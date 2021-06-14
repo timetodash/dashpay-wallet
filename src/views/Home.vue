@@ -95,6 +95,7 @@ export default {
     const router = useRouter();
 
     const store = useStore();
+    store.dispatch("fetchDashpayProfiles", [store.state.accountDPNS.$ownerId]);
 
     const { startRefreshWalletDataLoop, balance } = useWallet();
     const { startSyncContactRequests } = useContacts();
@@ -110,8 +111,10 @@ export default {
     return {
       identityId: computed(() => store.getters.identityId),
       name: computed(() => store.getters.name),
-      walletBalance: computed(() => `${balance.value} Dash`),
-      fiatBalance: computed(() => `${(balance.value || 0) * 178} USD`),
+      walletBalance: computed(() => `${balance.value / 1e8} Dash`),
+      fiatBalance: computed(
+        () => `${Math.floor(((balance.value || 0) / 1e8) * 178 * 10) / 10} USD`
+      ),
       listCircle,
       personAdd,
       send,

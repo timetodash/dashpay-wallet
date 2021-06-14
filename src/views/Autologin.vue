@@ -29,6 +29,11 @@ export default {
     onMounted(async () => {
       const clientOpts = getClientOpts(process.env.VUE_APP_USERMNEMONIC!);
 
+      console.log(
+        "autologin with mnemonic :>> ",
+        process.env.VUE_APP_USERMNEMONIC!
+      );
+
       const client = await initClient(clientOpts);
 
       const account = client.account as any;

@@ -38,10 +38,10 @@ export default function useChats() {
     isRefreshLoopActive = false;
   }
 
-  const chatMsgs = computed(() => (otherOwnerId: string) => {
-    console.log("otherOwnerId :>> ", otherOwnerId);
-    console.log(store.state.chats.msgsByOwnerId[otherOwnerId]);
-    return store.state.chats.msgsByOwnerId[otherOwnerId];
+  const chatMsgs = computed(() => (friendOwnerId: string) => {
+    console.log("friendOwnerId :>> ", friendOwnerId);
+    console.log(store.state.chats.msgsByOwnerId[friendOwnerId]);
+    return store.state.chats.msgsByOwnerId[friendOwnerId];
   });
 
   console.log("chatMsgs :>> ", chatMsgs);

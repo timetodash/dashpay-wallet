@@ -20,6 +20,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@capacitor/core": "^3.0.1",
     "@capacitor/storage": "^1.0.0",
     "@ionic/pwa-elements": "^3.0.2",
     "@ionic/vue": "^5.4.0",

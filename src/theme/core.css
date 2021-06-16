@@ -1,0 +1,48 @@
+.user {
+  background: linear-gradient(180deg, #f2edfd 0%, #eeedff 100%);
+  float: right;
+}
+.chat_partner {
+  background: #f1f1f3;
+}
+.request {
+  background: #ffffff;
+  box-shadow: 0px 2px 5px rgba(129, 129, 129, 0.3);
+}
+.chat_partner_txn {
+  background: linear-gradient(180deg, #f2f8fd 0%, #edfff9 100%);
+}
+
+.chatbubble {
+  display: inline-block;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 13px;
+  max-width: 268px;
+
+  /* background: linear-gradient(180deg, #f2edfd 0%, #eeedff 100%); */
+  border-radius: 10px;
+  clip-path: content-box;
+}
+.chat_timestamp {
+  /* font-family: Inter; */
+  font-style: normal;
+  font-weight: normal;
+  font-size: 10px;
+  line-height: 12px;
+
+  color: #8b8b8b;
+  margin-right: 4px;
+
+  /* flex: none;
+  order: 0;
+  flex-grow: 0; */
+}
+.align_checkmark {
+  display: flex;
+  wrap: nowrap;
+  align-items: flex-end;
+}
+.checkmark_color {
+  color: rgba(0, 0, 0, 0.4);
+}

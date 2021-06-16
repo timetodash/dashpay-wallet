@@ -16,11 +16,22 @@ const state = {
   chats: {
     msgsByOwnerId: {},
     lastTimestamp: 0,
+    lastSeenTimestampByOwnerId: {},
   },
   chatList: [{ id: "legacy" }],
 };
+interface SetLastSeenTimestampByOwnerIdMutation {
+  friendOwnerId: string;
+  timestamp: number;
+}
 
 const mutations = {
+  setLastSeenChatTimestampByOwnerId(
+    state: any,
+    { friendOwnerId, timestamp }: SetLastSeenTimestampByOwnerIdMutation
+  ) {
+    state.chats.lastSeenTimestampByOwnerId[friendOwnerId] = timestamp;
+  },
   sortChatList(state: any) {
     console.log("sortChatList start");
     const chatList: any = [];
@@ -308,12 +319,35 @@ const actions = {
 const getters = {
   name: (state: any) => state.accountDPNS?.label,
   identityId: (state: any) => state.accountDPNS?.$ownerId,
+  getNewChatMsgCount: (state: any) => (friendOwnerId: string) => {
+    const lastTimestamp = new Date(
+      state.chats.lastSeenTimestampByOwnerId[friendOwnerId] || 0
+    );
+
+    return state.chats.msgsByOwnerId[friendOwnerId].filter(
+      (chat: any) =>
+        chat.createdAt > lastTimestamp &&
+        chat.ownerId.toString() === friendOwnerId
+    ).length;
+  },
+  getChatMsgs: (state: any) => (friendOwnerId: string) => {
+    return ((state.chats as any).msgsByOwnerId[friendOwnerId] ?? []).map(
+      (chat: any) => {
+        const direction =
+          chat.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
+
+        return {
+          ...chat,
+          _friendOwnerId: friendOwnerId,
+          _direction: direction,
+        };
+      }
+    );
+  },
   getUserLabel: (state: any) => (ownerId: any) => {
-    console.log("getUserLabel ownerId :>> ", ownerId);
     return (state.dpns as any)[ownerId]?.data.label ?? ownerId.substr(0, 6);
   },
   getUserAvatar: (state: any) => (ownerId: any) => {
-    console.log("getUserAvatar ownerId :>> ", ownerId);
     return (
       (state.dashpayProfiles as any)[ownerId.toString()]?.data.avatarUrl ??
       "/assets/defaults/avataaar.png"

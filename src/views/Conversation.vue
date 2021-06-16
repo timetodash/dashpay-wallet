@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts">
-import { onMounted, ref, reactive, watch, computed } from "vue";
+import { onMounted, ref, reactive, watchEffect, computed } from "vue";
 
 import {
   IonPage,
@@ -119,11 +119,30 @@ export default {
 
     const route = useRoute();
 
-    const chatMsgs = useChats();
+    const { chatMsgs } = useChats();
 
-    const ownerId = route.params.ownerId; // read parameter id (it is reactive)
+    const ownerId = route.params.ownerId as string; // read parameter id (it is reactive)
 
     const store = useStore();
+
+    watchEffect(() => {
+      console.log("Setting last msg timestamp");
+
+      console.log("chatMsgs :>> ", store.state.chats.msgsByOwnerId[ownerId]);
+
+      if (store.state.chats.msgsByOwnerId[ownerId].length === 0) return;
+
+      const timestamp = store.state.chats.msgsByOwnerId[ownerId][
+        store.state.chats.msgsByOwnerId[ownerId].length - 1
+      ].createdAt.getTime();
+
+      const friendOwnerId = ownerId;
+
+      store.commit("setLastSeenChatTimestampByOwnerId", {
+        timestamp,
+        friendOwnerId,
+      });
+    });
 
     const chatText = ref("");
 

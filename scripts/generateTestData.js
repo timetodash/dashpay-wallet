@@ -290,8 +290,8 @@ async function main() {
   // Once the funding matured, run the rest:
     await initWallets()
     await initIdentities()
-    await generateUsers()
-    await generateChatMessages()
+    // await generateUsers()
+    // await generateChatMessages()
     await generateDashpayProfiles()
 }
 

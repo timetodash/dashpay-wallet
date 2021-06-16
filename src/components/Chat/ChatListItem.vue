@@ -15,7 +15,7 @@
         ></ion-icon>
         {{ getUserLabel(chatListItem.friendOwnerId) }}
 
-        <div class="message-time">
+        <div class="message-time" :class="{ primary: !!newMsgCount }">
           {{ chatListItem.lastMessage.createdAt.getHours() }}:{{
             chatListItem.lastMessage.createdAt.getMinutes()
           }}
@@ -41,7 +41,7 @@
             :src="require('/public/assets/icons/sendDash.svg')"
           />
         </ion-chip>
-        <ion-badge>1</ion-badge>
+        <ion-badge v-if="newMsgCount > 0">{{ newMsgCount }}</ion-badge>
         <ion-icon
           v-if="true"
           class="dash-viewed"
@@ -66,6 +66,8 @@ import { unlink } from "ionicons/icons";
 
 import { useStore } from "vuex";
 
+import { computed } from "vue";
+
 export default {
   components: {
     IonItem,
@@ -83,11 +85,16 @@ export default {
     const store = useStore();
     const { getUserLabel, getUserAvatar } = store.getters;
 
+    const newMsgCount = computed(() =>
+      store.getters.getNewChatMsgCount(props.chatListItem.friendOwnerId)
+    );
+
     return {
       getUserLabel,
       getUserAvatar,
       unlink,
       store,
+      newMsgCount,
     };
   },
 };
@@ -182,5 +189,8 @@ ion-badge {
   width: 20px;
   height: 20px;
   margin-left: 5px;
+}
+.primary {
+  color: #6a67fb;
 }
 </style>

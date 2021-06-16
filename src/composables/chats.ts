@@ -9,7 +9,9 @@ let client: any;
 
 let isRefreshLoopActive = false;
 
-export default function useChats() {
+export default function useChats(
+  friendOwnerId: string | undefined = undefined
+) {
   const store = useStore();
   console.log("store :>> ", store);
   async function syncChatsLoop() {
@@ -38,13 +40,7 @@ export default function useChats() {
     isRefreshLoopActive = false;
   }
 
-  const chatMsgs = computed(() => (friendOwnerId: string) => {
-    console.log("friendOwnerId :>> ", friendOwnerId);
-    console.log(store.state.chats.msgsByOwnerId[friendOwnerId]);
-    return store.state.chats.msgsByOwnerId[friendOwnerId];
-  });
-
-  console.log("chatMsgs :>> ", chatMsgs);
+  const chatMsgs = computed(() => store.getters.getChatMsgs(friendOwnerId));
 
   return {
     startSyncChats,

@@ -32,7 +32,28 @@
         ></ion-input>
       </ion-toolbar>
     </ion-footer> -->
-    <chat-footer @send-chat="sendChat"></chat-footer>
+    <ion-action-sheet
+      :is-open="isSendRequestDashSheetOpen"
+      header="Send / Request"
+      :buttons="sendAndRequestButtons"
+      @didDismiss="showSendRequestDashSheet(false)"
+    >
+    </ion-action-sheet>
+    <ion-modal
+      :is-open="isSendRequestDashModalOpen"
+      @didDismiss="showSendRequestDashModal(false)"
+    >
+      <SendRequestDashModal
+        :sendRequestDirection="sendRequestDirection"
+        @handleSendRequest="handleSendRequest"
+      ></SendRequestDashModal>
+    </ion-modal>
+    <ion-footer class="ion-no-border">
+      <chat-footer
+        @send-chat="sendChat"
+        @showSendRequestDashSheet="showSendRequestDashSheet"
+      ></chat-footer>
+    </ion-footer>
   </ion-page>
 </template>
 
@@ -45,6 +66,8 @@ import {
   IonToolbar,
   IonContent,
   // IonInput,
+  IonActionSheet,
+  IonModal,
 } from "@ionic/vue";
 
 import {
@@ -67,6 +90,7 @@ import useChats from "@/composables/chats";
 import ChatBubbles from "@/components/Chat/ChatBubbles.vue";
 import ChatHeader from "@/components/Chat/ChatHeader.vue";
 import ChatFooter from "@/components/Chat/ChatFooter.vue";
+import SendRequestDashModal from "@/components/Chat/SendRequestModal.vue";
 
 import { Client } from "dash/dist/src/SDK/Client/index";
 
@@ -85,6 +109,9 @@ export default {
     ChatBubbles,
     ChatHeader,
     ChatFooter,
+    IonActionSheet,
+    SendRequestDashModal,
+    IonModal,
     // IonInput,
   },
   setup() {
@@ -110,19 +137,11 @@ export default {
     const store = useStore();
 
     watchEffect(() => {
-      console.log("Setting last msg timestamp");
+      if (!(chatMsgs.value.length > 0)) return;
 
-      console.log(
-        "chatMsgs :>> ",
-        store.state.chats.msgsByOwnerId[friendOwnerId]
-      );
-
-      if (store.state.chats.msgsByOwnerId[friendOwnerId].length === 0) return;
-
-      const timestamp =
-        store.state.chats.msgsByOwnerId[friendOwnerId][
-          store.state.chats.msgsByOwnerId[friendOwnerId].length - 1
-        ].createdAt.getTime();
+      const timestamp = store.state.chats.msgsByOwnerId[friendOwnerId][
+        store.state.chats.msgsByOwnerId[friendOwnerId].length - 1
+      ].createdAt.getTime();
 
       store.commit("setLastSeenChatTimestampByOwnerId", {
         timestamp,
@@ -140,7 +159,37 @@ export default {
 
     const existingContactRequest = ref({});
 
-    const sendChat = async (chatText: string) => {
+    const isSendRequestDashSheetOpen = ref(false);
+
+    const isSendRequestDashModalOpen = ref(false);
+
+    const showSendRequestDashSheet = async (state: boolean) => {
+      isSendRequestDashSheetOpen.value = state;
+    };
+    const sendRequestDirection = ref("");
+
+    const showSendRequestDashModal = async (
+      state = true,
+      direction: string
+    ) => {
+      sendRequestDirection.value = direction;
+      isSendRequestDashModalOpen.value = state;
+    };
+
+    const showSendDashModal = async () => {
+      showSendRequestDashModal(true, "send");
+    };
+
+    const showRequestDashModal = async () => {
+      showSendRequestDashModal(true, "request");
+    };
+
+    const sendAndRequestButtons = [
+      { text: "Send", handler: showSendDashModal },
+      { text: "Request", handler: showRequestDashModal },
+    ];
+
+    const sendChat = async (chatText: string, amount = 0, request = "") => {
       console.log("event", chatText);
       // console.log("Sending chat", chatText.value);
       const platform = client.platform;
@@ -150,7 +199,12 @@ export default {
         replyToChatId: "",
         txId: "",
         toOwnerId: friendOwnerId,
+        amount: amount || undefined,
+        request: request || undefined,
       };
+
+      console.log("docProperties :>> ", docProperties);
+
       const document = await platform?.documents.create(
         "dashpayWallet.chat",
         clientIdentity,
@@ -164,9 +218,10 @@ export default {
       const senderIdentityId = clientIdentity.getId();
 
       const senderIdentity = clientIdentity;
-      const senderHdPrivateKey = (
-        client?.account as any
-      ).identities.getIdentityHDKeyByIndex(0, 0);
+      const senderHdPrivateKey = (client?.account as any).identities.getIdentityHDKeyByIndex(
+        0,
+        0
+      );
 
       const senderPrivateKey = senderHdPrivateKey.privateKey.toString();
 
@@ -330,22 +385,53 @@ export default {
       // loopFetchChatMsgs();
     });
 
+    const handleSendRequest = (event: any) => {
+      console.log("event :>> ", event);
+      const request = event.sendRequestDirection === "request" ? "open" : "";
+      console.log("request :>> ", request);
+      sendChat(event.message, event.amount, request);
+    };
+
     return {
       chatText,
       sendChat,
+      showSendRequestDashSheet,
       friendOwnerId,
       chatMsgs,
       checkedExistingContactRequest,
       existingContactRequest,
       getUserLabel: store.getters.getUserLabel,
       store,
+      sendAndRequestButtons,
+      isSendRequestDashSheetOpen,
+      isSendRequestDashModalOpen,
+      showSendRequestDashModal,
+      handleSendRequest,
+      sendRequestDirection,
+      showRequestDashModal,
+      showSendDashModal,
     };
   },
 };
 </script>
 
 <style scoped>
+ion-header {
+  padding-top: 16px;
+  padding-left: 0px;
+  background-color: #f7f7f7;
+  border: 1px solid #e3e3e3;
+}
+
+ion-toolbar {
+  --background: primary;
+}
+/* removes the shadow below the header */
+.header-md::after {
+  height: 0px;
+  border-style: solid 2px;
+}
 ion-footer {
-  padding-left: 16px;
+  padding: 0px 0px 8px 16px;
 }
 </style>

@@ -1,28 +1,30 @@
 <template>
-  <div style="height: 100%">
-    <ion-grid class="ion-no-padding">
-      <ion-row
-        v-for="msg in chatMsgs"
-        :key="msg.id.toString()"
-        class="row_padding"
-      >
-        <ion-col class="ion-padding-horizontal">
-          <chat-message v-if="msg.data.text && !msg.data.amount" :msg="msg">
-          </chat-message>
-          <chat-txn
-            v-if="(msg.data.amount && msg.data.text) || msg.data.request"
-            :msg="msg"
-            :friendOwnerId="friendOwnerId"
-          >
-          </chat-txn>
-          <chat-small-txn
-            v-if="!msg.data.request && msg.data.amount && !msg.data.text"
-            :msg="msg"
-          >
-          </chat-small-txn>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+  <div class="scroll_container">
+    <div>
+      <ion-grid class="ion-no-padding">
+        <ion-row
+          v-for="msg in chatMsgs"
+          :key="msg.id.toString()"
+          class="row_padding"
+        >
+          <ion-col class="ion-padding-horizontal">
+            <chat-message v-if="msg.data.text && !msg.data.amount" :msg="msg">
+            </chat-message>
+            <chat-txn
+              v-if="(msg.data.amount && msg.data.text) || msg.data.request"
+              :msg="msg"
+              :friendOwnerId="friendOwnerId"
+            >
+            </chat-txn>
+            <chat-small-txn
+              v-if="!msg.data.request && msg.data.amount && !msg.data.text"
+              :msg="msg"
+            >
+            </chat-small-txn>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
   </div>
 </template>
 
@@ -53,6 +55,12 @@ export default {
 </script>
 
 <style scoped>
+.scroll_container {
+  height: 100%;
+  display: flex;
+  overflow-y: scroll;
+  flex-direction: column-reverse;
+}
 .row_padding {
   padding-top: 5px;
   padding-bottom: 4px;

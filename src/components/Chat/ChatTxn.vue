@@ -50,6 +50,7 @@
 import { IonIcon } from "@ionic/vue";
 import { checkmarkDoneOutline } from "ionicons/icons";
 import { computed } from "vue";
+import { useStore } from "vuex";
 
 export default {
   props: ["msg", "friendOwnerId"],
@@ -57,6 +58,12 @@ export default {
     IonIcon,
   },
   setup(props) {
+    const store = useStore();
+
+    const UserLabel = computed(() =>
+      store.getters.getUserLabel(props.friendOwnerId)
+    );
+
     const title = computed(() => {
       if (props.msg.data.request) {
         return "Requested";
@@ -66,7 +73,7 @@ export default {
         props.msg._direction === "RECEIVED" &&
         !props.msg.data.request
       ) {
-        return props.friendOwnerId + "Sent";
+        return UserLabel.value + " Sent";
       } else {
         return "";
       }

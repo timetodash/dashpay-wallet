@@ -9,16 +9,23 @@
       <ion-icon class="attach" :icon="attachOutline"></ion-icon>
     </ion-input>
     <ion-icon
+      v-if="chatText === ''"
+      class="dash_button"
+      :src="require('/public/assets/icons/userSent.svg')"
+      @click="showSendRequestDashSheet"
+    ></ion-icon>
+    <ion-icon
+      v-else
       class="dash_button"
       @click="sendChat"
-      :src="require('/public/assets/icons/userSent.svg')"
+      :src="require('/public/assets/icons/sending.svg')"
     ></ion-icon>
   </div>
 </template>
 
 <script>
 import { IonInput, IonIcon } from "@ionic/vue";
-import { happyOutline, attachOutline } from "ionicons/icons";
+import { happyOutline, attachOutline, send } from "ionicons/icons";
 import { ref } from "vue";
 
 export default {
@@ -29,15 +36,21 @@ export default {
   setup(_, context) {
     const chatText = ref("");
 
-    const sendChat = function () {
-      context.emit("send-message", chatText.value);
+    const sendChat = function() {
+      context.emit("sendChat", chatText.value);
       chatText.value = "";
+    };
+
+    const showSendRequestDashSheet = function() {
+      context.emit("showSendRequestDashSheet", true);
     };
 
     return {
       happyOutline,
       attachOutline,
+      send,
       sendChat,
+      showSendRequestDashSheet,
       chatText,
     };
   },

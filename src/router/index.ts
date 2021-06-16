@@ -77,7 +77,7 @@ const routes: Array<RouteRecordRaw> = [
     component: ContactSearch,
   },
   {
-    path: "/conversation/:ownerId",
+    path: "/conversation/:friendownerId",
     component: Conversation,
     name: "Conversation",
     props: true,

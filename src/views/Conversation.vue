@@ -2,28 +2,27 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
-        </ion-buttons>
-        <ion-title>{{ getUserLabel(ownerId) }}</ion-title>
+        <chat-header :friendOwnerId="friendOwnerId"></chat-header>
       </ion-toolbar>
     </ion-header>
-    <ion-content :fullscreen="true" class="ion-padding">
+    <ion-content class="ion-padding">
       <h1 v-if="!checkedExistingContactRequest">Loading Conversation..</h1>
       <h1 v-if="checkedExistingContactRequest && !existingContactRequest">
         You are not friends yet, when you send your first message you will open
         a friendship connection.
       </h1>
-      <ion-list>
-        <ion-item
-          v-for="msg in store.state.chats.msgsByOwnerId[ownerId]"
-          :key="msg.id.toString()"
-          >{{ getUserLabel(msg.ownerId.toString()) }}: {{ msg.data.text }} -
-          {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes() }}
-        </ion-item>
-      </ion-list>
+      <!-- <ion-list> -->
+      <ChatBubbles
+        :chatMsgs="chatMsgs"
+        :friendOwnerId="friendOwnerId"
+      ></ChatBubbles>
+      <!-- <ion-item v-for="msg in chatMsgs" :key="msg.id.toString()"
+        >{{ getUserLabel(msg._friendOwnerId) }}: {{ msg.data.text }} -
+        {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes() }}
+      </ion-item> -->
+      <!-- </ion-list> -->
     </ion-content>
-    <ion-footer class="ion-no-border">
+    <!-- <ion-footer class="ion-no-border">
       <ion-toolbar>
         <ion-input
           :disabled="!checkedExistingContactRequest"
@@ -32,30 +31,20 @@
           @keyup.enter="sendChat()"
         ></ion-input>
       </ion-toolbar>
-    </ion-footer>
+    </ion-footer> -->
+    <chat-footer @send-chat="sendChat"></chat-footer>
   </ion-page>
 </template>
 
 <script lang="ts">
-import { onMounted, ref, reactive, watchEffect, computed } from "vue";
+import { onMounted, ref, watchEffect } from "vue";
 
 import {
   IonPage,
   IonHeader,
-  IonBackButton,
   IonToolbar,
-  IonTitle,
   IonContent,
-  IonButton,
-  IonLabel,
-  IonInput,
-  IonSearchbar,
-  IonIcon,
-  IonList,
-  IonItem,
-  IonFooter,
-  IonSpinner,
-  IonButtons,
+  // IonInput,
 } from "@ionic/vue";
 
 import {
@@ -75,6 +64,9 @@ import {
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 import useChats from "@/composables/chats";
+import ChatBubbles from "@/components/Chat/ChatBubbles.vue";
+import ChatHeader from "@/components/Chat/ChatHeader.vue";
+import ChatFooter from "@/components/Chat/ChatFooter.vue";
 
 import { Client } from "dash/dist/src/SDK/Client/index";
 
@@ -88,20 +80,12 @@ export default {
   components: {
     IonHeader,
     IonToolbar,
-    IonTitle,
     IonContent,
-    IonBackButton,
-    IonButtons,
     IonPage,
-    IonFooter,
-    // IonButton,
-    // IonLabel,
-    IonList,
-    // IonIcon,
-    IonInput,
-    // IonSearchbar,
-    IonItem,
-    // IonSpinner,
+    ChatBubbles,
+    ChatHeader,
+    ChatFooter,
+    // IonInput,
   },
   setup() {
     let client: Client;
@@ -119,24 +103,26 @@ export default {
 
     const route = useRoute();
 
-    const { chatMsgs } = useChats();
+    const friendOwnerId = route.params.friendownerId as string; // read parameter id (it is reactive)
 
-    const ownerId = route.params.ownerId as string; // read parameter id (it is reactive)
+    const { chatMsgs } = useChats(friendOwnerId);
 
     const store = useStore();
 
     watchEffect(() => {
       console.log("Setting last msg timestamp");
 
-      console.log("chatMsgs :>> ", store.state.chats.msgsByOwnerId[ownerId]);
+      console.log(
+        "chatMsgs :>> ",
+        store.state.chats.msgsByOwnerId[friendOwnerId]
+      );
 
-      if (store.state.chats.msgsByOwnerId[ownerId].length === 0) return;
+      if (store.state.chats.msgsByOwnerId[friendOwnerId].length === 0) return;
 
-      const timestamp = store.state.chats.msgsByOwnerId[ownerId][
-        store.state.chats.msgsByOwnerId[ownerId].length - 1
-      ].createdAt.getTime();
-
-      const friendOwnerId = ownerId;
+      const timestamp =
+        store.state.chats.msgsByOwnerId[friendOwnerId][
+          store.state.chats.msgsByOwnerId[friendOwnerId].length - 1
+        ].createdAt.getTime();
 
       store.commit("setLastSeenChatTimestampByOwnerId", {
         timestamp,
@@ -154,17 +140,17 @@ export default {
 
     const existingContactRequest = ref({});
 
-    const sendChat = async () => {
+    const sendChat = async (chatText: string) => {
+      console.log("event", chatText);
       // console.log("Sending chat", chatText.value);
       const platform = client.platform;
 
       const docProperties = {
-        text: chatText.value,
+        text: chatText,
         replyToChatId: "",
         txId: "",
-        toOwnerId: ownerId,
+        toOwnerId: friendOwnerId,
       };
-
       const document = await platform?.documents.create(
         "dashpayWallet.chat",
         clientIdentity,
@@ -178,14 +164,15 @@ export default {
       const senderIdentityId = clientIdentity.getId();
 
       const senderIdentity = clientIdentity;
-      const senderHdPrivateKey = (client?.account as any).identities.getIdentityHDKeyByIndex(
-        0,
-        0
-      );
+      const senderHdPrivateKey = (
+        client?.account as any
+      ).identities.getIdentityHDKeyByIndex(0, 0);
 
       const senderPrivateKey = senderHdPrivateKey.privateKey.toString();
 
-      const receiverIdentity = await client?.platform?.identities.get(ownerId);
+      const receiverIdentity = await client?.platform?.identities.get(
+        friendOwnerId
+      );
 
       const receiverPublicKey = receiverIdentity.toJSON().publicKeys[0].data;
 
@@ -269,7 +256,7 @@ export default {
       if (result.transitions[1])
         existingContactRequest.value = {
           ...result.transitions[1],
-          ownerId: result.ownerId,
+          friendOwnerId: result.ownerId,
         };
 
       // console.dir(result.transitions[0].toJSON(), { depth: 100 });
@@ -279,8 +266,6 @@ export default {
       chatSent.ownerId = result.ownerId;
 
       chatMsgsSent.value.push(chatSent);
-
-      chatText.value = "";
     };
 
     const fetchChatMsgs = async () => {
@@ -289,7 +274,7 @@ export default {
         {
           where: [
             ["$ownerId", "==", clientIdentity.getId()],
-            ["toOwnerId", "==", ownerId],
+            ["toOwnerId", "==", friendOwnerId],
           ],
         }
       );
@@ -301,7 +286,7 @@ export default {
         {
           where: [
             ["toOwnerId", "==", clientIdentity.getId().toString()],
-            ["$ownerId", "==", ownerId],
+            ["$ownerId", "==", friendOwnerId],
           ],
         }
       );
@@ -319,7 +304,7 @@ export default {
         await client?.platform?.documents.get("dashpay.contactRequest", {
           where: [
             ["$ownerId", "==", clientIdentity.getId()],
-            ["toUserId", "==", ownerId],
+            ["toUserId", "==", friendOwnerId],
           ],
         })
       )[0];
@@ -336,7 +321,7 @@ export default {
 
       // console.log("clientIdentity :>> ", clientIdentity);
 
-      store.dispatch("fetchDPNSDoc", ownerId);
+      store.dispatch("fetchDPNSDoc", friendOwnerId);
 
       await checkExistingContactRequest();
 
@@ -348,7 +333,7 @@ export default {
     return {
       chatText,
       sendChat,
-      ownerId,
+      friendOwnerId,
       chatMsgs,
       checkedExistingContactRequest,
       existingContactRequest,
@@ -359,4 +344,8 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+ion-footer {
+  padding-left: 16px;
+}
+</style>

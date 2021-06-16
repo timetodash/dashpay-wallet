@@ -335,11 +335,12 @@ const getters = {
       (chat: any) => {
         const direction =
           chat.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
-
+          
         return {
           ...chat,
           _friendOwnerId: friendOwnerId,
           _direction: direction,
+
         };
       }
     );

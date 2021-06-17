@@ -1,5 +1,6 @@
 import { createStore } from "vuex";
 import { getClient } from "@/lib/DashClient";
+import { Storage } from "@capacitor/storage";
 
 const state = {
   accountDPNS: null,
@@ -22,15 +23,18 @@ const state = {
 };
 interface SetLastSeenTimestampByOwnerIdMutation {
   friendOwnerId: string;
-  timestamp: number;
+  lastTimestamp: number;
 }
 
 const mutations = {
+  setLastSeenChatTimestampObject(state: any, obj: any) {
+    state.chats.lastSeenTimestampByOwnerId = obj;
+  },
   setLastSeenChatTimestampByOwnerId(
     state: any,
-    { friendOwnerId, timestamp }: SetLastSeenTimestampByOwnerIdMutation
+    { friendOwnerId, lastTimestamp }: SetLastSeenTimestampByOwnerIdMutation
   ) {
-    state.chats.lastSeenTimestampByOwnerId[friendOwnerId] = timestamp;
+    state.chats.lastSeenTimestampByOwnerId[friendOwnerId] = lastTimestamp;
   },
   sortChatList(state: any) {
     console.log("sortChatList start");
@@ -145,12 +149,31 @@ const mutations = {
 };
 
 const actions = {
-  async fetchDashpayProfiles(context: any, ownerIds: any) {
+  async loadLastSeenChatTimestamps(context: any) {
+    const readResult = await Storage.get({
+      key: `lastSeenChatTimestamps_${context.getters.myLabel}`,
+    });
+
+    if (readResult.value) {
+      context.commit(
+        "setLastSeenChatTimestampObject",
+        JSON.parse(readResult.value)
+      );
+    }
+  },
+  async saveLastSeenChatTimestamps(context: any) {
+    await Storage.set({
+      key: `lastSeenChatTimestamps_${context.getters.myLabel}`,
+      value: JSON.stringify(context.state.chats.lastSeenTimestampByOwnerId),
+    });
+  },
+  async fetchDashpayProfiles(context: any, ownerIds: []) {
     console.log("fetchDashpayProfiles", ownerIds);
 
     const client = getClient();
 
     const profilePromises = ownerIds
+      // Filter out ownerIds with already cached profiles
       .filter(
         (ownerId: any) => !(ownerId.toString() in context.state.dashpayProfiles)
       )
@@ -317,7 +340,29 @@ const actions = {
 };
 
 const getters = {
-  name: (state: any) => state.accountDPNS?.label,
+  name: (state: any) => state.accountDPNS?.label, // TODO deprecated, remove and refactor
+  myLabel: (state: any) => state.accountDPNS?.label,
+  myAvatar: (state: any) => {
+    return (
+      (state.dashpayProfiles as any)[state.accountDPNS.$ownerId]?.data
+        .avatarUrl ?? "/assets/defaults/avataaar.png"
+    );
+  },
+  getUserLabel: (state: any) => (ownerId: string) => {
+    return (state.dpns as any)[ownerId]?.data.label ?? ownerId.substr(0, 6);
+  },
+  getUserAvatar: (state: any) => (ownerId: string) => {
+    return (
+      (state.dashpayProfiles as any)[ownerId.toString()]?.data.avatarUrl ??
+      "/assets/defaults/avataaar.png"
+    );
+  },
+  getSentContactRequest: (state: any) => (friendOwnerId: string) => {
+    return (state.contactRequests.sent as any)[friendOwnerId];
+  },
+  getReceivedContactRequest: (state: any) => (friendOwnerId: string) => {
+    return (state.contactRequests.received as any)[friendOwnerId];
+  },
   identityId: (state: any) => state.accountDPNS?.$ownerId,
   getNewChatMsgCount: (state: any) => (friendOwnerId: string) => {
     const lastTimestamp = new Date(
@@ -335,29 +380,13 @@ const getters = {
       (chat: any) => {
         const direction =
           chat.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
-          
+
         return {
           ...chat,
           _friendOwnerId: friendOwnerId,
           _direction: direction,
-
         };
       }
-    );
-  },
-  getUserLabel: (state: any) => (ownerId: any) => {
-    return (state.dpns as any)[ownerId]?.data.label ?? ownerId.substr(0, 6);
-  },
-  getUserAvatar: (state: any) => (ownerId: any) => {
-    return (
-      (state.dashpayProfiles as any)[ownerId.toString()]?.data.avatarUrl ??
-      "/assets/defaults/avataaar.png"
-    );
-  },
-  myAvatar: (state: any) => {
-    return (
-      (state.dashpayProfiles as any)[state.accountDPNS.$ownerId]?.data
-        .avatarUrl ?? "/assets/defaults/avataaar.png"
     );
   },
 };

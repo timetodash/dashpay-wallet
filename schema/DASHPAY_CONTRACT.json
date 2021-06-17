@@ -4,7 +4,7 @@
       {
         "properties": [
           {
-            "$ownerId": "asc"
+            "$ownerId": "desc"
           }
         ],
         "unique": true

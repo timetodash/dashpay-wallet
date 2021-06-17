@@ -3,7 +3,7 @@
     ><ion-back-button default-href="/home" :icon="arrowBack"></ion-back-button
   ></ion-buttons>
   <ion-avatar slot="start" class="useravatar"
-    ><img :src="store.getters.myAvatar"
+    ><img :src="store.getters.getUserAvatar(friendOwnerId)"
   /></ion-avatar>
   <div class="username">{{ getUserLabel(friendOwnerId) }}</div>
   <ion-buttons slot="end">

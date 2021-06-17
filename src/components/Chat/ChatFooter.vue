@@ -1,4 +1,15 @@
 <template>
+  <div v-if="!receivedContactRequest">
+    You can send Dash once your friend responds
+  </div>
+  <ion-button
+    fill="outline"
+    color="tertiary"
+    v-if="receivedContactRequest && !sentContactRequest && !isSendingAccept"
+    @click="acceptAndSayHi"
+  >
+    Accept friendship & say "hi"
+  </ion-button>
   <div class="oneline">
     <ion-input
       placeholder="Messsage... "
@@ -11,7 +22,11 @@
     <ion-icon
       v-if="chatText === ''"
       class="dash_button"
-      :src="require('/public/assets/icons/userSent.svg')"
+      :src="
+        receivedContactRequest
+          ? require('/public/assets/icons/userSent.svg')
+          : require('/public/assets/icons/userSent_disabled.svg')
+      "
       @click="showSendRequestDashSheet"
     ></ion-icon>
     <ion-icon
@@ -24,25 +39,37 @@
 </template>
 
 <script>
-import { IonInput, IonIcon } from "@ionic/vue";
+import { IonInput, IonIcon, IonButton } from "@ionic/vue";
 import { happyOutline, attachOutline, send } from "ionicons/icons";
 import { ref } from "vue";
 
 export default {
+  props: ["receivedContactRequest", "sentContactRequest"],
+  emits: ["sendChat", "showSendRequestDashSheet"],
   components: {
     IonInput,
     IonIcon,
+    IonButton,
   },
-  setup(_, context) {
+  setup(props, context) {
     const chatText = ref("");
 
-    const sendChat = function() {
+    const isSendingAccept = ref(false);
+
+    const sendChat = () => {
       context.emit("sendChat", chatText.value);
       chatText.value = "";
     };
 
+    const acceptAndSayHi = () => {
+      isSendingAccept.value = true;
+      chatText.value = "hi";
+      sendChat();
+    };
+
     const showSendRequestDashSheet = function() {
-      context.emit("showSendRequestDashSheet", true);
+      props.receivedContactRequest &&
+        context.emit("showSendRequestDashSheet", true);
     };
 
     return {
@@ -50,7 +77,9 @@ export default {
       attachOutline,
       send,
       sendChat,
+      acceptAndSayHi,
       showSendRequestDashSheet,
+      isSendingAccept,
       chatText,
     };
   },

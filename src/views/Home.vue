@@ -101,11 +101,13 @@ export default {
     const { startSyncContactRequests } = useContacts();
     const { startSyncChats } = useChats();
 
+    store.dispatch("loadLastSeenChatTimestamps");
+
     startSyncChats();
     startRefreshWalletDataLoop();
     startSyncContactRequests();
 
-    // onMounted(() => {
+    // onMounted(async () => {
     // });
 
     return {
@@ -131,7 +133,6 @@ export default {
 <style scoped>
 ion-header {
   padding-top: 16px;
-  padding-left: 16px;
   background: #f7f7f7;
   border: 1px solid #e3e3e3;
   /* --background-color: #f7f7f7; */

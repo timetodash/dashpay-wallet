@@ -156,8 +156,71 @@ const deriveExtendedPublicKeyDIP15 = (senderHDPrivateKey, senderIdentityId, rece
   return extendedPublicKeyDIP15Buffers.toString('hex');
 };
 
+const createContactRequest = async (client, clientIdentity, toUserId) => {
+  const senderIdentityId = clientIdentity.getId();
+
+  const senderIdentity = clientIdentity;
+  
+  const senderHdPrivateKey = client.account.identities.getIdentityHDKeyByIndex(0,0);
+
+  const senderPrivateKey = senderHdPrivateKey.privateKey.toString();
+
+  const receiverIdentity = await client.platform.identities.get(toUserId);
+
+  const receiverPublicKey = receiverIdentity.toJSON().publicKeys[0].data;
+
+  // ECDH Shared Key / Diffie-Hellman Key Exchange
+  // https://github.com/dashpay/dips/blob/feat/dashpay/dip-0015.md#ecdh-shared-key-senderkeyindex-and-recipientkeyindex
+  // const sharedSecret = dashpaycrypto.ecdhSharedKey(
+  //   senderPrivateKey,
+  //   receiverPublicKey
+  // );
+
+  const sharedSecret = "0";
+
+  // DashPay Incoming Funds Derivation Path
+  // https://github.com/dashpay/dips/blob/feat/dashpay/dip-0015.md#dashpay-incoming-funds-derivation-path
+  // console.log(
+  //   senderHdPrivateKey,
+  //   clientIdentity.getId().toString(),
+  //   receiverIdentity.id.toString()
+  // );
+  const publicKeyDIP15 = deriveExtendedPublicKeyDIP15(
+    senderHdPrivateKey,
+    clientIdentity.getId().toString(),
+    receiverIdentity.id.toString()
+  );
+
+  const contactRequest = {
+    toUserId: receiverIdentity.id,
+    senderKeyIndex: 0,
+    accountReference: 1,
+    //dashpaycrypto.createAccountReference(
+    // senderPrivateKey,
+    // publicKeyDIP15
+    // ),
+    recipientKeyIndex: 0,
+    encryptedPublicKey: Buffer.from(
+      encryptPublicKey(publicKeyDIP15, sharedSecret),
+      "hex"
+    ),
+    encryptedAccountLabel: Buffer.from(
+      encryptAccountLabel("Default Account", sharedSecret),
+      "base64"
+    ),
+
+  };
+
+  return await client.platform.documents.create(
+    "dashpay.contactRequest",
+    clientIdentity,
+    contactRequest
+  );
+  
+  
+}
 module.exports = {
   encryptCBCAES256, decryptCBCAES256, encryptPublicKey, decryptPublicKey, encryptAccountLabel, decryptAccountLabel,
+  createAccountReference, deriveExtendedPublicKeyDIP15,createContactRequest
   // ecdhSharedKey,
-  createAccountReference, deriveExtendedPublicKeyDIP15,
 };

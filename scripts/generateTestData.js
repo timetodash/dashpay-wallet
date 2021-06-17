@@ -281,17 +281,17 @@ async function initIdentities() {
 
 async function main() {
   // Run init and fund first:
-    // await initWallets()
-    // await fundWallets()
+    await initWallets()
+    await fundWallets()
     
-    // console.log('Waiting 10s to mature wallet funds..')
-    // await sleep(10000)
+    // console.log('Waiting 20s to mature wallet funds..')
+    await sleep(20000)
     
   // Once the funding matured, run the rest:
     await initWallets()
     await initIdentities()
-    // await generateUsers()
-    // await generateChatMessages()
+    await generateUsers()
+    await generateChatMessages()
     await generateDashpayProfiles()
 }
 

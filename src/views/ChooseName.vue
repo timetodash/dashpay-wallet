@@ -46,7 +46,7 @@
             :icon="nameConstraintIcons.isAvailable"
             :color="constraintColor(nameConstraints.isAvailable)"
           ></ion-icon>
-          <ion-spinner v-else name="lines" color="tertiary"></ion-spinner>
+          <ion-spinner v-else name="dots" color="tertiary"></ion-spinner>
           <ion-label
             :color="
               isCheckingName

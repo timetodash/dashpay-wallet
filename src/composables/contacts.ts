@@ -11,7 +11,15 @@ let isRefreshLoopActive = false;
 
 export default function useContacts() {
   const store = useStore();
-  console.log("store :>> ", store);
+
+  const getUserLabel = computed((friendOwnerId) =>
+    store.getters.getUserLabel(friendOwnerId)
+  );
+
+  const getUserAvatar = computed((friendOwnerId) =>
+    store.getters.getUserAvatar(friendOwnerId)
+  );
+
   async function syncContactRequestsLoop() {
     if (!isRefreshLoopActive) return;
     console.log("syncContactRequestsLoop");
@@ -41,5 +49,7 @@ export default function useContacts() {
   return {
     startSyncContactRequests,
     stopSyncContactRequestsLoop,
+    getUserLabel,
+    getUserAvatar,
   };
 }

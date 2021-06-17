@@ -87,19 +87,18 @@ export default {
 
     const store = useStore();
 
-    const formName = ref(store.state.wishName);
+    const formName = ref(store.state.wishName || "");
 
     const registrationMessage = ref("Starting to Finish!");
 
-    const showLoader = ref(true);
+    const showLoader = ref(false);
 
     const errorMessage = ref("");
 
     const registerName = async () => {
       showLoader.value = true;
-      try {
-        console.log("event :>> ", event);
 
+      try {
         let identity: any;
 
         registrationMessage.value = "Many Duffs make a Dash";
@@ -112,15 +111,15 @@ export default {
 
         if (identityId) {
           registrationMessage.value = "Fetching existing identity";
+
           identity = await client.platform?.identities.get(identityId);
         } else {
           registrationMessage.value = "Creating new identity";
 
           identity = await client.platform?.identities.register();
+
           setClientIdentity(identity);
         }
-
-        console.log("identity :>> ", identity.toJSON());
 
         registrationMessage.value = "Registering name";
 
@@ -153,7 +152,12 @@ export default {
       }
     };
 
-    registerName();
+    if (formName.value !== "") {
+      console.log("formName.value :>> ", formName.value);
+      registerName();
+    } else {
+      errorMessage.value = "Please choose a name.";
+    }
 
     return {
       formName,

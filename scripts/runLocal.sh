@@ -3,7 +3,10 @@ source ~/.evoenv
 
 export VUE_APP_ENV_RUN="local"
 
-export VUE_APP_USERMNEMONIC='together tail kingdom daughter sight airport vivid uphold nothing ball lazy panther'
+export VUE_APP_USERMNEMONIC='wealth rally infant weapon vendor rebel tired horn mandate object venue lesson'
+
+# brain federal improve scatter educate holiday seed grain north prosper soul heart'
+# together tail kingdom daughter sight airport vivid uphold nothing ball lazy panther
 # export VUE_APP_USERMNEMONIC='then creek just viable vivid alcohol bitter diet globe accuse term hard'
 # export VUE_APP_USERMNEMONIC='present invite someone moon circle blossom wage awesome success suffer service fire'
 

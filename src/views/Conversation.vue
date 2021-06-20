@@ -97,12 +97,8 @@ export default {
 
     const friendOwnerId = route.params.friendownerId as string;
 
-    const {
-      chatMsgs,
-      sendChat,
-      sentContactRequest,
-      receivedContactRequest,
-    } = useChats(friendOwnerId);
+    const { chatMsgs, sendChat, sentContactRequest, receivedContactRequest } =
+      useChats(friendOwnerId);
 
     const chatText = ref("");
 

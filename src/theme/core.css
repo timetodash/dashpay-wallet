@@ -1,3 +1,28 @@
+.flex{
+  display: flex;
+}
+.nowrap{
+  display: flex;
+  wrap: nowrap;
+}
+ion-header {
+  padding-top: 16px;
+  padding-left: 0px;
+  background-color: #f7f7f7;
+  border-bottom: 1px solid #e3e3e3;
+  border-top: none;
+}
+
+ion-toolbar {
+  --background: primary;
+}
+/* removes the shadow below the header */
+.header-md::after {
+  height: 0px;
+  border-style: solid 2px;
+}
+
+
 .user {
   background: linear-gradient(180deg, #f2edfd 0%, #eeedff 100%);
   float: right;

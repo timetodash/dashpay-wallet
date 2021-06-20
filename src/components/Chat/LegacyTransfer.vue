@@ -1,6 +1,7 @@
 <template>
   <div
     class="chatbubble_txn_small"
+    style=""
     :class="{
       user: direction.toUpperCase() === 'SENT',
       chat_partner_txn: direction.toUpperCase() === 'RECEIVED',
@@ -25,8 +26,8 @@
     </div>
     <div class="alignrow">
       <div class="chat_timestamp">
+        {{ new Date().getHours() }}:{{ new Date().getMinutes(2) }}
         <!-- {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes() }} -->
-        {{ hours }}:{{ minutes }}
       </div>
       <ion-icon
         class="align_checkmark checkmark_color"
@@ -43,7 +44,7 @@ import { checkmarkDoneOutline } from "ionicons/icons";
 // import { reactive } from "vue";
 
 export default {
-  props: ["direction", "amount", "hours", "minutes"],
+  props: ["direction", "amount"],
   components: {
     IonIcon,
   },
@@ -59,11 +60,12 @@ export default {
 .chatbubble_txn_small {
   display: flex;
   flex-wrap: nowrap;
+  margin: 6px 0px;
   padding-bottom: 3px;
   padding-top: 3px;
   padding-right: 13px;
-  margin-bottom: 6px;
-  width: 174px;
+  min-width: 181px;
+  height: 34px;
   justify-content: space-between;
   box-shadow: 0px 2px 4px rgba(106, 103, 251, 0.3);
   border-radius: 100px;

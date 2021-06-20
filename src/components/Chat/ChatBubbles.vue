@@ -7,7 +7,7 @@
           :key="msg.id.toString()"
           class="row_padding"
         >
-          <ion-col class="ion-padding-horizontal">
+          <ion-col>
             <chat-message v-if="msg.data.text && !msg.data.amount" :msg="msg">
             </chat-message>
             <chat-txn
@@ -18,7 +18,10 @@
             </chat-txn>
             <chat-small-txn
               v-if="!msg.data.request && msg.data.amount && !msg.data.text"
-              :msg="msg"
+              :direction="msg._direction"
+              :amount="msg.data.amount"
+              :hours="msg.createdAt.getHours()"
+              :minutes="msg.createdAt.getMinutes()"
             >
             </chat-small-txn>
           </ion-col>

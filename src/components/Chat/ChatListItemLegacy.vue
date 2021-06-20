@@ -3,7 +3,7 @@
     <ion-avatar slot="start" class="avatar">
       <img
         :src="require('/public/assets/avatars/dash.png')"
-        class="squareBorder"
+        class="squareborder"
       />
     </ion-avatar>
     <ion-label
@@ -75,7 +75,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .avatar {
   width: 50px;
   height: 50px;

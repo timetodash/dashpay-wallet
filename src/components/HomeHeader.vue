@@ -45,7 +45,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .userAvatar {
   display: flex;
   align-items: center;

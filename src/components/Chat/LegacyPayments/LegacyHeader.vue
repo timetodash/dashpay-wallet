@@ -3,9 +3,11 @@
     ><ion-back-button default-href="/home" :icon="arrowBack"></ion-back-button
   ></ion-buttons>
   <ion-avatar slot="start" class="useravatar"
-    ><img :src="store.getters.getUserAvatar(friendOwnerId)"
+    ><img
+      class="squareborder"
+      :src="require('/public/assets/avatars/dash.png')"
   /></ion-avatar>
-  <div class="username">{{ getUserLabel(friendOwnerId) }}</div>
+  <div class="username">Legacy Payments</div>
   <ion-buttons slot="end">
     <ion-button
       ><ion-icon :icon="ellipsisVertical" class="ellipsis_color"></ion-icon
@@ -22,9 +24,6 @@ import {
   IonIcon,
 } from "@ionic/vue";
 import { arrowBack, ellipsisVertical } from "ionicons/icons";
-import { computed } from "vue";
-import { useStore } from "vuex";
-// import chats from "@/composables/chats.ts";
 
 export default {
   props: ["friendOwnerId"],
@@ -38,10 +37,7 @@ export default {
   },
 
   setup() {
-    const store = useStore();
     return {
-      getUserLabel: computed(() => store.getters.getUserLabel),
-      store,
       arrowBack,
       ellipsisVertical,
     };
@@ -50,16 +46,19 @@ export default {
 </script>
 
 <style scoped>
-/* TODO: font weight not registering */
 ion-back-button {
   color: rgba(0, 0, 0, 0.5);
   font-weight: 100;
-  --icon-font-weight: 100;
+  --ionicon-stroke-width: 10px;
 }
 .useravatar {
   display: flex;
   align-items: center;
   justify-content: left;
+  border-radius: 10px;
+}
+.squareborder {
+  border-radius: 10px;
 }
 .useravatar > img {
   height: 30px;

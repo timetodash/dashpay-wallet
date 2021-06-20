@@ -7,7 +7,7 @@
     </ion-header>
     <ion-content class="ion-padding">
       <ChatBubbles
-        :chatMsgs="chatMsgs"
+        :chatMsgs="getChatMsgs(friendOwnerId)"
         :friendOwnerId="friendOwnerId"
       ></ChatBubbles>
     </ion-content>
@@ -29,9 +29,9 @@
     </ion-modal>
     <ion-footer class="ion-no-border">
       <chat-footer
-        :receivedContactRequest="receivedContactRequest"
-        :sentContactRequest="sentContactRequest"
-        @send-chat="sendChat"
+        :receivedContactRequest="receivedContactRequest(friendOwnerId)"
+        :sentContactRequest="sentContactRequest(friendOwnerId)"
+        @send-chat-wrapper="sendChatWrapper"
         @showSendRequestDashSheet="showSendRequestDashSheet"
       ></chat-footer>
     </ion-footer>
@@ -39,7 +39,7 @@
 </template>
 
 <script lang="ts">
-import { onMounted, ref, watchEffect, computed } from "vue";
+import { onMounted, ref, watchEffect, watch, computed } from "vue";
 
 import {
   IonPage,
@@ -95,34 +95,51 @@ export default {
 
     const getUserLabel = computed(() => store.getters.getUserLabel);
 
-    const friendOwnerId = route.params.friendownerId as string;
+    const friendOwnerId = ref(route.params.friendOwnerId as string);
 
     const {
-      chatMsgs,
+      getChatMsgs,
       sendChat,
       sentContactRequest,
       receivedContactRequest,
-    } = useChats(friendOwnerId);
+    } = useChats();
 
     const chatText = ref("");
 
-    // Resolve friend if still unknown
-    store.dispatch("fetchDPNSDoc", friendOwnerId);
-    store.dispatch("fetchDashpayProfiles", [friendOwnerId]);
+    watch(
+      () => route.params.friendOwnerId,
+      () => {
+        if (route.params.friendOwnerId) {
+          friendOwnerId.value = route.params.friendOwnerId as string;
+
+          // Resolve friend if still unknown
+          store.dispatch("fetchDPNSDoc", friendOwnerId.value);
+          store.dispatch("fetchDashpayProfiles", [friendOwnerId.value]);
+        }
+      }
+    );
 
     // Mark msgs as read
     watchEffect(() => {
-      if (!(chatMsgs.value.length > 0)) return;
+      console.log("watcheffect friendOwnerId.value :>> ", friendOwnerId.value);
+      console.log(
+        "watcheffect store.getters.getChatMsgs(friendOwnerId.value) length :>> ",
+        store.getters.getChatMsgs(friendOwnerId.value).length,
+        store.getters.getChatMsgs(friendOwnerId.value)
+      );
+      if (!(store.getters.getChatMsgs(friendOwnerId.value).length > 0)) return;
 
       const getLastMsgTimestamp = (msgs: any[]) => {
         return msgs[msgs.length - 1].createdAt.getTime();
       };
 
-      const lastTimestamp = getLastMsgTimestamp(chatMsgs.value);
+      const lastTimestamp = getLastMsgTimestamp(
+        store.getters.getChatMsgs(friendOwnerId.value)
+      );
 
       store.commit("setLastSeenChatTimestampByOwnerId", {
         lastTimestamp,
-        friendOwnerId,
+        friendOwnerId: friendOwnerId.value,
       });
 
       store.dispatch("saveLastSeenChatTimestamps");
@@ -158,22 +175,31 @@ export default {
       { text: "Send", handler: showSendDashModal },
       { text: "Request", handler: showRequestDashModal },
     ];
-
+    const sendChatWrapper = (message: string, amount: number, request: any) => {
+      sendChat(message, friendOwnerId.value, amount, request);
+    };
     const handleSendRequest = (event: any) => {
       console.log("event :>> ", event);
       const request = event.sendRequestDirection === "request" ? "open" : "";
       console.log("request :>> ", request);
-      sendChat(event.message, event.amount, request);
+      console.log(
+        "sendChat",
+        event.message,
+        friendOwnerId.value,
+        event.amount,
+        request
+      );
+      sendChatWrapper(event.message, event.amount, request);
     };
 
     // onMounted(async () => {});
 
     return {
       chatText,
-      sendChat,
+      sendChatWrapper,
       showSendRequestDashSheet,
       friendOwnerId,
-      chatMsgs,
+      getChatMsgs,
       getUserLabel,
       store,
       sendAndRequestButtons,

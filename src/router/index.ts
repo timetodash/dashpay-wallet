@@ -14,6 +14,7 @@ import ChooseName from "@/views/ChooseName.vue";
 import ChoosePassword from "@/views/ChoosePassword.vue";
 import BackupMnemonic from "@/views/BackupMnemonic.vue";
 import ContactSearch from "@/views/ContactSearch.vue";
+import ContactProfile from "@/views/ContactProfile.vue";
 import Conversation from "@/views/Conversation.vue";
 import ChatLegacyPayment from "@/components/Chat/ChatLegacyPayment.vue";
 
@@ -77,7 +78,13 @@ const routes: Array<RouteRecordRaw> = [
     component: ContactSearch,
   },
   {
-    path: "/conversation/:friendownerId",
+    path: "/profile/:friendOwnerId",
+    component: ContactProfile,
+    name: "ContactProfile",
+    props: true,
+  },
+  {
+    path: "/conversation/:friendOwnerId",
     component: Conversation,
     name: "Conversation",
     props: true,
@@ -87,6 +94,7 @@ const routes: Array<RouteRecordRaw> = [
     component: ChatLegacyPayment,
   },
   {
+    // TODO remove for production
     path: "/autologin",
     component: Autologin,
   },

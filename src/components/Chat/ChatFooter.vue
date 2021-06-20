@@ -14,7 +14,7 @@
     <ion-input
       placeholder="Messsage... "
       v-model="chatText"
-      @keyup.enter="sendChat"
+      @keyup.enter="sendChatWrapper"
     >
       <ion-icon class="emoji" :icon="happyOutline"></ion-icon>
       <ion-icon class="attach" :icon="attachOutline"></ion-icon>
@@ -32,7 +32,7 @@
     <ion-icon
       v-else
       class="dash_button"
-      @click="sendChat"
+      @click="sendChatWrapper"
       :src="require('/public/assets/icons/sending.svg')"
     ></ion-icon>
   </div>
@@ -45,7 +45,7 @@ import { ref } from "vue";
 
 export default {
   props: ["receivedContactRequest", "sentContactRequest"],
-  emits: ["sendChat", "showSendRequestDashSheet"],
+  emits: ["sendChatWrapper", "showSendRequestDashSheet"],
   components: {
     IonInput,
     IonIcon,
@@ -56,15 +56,15 @@ export default {
 
     const isSendingAccept = ref(false);
 
-    const sendChat = () => {
-      context.emit("sendChat", chatText.value);
+    const sendChatWrapper = () => {
+      context.emit("sendChatWrapper", chatText.value);
       chatText.value = "";
     };
 
     const acceptAndSayHi = () => {
       isSendingAccept.value = true;
       chatText.value = "hi";
-      sendChat();
+      sendChatWrapper();
     };
 
     const showSendRequestDashSheet = function() {
@@ -76,7 +76,7 @@ export default {
       happyOutline,
       attachOutline,
       send,
-      sendChat,
+      sendChatWrapper,
       acceptAndSayHi,
       showSendRequestDashSheet,
       isSendingAccept,

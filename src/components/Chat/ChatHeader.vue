@@ -2,7 +2,10 @@
   <ion-buttons slot="start"
     ><ion-back-button default-href="/home" :icon="arrowBack"></ion-back-button
   ></ion-buttons>
-  <ion-avatar slot="start" class="useravatar"
+  <ion-avatar
+    slot="start"
+    class="useravatar"
+    @click="router.push(`/profile/${friendOwnerId}`)"
     ><img :src="store.getters.getUserAvatar(friendOwnerId)"
   /></ion-avatar>
   <div class="username">{{ getUserLabel(friendOwnerId) }}</div>
@@ -24,6 +27,7 @@ import {
 import { arrowBack, ellipsisVertical } from "ionicons/icons";
 import { computed } from "vue";
 import { useStore } from "vuex";
+import { useRouter } from "vue-router";
 // import chats from "@/composables/chats.ts";
 
 export default {
@@ -39,11 +43,15 @@ export default {
 
   setup() {
     const store = useStore();
+
+    const router = useRouter();
+
     return {
       getUserLabel: computed(() => store.getters.getUserLabel),
       store,
       arrowBack,
       ellipsisVertical,
+      router,
     };
   },
 };

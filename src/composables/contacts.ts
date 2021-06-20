@@ -12,18 +12,35 @@ let isRefreshLoopActive = false;
 export default function useContacts() {
   const store = useStore();
 
-  const getUserLabel = computed((friendOwnerId) =>
-    store.getters.getUserLabel(friendOwnerId)
+  const getUserPublicMessage = computed(
+    () => store.getters.getUserPublicMessage
   );
 
-  const getUserAvatar = computed((friendOwnerId) =>
-    store.getters.getUserAvatar(friendOwnerId)
-  );
+  const getUserDisplayName = computed(() => store.getters.getUserDisplayName);
+
+  const getUserLabel = computed(() => store.getters.getUserLabel);
+
+  const getUserAvatar = computed(() => store.getters.getUserAvatar);
+
+  const getMyFriends = computed(() => store.getters.getMyFriends);
+
+  const getSuggestedFriends = computed(() => store.getters.getSuggestedFriends);
 
   async function syncContactRequestsLoop() {
     if (!isRefreshLoopActive) return;
     console.log("syncContactRequestsLoop");
-    store.dispatch("syncContactRequests");
+
+    await store.dispatch("syncContactRequests");
+
+    Object.entries(store.state.contactRequests.sent).forEach(
+      async ([myOwnerId, contactRequest]) => {
+        await store.dispatch(
+          "fetchContactRequestsSent",
+          (contactRequest as any).data.toUserId.toString()
+        );
+      }
+    );
+
     await sleep(10000);
     syncContactRequestsLoop();
   }
@@ -49,7 +66,11 @@ export default function useContacts() {
   return {
     startSyncContactRequests,
     stopSyncContactRequestsLoop,
+    getMyFriends,
+    getSuggestedFriends,
     getUserLabel,
     getUserAvatar,
+    getUserDisplayName,
+    getUserPublicMessage,
   };
 }

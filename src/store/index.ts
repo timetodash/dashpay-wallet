@@ -2,12 +2,18 @@ import { createStore } from "vuex";
 import { getClient } from "@/lib/DashClient";
 import { Storage } from "@capacitor/storage";
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const state = {
   accountDPNS: null,
   balance: null,
   wishName: null,
   dpns: {},
   dashpayProfiles: {},
+  socialGraph: {
+    sentByOwnerId: {},
+    suggestedContacts: [], //ordered by common connections
+  },
   contactRequests: {
     received: {},
     sent: {},
@@ -24,6 +30,16 @@ const state = {
 interface SetLastSeenTimestampByOwnerIdMutation {
   friendOwnerId: string;
   lastTimestamp: number;
+}
+
+interface SetSocialGrahSentMutation {
+  ownerId: string;
+  contactRequests: any[];
+}
+interface FetchContactRequestArguments {
+  ownerId: any;
+  lastTimestampSent: number | undefined;
+  sortDirection: "asc" | "desc";
 }
 
 const mutations = {
@@ -110,6 +126,24 @@ const mutations = {
     const friendOwnerId = contactRequest.data.toUserId.toString();
 
     state.contactRequests.sent[friendOwnerId] = contactRequest;
+  },
+  setSocialGraphSent(state: any, contactRequest: any) {
+    if (!contactRequest) return;
+
+    const ownerId = contactRequest.ownerId.toString();
+
+    const toUserId = contactRequest.data.toUserId.toString();
+
+    state.socialGraph.sentByOwnerId[ownerId] = state.socialGraph.sentByOwnerId[
+      ownerId
+    ] || { docs: {}, lastTimestamp: 0 };
+
+    state.socialGraph.sentByOwnerId[ownerId].docs[toUserId] = contactRequest;
+
+    // TODO don't store timestamp if fetch was sorted 'desc', ideally move to different mutation
+    state.socialGraph.sentByOwnerId[
+      ownerId
+    ].lastTimestamp = contactRequest.createdAt.getTime();
   },
   setContactRequestReceivedLastTimestamp(state: any, timestamp: Date) {
     state.contactRequests.lastTimestampReceived = timestamp;
@@ -248,6 +282,56 @@ const actions = {
       context.commit("sortChatList");
     }
   },
+  // async syncSocialGraph(context: any) {},
+  async fetchContactRequestsSent(context: any, ownerId: any) {
+    // TODO implement a way to do a forced resync from `createdAt === 0`
+    const client = getClient();
+
+    const sentByOwnerId = state.socialGraph.sentByOwnerId as any;
+
+    const lastTimestampSent = sentByOwnerId[ownerId]?.lastTimestamp || 0;
+
+    console.log("fetchContactRequestsSent", ownerId, lastTimestampSent);
+    console.log("dashpay.contactRequest", {
+      where: [
+        ["$ownerId", "==", ownerId],
+        ["$createdAt", ">", lastTimestampSent],
+      ],
+      orderBy: [["$createdAt", "asc"]],
+    });
+    const resultSent = await client?.platform?.documents.get(
+      "dashpay.contactRequest",
+      {
+        where: [
+          ["$ownerId", "==", ownerId],
+          ["$createdAt", ">", lastTimestampSent],
+        ],
+        orderBy: [["$createdAt", "asc"]],
+      }
+    );
+
+    console.log(
+      "fetchContactRequestsSent resultSent :>> ",
+      resultSent.map((x: any) => x.toJSON())
+    );
+
+    resultSent.forEach((contactRequest: any) => {
+      context.commit("setSocialGraphSent", contactRequest);
+      context.dispatch("fetchDPNSDoc", contactRequest.data.toUserId.toString()); // TODO fetch using 'in' operator with Identifier
+    });
+
+    const resultSentFriendOwnerIds = resultSent.map((contactRequest: any) =>
+      contactRequest.data.toUserId.toString()
+    );
+
+    context.dispatch("fetchDashpayProfiles", resultSentFriendOwnerIds); // use identifier and 'in' operator
+
+    if (resultSent.length > 0) {
+      await sleep(100);
+
+      await context.dispatch("fetchContactRequestsSent", ownerId);
+    }
+  },
   async syncContactRequests(context: any) {
     const client = getClient();
 
@@ -351,10 +435,23 @@ const getters = {
   getUserLabel: (state: any) => (ownerId: string) => {
     return (state.dpns as any)[ownerId]?.data.label ?? ownerId.substr(0, 6);
   },
+  getUserDisplayName: (state: any) => (ownerId: string) => {
+    return (
+      (state.dashpayProfiles as any)[ownerId]?.data.displayName ??
+      (state.dpns as any)[ownerId]?.data.label ??
+      ownerId.substr(0, 6)
+    );
+  },
   getUserAvatar: (state: any) => (ownerId: string) => {
     return (
       (state.dashpayProfiles as any)[ownerId.toString()]?.data.avatarUrl ??
       "/assets/defaults/avataaar.png"
+    );
+  },
+  getUserPublicMessage: (state: any) => (ownerId: string) => {
+    return (
+      (state.dashpayProfiles as any)[ownerId.toString()]?.data.publicMessage ??
+      ""
     );
   },
   getSentContactRequest: (state: any) => (friendOwnerId: string) => {
@@ -374,6 +471,130 @@ const getters = {
         chat.createdAt > lastTimestamp &&
         chat.ownerId.toString() === friendOwnerId
     ).length;
+  },
+  getUserFriends: (state: any) => (friendOwnerId: string) => {
+    const getSocialMetrics = (findOwnerId: string) => {
+      const sentByOwnerId = state.socialGraph.sentByOwnerId;
+
+      let count = 0;
+      let isMyFriend = false;
+
+      Object.entries(sentByOwnerId).forEach(([rootOwnerId, entry]) => {
+        const contactRequestsByFindOwnerId = (entry as any).docs;
+        console.log(
+          "contactRequestsByFindOwnerId findOwnerId :>> ",
+          findOwnerId
+        );
+
+        if (findOwnerId in contactRequestsByFindOwnerId) {
+          count = count + 1;
+        }
+      });
+
+      if (findOwnerId in state.contactRequests.sent) isMyFriend = true;
+      console.log(
+        "state.contactRequests.sent):>> ",
+        state.contactRequests.sent
+      );
+
+      if (count > 0) count = count - 1;
+
+      return { count, isMyFriend };
+    };
+
+    return Object.entries(
+      state.socialGraph.sentByOwnerId[friendOwnerId]?.docs ?? {}
+    ).map((entry: any) => {
+      const contactRequest = entry[1];
+
+      return {
+        ...contactRequest,
+        _socialMetrics: getSocialMetrics(
+          contactRequest.data.toUserId.toString()
+        ),
+      };
+    });
+  },
+  getMyFriends: (state: any) => {
+    return Object.entries(state.contactRequests.sent).map((entry: any) => {
+      const contactRequest = entry[1];
+
+      return contactRequest;
+    });
+  },
+  getSuggestedFriends: (state: any, getters: any) => {
+    const getSocialMetrics = (findOwnerId: string) => {
+      const sentByOwnerId = state.socialGraph.sentByOwnerId;
+
+      let count = 0;
+      let isMyFriend = false;
+
+      Object.entries(sentByOwnerId).forEach(([rootOwnerId, entry]) => {
+        const contactRequestsByFindOwnerId = (entry as any).docs;
+        console.log(
+          "contactRequestsByFindOwnerId findOwnerId :>> ",
+          findOwnerId
+        );
+
+        if (findOwnerId in contactRequestsByFindOwnerId) {
+          count = count + 1;
+        }
+      });
+
+      if (findOwnerId in state.contactRequests.sent) isMyFriend = true;
+      console.log(
+        "state.contactRequests.sent):>> ",
+        state.contactRequests.sent
+      );
+
+      return { count, isMyFriend };
+    };
+
+    let suggestedFriendsByOwnerId: any = {};
+
+    Object.entries(state.socialGraph.sentByOwnerId).forEach((entry: any) => {
+      const contactRequests = entry[1];
+
+      suggestedFriendsByOwnerId = {
+        ...suggestedFriendsByOwnerId,
+        ...contactRequests.docs,
+      };
+    });
+
+    console.log("suggestedFriendsByOwnerId :>> ", suggestedFriendsByOwnerId);
+
+    const suggestedFriends = Object.entries(suggestedFriendsByOwnerId).map(
+      (entry: any) => {
+        const contactRequest = entry[1];
+
+        return {
+          ...contactRequest,
+          _socialMetrics: getSocialMetrics(
+            contactRequest.data.toUserId.toString()
+          ),
+        };
+      }
+    );
+
+    console.log("suggestedFriends :>> ", suggestedFriends);
+
+    console.log(
+      "mutualFriends :>> ",
+      suggestedFriends.sort(
+        (a, b) => b._socialMetrics.count - a._socialMetrics.count
+      )
+    );
+    const alreadyFriendOwnerIds = getters.getMyFriends.map((x: any) =>
+      x.data.toUserId.toString()
+    );
+
+    console.log("alreadyFriendOwnerIds :>> ", alreadyFriendOwnerIds);
+
+    return suggestedFriends
+      .filter((x) => {
+        return !alreadyFriendOwnerIds.includes(x.data.toUserId.toString());
+      })
+      .sort((a, b) => b._socialMetrics.count - a._socialMetrics.count);
   },
   getChatMsgs: (state: any) => (friendOwnerId: string) => {
     return ((state.chats as any).msgsByOwnerId[friendOwnerId] ?? []).map(

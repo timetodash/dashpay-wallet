@@ -11,20 +11,20 @@ let client: any;
 
 let isRefreshLoopActive = false;
 
-export default function useChats(
-  friendOwnerId: string | undefined = undefined
-) {
+export default function useChats() {
   const store = useStore();
 
   console.log("store :>> ", store);
 
-  const sentContactRequest = computed(() =>
-    store.getters.getSentContactRequest(friendOwnerId)
+  const sentContactRequest = computed(
+    () => store.getters.getSentContactRequest
   );
 
-  const receivedContactRequest = computed(() =>
-    store.getters.getReceivedContactRequest(friendOwnerId)
+  const receivedContactRequest = computed(
+    () => store.getters.getReceivedContactRequest
   );
+
+  const getChatMsgs = computed(() => store.getters.getChatMsgs);
 
   async function syncChatsLoop() {
     if (!isRefreshLoopActive) return;
@@ -52,10 +52,13 @@ export default function useChats(
     isRefreshLoopActive = false;
   }
 
-  const chatMsgs = computed(() => store.getters.getChatMsgs(friendOwnerId));
-
-  const sendChat = async (chatText: string, amount = 0, request = "") => {
-    console.log("sendChat", { chatText, amount, request });
+  const sendChat = async (
+    chatText: string,
+    friendOwnerId: string,
+    amount = 0,
+    request = ""
+  ) => {
+    console.log("sendChat", { chatText, friendOwnerId, amount, request });
 
     const client = getClient();
 
@@ -89,7 +92,7 @@ export default function useChats(
     };
 
     // Attach contact request if we haven't sent one before
-    if (!sentContactRequest.value) {
+    if (!store.getters.getSentContactRequest(friendOwnerId)) {
       const contactRequest = await createContactRequest(
         client,
         clientIdentity,
@@ -132,7 +135,7 @@ export default function useChats(
     startSyncChats,
     stopSyncChats,
     sendChat,
-    chatMsgs,
+    getChatMsgs,
     sentContactRequest,
     receivedContactRequest,
   };

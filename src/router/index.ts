@@ -16,7 +16,7 @@ import BackupMnemonic from "@/views/BackupMnemonic.vue";
 import ContactSearch from "@/views/ContactSearch.vue";
 import ContactProfile from "@/views/ContactProfile.vue";
 import Conversation from "@/views/Conversation.vue";
-import ChatLegacyPayment from "@/components/Chat/ChatLegacyPayment.vue";
+import ChatLegacyPayment from "@/components/Chat/LegacyPayments/ChatLegacyPayment.vue";
 
 import Autologin from "@/views/Autologin.vue"; // TODO deploy: remove, this is for dev only
 

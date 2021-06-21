@@ -44,7 +44,7 @@
       },
       "request": {
         "type": "string",
-        "$comment": "open | accept | reject"
+        "$comment": "open | accept | decline"
       },
       "toOwnerId": {
         "type": "string",

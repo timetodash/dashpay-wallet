@@ -26,6 +26,12 @@ export default function useContacts() {
 
   const getSuggestedFriends = computed(() => store.getters.getSuggestedFriends);
 
+  const myLabel = computed(() => store.getters.myLabel);
+
+  const myAvatar = computed(() => store.getters.myAvatar);
+
+  const myOwnerId = computed(() => store.getters.myOwnerId);
+
   async function syncContactRequestsLoop() {
     if (!isRefreshLoopActive) return;
     console.log("syncContactRequestsLoop");
@@ -72,5 +78,8 @@ export default function useContacts() {
     getUserAvatar,
     getUserDisplayName,
     getUserPublicMessage,
+    myLabel,
+    myAvatar,
+    myOwnerId,
   };
 }

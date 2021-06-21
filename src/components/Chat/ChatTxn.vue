@@ -48,42 +48,55 @@
     v-if="msg.data.request && msg._direction === 'RECEIVED'"
     class="ion-no-wrap"
   >
-    <ion-chip class="decline"
-      ><ion-label class="decline_text">Decline</ion-label
-      ><ion-icon
-        :icon="closeOutline"
-        class="decline_icon"
-        style="width: 14px; height: 14px"
-      ></ion-icon
-    ></ion-chip>
-    <ion-chip class="accept"
-      ><ion-label class="accept_text">Accept</ion-label>
-      <ion-icon
-        class="accept_icon"
-        :src="require('/public/assets/icons/accept.svg')"
-      >
-      </ion-icon>
+    <ion-chip class="decline" @click="declineRequest"
+      ><ion-label class="decline_text">Decline</ion-label></ion-chip
+    >
+    <ion-chip class="accept" @click="showViewRequestModal(true)"
+      ><ion-label class="accept_text">View</ion-label>
     </ion-chip>
   </ion-row>
+  <ion-modal
+    :is-open="isViewRequestModalOpen"
+    @didDismiss="showViewRequestModal(false)"
+  >
+    <ViewRequestModal
+      :friendOwnerId="friendOwnerId"
+      @declineRequest="declineRequest"
+      :msg="msg"
+    ></ViewRequestModal>
+  </ion-modal>
 </template>
 
-<script>
-import { IonIcon } from "@ionic/vue";
+<script lang="ts">
+import { IonLabel, IonChip, IonRow, IonIcon, IonModal } from "@ionic/vue";
 import { checkmarkDoneOutline, closeOutline } from "ionicons/icons";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
+
+import ViewRequestModal from "@/components/Chat/ViewRequestModal.vue";
+import useContacts from "@/composables/contacts";
+import useChats from "@/composables/chats";
 
 export default {
   props: ["msg", "friendOwnerId"],
   components: {
     IonIcon,
+    IonLabel,
+    IonChip,
+    IonRow,
+    IonModal,
+    ViewRequestModal,
   },
   setup(props) {
     const store = useStore();
 
-    const UserLabel = computed(() =>
-      store.getters.getUserLabel(props.friendOwnerId)
-    );
+    const { sendChat } = useChats();
+    const declineRequest = () => {
+      sendChat("", props.friendOwnerId, 0, "decline");
+      // chat obj must include request id / tx id
+    };
+
+    const { getUserLabel } = useContacts();
 
     const title = computed(() => {
       if (props.msg.data.request) {
@@ -94,23 +107,25 @@ export default {
         props.msg._direction === "RECEIVED" &&
         !props.msg.data.request
       ) {
-        return UserLabel.value + " Sent";
+        return getUserLabel.value(props.friendOwnerId) + " Sent";
       } else {
         return "";
       }
     });
 
-    // 1. plain chat text no txn
-    // 2. plain text wth txn
-    // 3. txn with no text
-    // 4. open a request
-    // 5. reject a request
-    // 6. pay a request
+    const isViewRequestModalOpen = ref(false);
+
+    const showViewRequestModal = async (state: boolean) => {
+      isViewRequestModalOpen.value = state;
+    };
 
     return {
       checkmarkDoneOutline,
       title,
       closeOutline,
+      declineRequest,
+      showViewRequestModal,
+      isViewRequestModalOpen,
     };
   },
 };

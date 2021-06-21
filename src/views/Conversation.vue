@@ -23,7 +23,8 @@
       @didDismiss="showSendRequestDashModal(false)"
     >
       <SendRequestDashModal
-        :sendRequestDirection="sendRequestDirection"
+        :initSendRequestDirection="sendRequestDirection"
+        :friendOwnerId="friendOwnerId"
         @handleSendRequest="handleSendRequest"
       ></SendRequestDashModal>
     </ion-modal>

@@ -32,16 +32,6 @@ interface SetLastSeenTimestampByOwnerIdMutation {
   lastTimestamp: number;
 }
 
-interface SetSocialGrahSentMutation {
-  ownerId: string;
-  contactRequests: any[];
-}
-interface FetchContactRequestArguments {
-  ownerId: any;
-  lastTimestampSent: number | undefined;
-  sortDirection: "asc" | "desc";
-}
-
 const mutations = {
   setLastSeenChatTimestampObject(state: any, obj: any) {
     state.chats.lastSeenTimestampByOwnerId = obj;
@@ -426,6 +416,7 @@ const actions = {
 const getters = {
   name: (state: any) => state.accountDPNS?.label, // TODO deprecated, remove and refactor
   myLabel: (state: any) => state.accountDPNS?.label,
+  myOwnerId: (state: any) => state.accountDPNS?.$ownerId,
   myAvatar: (state: any) => {
     return (
       (state.dashpayProfiles as any)[state.accountDPNS.$ownerId]?.data

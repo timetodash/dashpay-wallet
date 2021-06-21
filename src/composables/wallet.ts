@@ -9,14 +9,14 @@ let client: any;
 
 let isRefreshLoopActive = false;
 
-const balance = ref(0);
+const myBalance = ref(0);
 
-const transactionHistory = ref();
+const myTransactionHistory = ref();
 
 export default function useWallet() {
   function refreshBalance() {
-    balance.value = client?.account!.getTotalBalance();
-    console.log("balance.value :>> ", balance.value);
+    myBalance.value = client?.account!.getTotalBalance();
+    console.log("balance.value :>> ", myBalance.value);
   }
 
   function refreshTransactionHistory() {
@@ -26,10 +26,10 @@ export default function useWallet() {
 
     console.log("transactions :>> ", transactions);
 
-    transactionHistory.value = transactions.map((tx: any) =>
+    myTransactionHistory.value = transactions.map((tx: any) =>
       resolveTransaction(client, tx)
     );
-    console.log("transactionHistory.value :>> ", transactionHistory.value);
+    console.log("transactionHistory.value :>> ", myTransactionHistory.value);
   }
 
   const transactionDisplay = (transaction: any) => {
@@ -84,7 +84,7 @@ export default function useWallet() {
     startRefreshWalletDataLoop,
     stopRefreshWalletDataLoop,
     transactionDisplay,
-    transactionHistory,
-    balance,
+    myTransactionHistory,
+    myBalance,
   };
 }

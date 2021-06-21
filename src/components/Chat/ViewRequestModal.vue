@@ -2,11 +2,7 @@
   <ion-header>
     <ion-toolbar>
       <ion-title
-        ><span
-          style="text-transform:capitalize; color:#6A67FB; font-weight:bold"
-          >{{ sendRequestDirection }}</span
-        >
-        Dash
+        ><span style=" color:#6A67FB; font-weight:bold">Accept Request</span>
       </ion-title>
     </ion-toolbar>
   </ion-header>
@@ -26,7 +22,7 @@
         >
           {{ myLabel }}
         </h2>
-        <h3>New balance: {{ myBalance - parseInt(amount) }}</h3>
+        <h3>New balance: {{ myBalance - parseInt(msg.data.amount) }}</h3>
       </ion-label>
     </ion-item>
     <ion-item>
@@ -47,19 +43,30 @@
         </h3>
       </ion-label>
     </ion-item>
-    <ion-button color="tertiary" @click="switchSendRequest">switch</ion-button>
-    <ion-input placeholder="Amount" v-model="amount"></ion-input>
-    <ion-input placeholder="Message" v-model="message"></ion-input>
+    <ion-input
+      placeholder="Amount"
+      readonly
+      :value="msg.data.amount"
+    ></ion-input>
+    <ion-input
+      placeholder="Message"
+      readonly
+      :value="msg.data.text"
+    ></ion-input>
   </ion-content>
   <ion-footer>
-    <!-- TODO disable button if the balance is too low -->
-    <ion-button
-      expand="block"
-      color="tertiary"
-      @click="handleSendRequest"
-      :disabled="amount === 0"
-      >{{ sendRequestDirection }}</ion-button
+    <!-- TODO disable button if balance is too low -->
+    <ion-button expand="block" color="tertiary" @click="sendRequestAmount"
+      >Send</ion-button
     >
+    <ion-button
+      fill="outline"
+      expand="block"
+      color="danger"
+      @click="declineRequestWrapper"
+      >Decline</ion-button
+    >
+    <!-- TODO move cancel to X icon in the header -->
     <ion-button fill="outline" expand="block" color="tertiary" @click="cancel"
       >Cancel</ion-button
     >
@@ -86,8 +93,9 @@ import {
 import { defineComponent, ref } from "vue";
 
 export default defineComponent({
-  name: "SendReceiveDashModal",
-  props: ["initSendRequestDirection", "friendOwnerId"],
+  name: "ViewRequestModal",
+  props: ["msg", "friendOwnerId"],
+  emits: ["declineRequest"],
   components: {
     IonItem,
     IonLabel,
@@ -101,15 +109,6 @@ export default defineComponent({
     IonInput,
   },
   setup(props, { emit }) {
-    const amount = ref(0);
-
-    const sendRequestDirection = ref("send");
-
-    // eslint-disable-next-line vue/no-setup-props-destructure
-    sendRequestDirection.value = props.initSendRequestDirection;
-
-    const message = ref("");
-
     const {
       getUserLabel,
       getUserAvatar,
@@ -122,28 +121,24 @@ export default defineComponent({
 
     const { myBalance } = useWallet();
 
-    const switchSendRequest = () => {
-      sendRequestDirection.value =
-        sendRequestDirection.value === "send"
-          ? (sendRequestDirection.value = "request")
-          : (sendRequestDirection.value = "send");
-    };
-
-    const handleSendRequest = () => {
-      console.log("sendDash inside modal :>> ", amount.value, message.value);
-      emit("handleSendRequest", {
-        amount: parseInt(amount.value),
-        message: message.value,
-        sendRequestDirection: sendRequestDirection.value,
-      });
-      modalController.dismiss();
-    };
+    //   modalController.dismiss();
 
     const cancel = () => {
       modalController.dismiss();
     };
 
+    const declineRequestWrapper = () => {
+      emit("declineRequest");
+      modalController.dismiss();
+      // chat obj must include request id
+    };
+
+    const sendRequestAmount = () => {
+      // chat obj must include request id
+    };
+
     return {
+      declineRequestWrapper,
       getUserLabel,
       getUserAvatar,
       getUserDisplayName,
@@ -152,12 +147,10 @@ export default defineComponent({
       myAvatar,
       myOwnerId,
       myBalance,
-      handleSendRequest,
-      switchSendRequest,
       cancel,
       amount,
       message,
-      sendRequestDirection,
+      sendRequestAmount,
     };
   },
 });

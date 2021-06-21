@@ -7,7 +7,7 @@
 
       <ion-grid class="ion-no-padding">
         <ion-row
-          v-for="(transaction, idx) in transactionHistory"
+          v-for="(transaction, idx) in myTransactionHistory"
           :key="idx"
           class="row_padding"
         >
@@ -37,12 +37,12 @@ export default {
     LegacyPaymentContent,
   },
   setup() {
-    const { transactionDisplay, transactionHistory, balance } = useWallet();
+    const { transactionDisplay, myTransactionHistory, myBalance } = useWallet();
 
-    console.log("balance.value :>> ", balance.value);
-    console.log("transactionHistory.value :>> ", transactionHistory.value);
+    console.log("balance.value :>> ", myBalance.value);
+    console.log("transactionHistory.value :>> ", myTransactionHistory.value);
     return {
-      transactionHistory,
+      myTransactionHistory,
       transactionDisplay,
     };
   },
@@ -80,4 +80,3 @@ ion-label {
   color: #ffffff;
 }
 </style>
-

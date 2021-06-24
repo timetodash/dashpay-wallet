@@ -14,6 +14,8 @@
         request_title: msg.data.request,
       }"
     >
+      <!-- @timetodash use request === decline || accepted to syle the card -->
+      {{ getChatMsgByReplyToId(msg.id.toString())?.data.request }}
       {{ title }}
     </div>
     <div class="amount">{{ msg.data.amount }} Dash</div>
@@ -87,13 +89,19 @@ export default {
     IonModal,
     ViewRequestModal,
   },
-  setup(props) {
+  setup(props: any) {
     const store = useStore();
 
-    const { sendChat } = useChats();
+    const { sendChat, getChatMsgByReplyToId } = useChats();
     const declineRequest = () => {
-      sendChat("", props.friendOwnerId, 0, "decline");
-      // chat obj must include request id / tx id
+      // TODO amount is mocked and should come from request msg
+      sendChat(
+        "",
+        props.friendOwnerId,
+        props.msg.data.amount,
+        "decline",
+        props.msg.id.toString()
+      );
     };
 
     const { getUserLabel } = useContacts();
@@ -126,6 +134,7 @@ export default {
       declineRequest,
       showViewRequestModal,
       isViewRequestModalOpen,
+      getChatMsgByReplyToId,
     };
   },
 };

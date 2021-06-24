@@ -93,6 +93,7 @@ export default {
   },
   setup() {
     const router = useRouter();
+    // router.push("/settings");
 
     const store = useStore();
     store.dispatch("fetchDashpayProfiles", [store.state.accountDPNS.$ownerId]);

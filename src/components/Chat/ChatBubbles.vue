@@ -11,11 +11,22 @@
             <chat-message v-if="msg.data.text && !msg.data.amount" :msg="msg">
             </chat-message>
             <chat-txn
-              v-if="(msg.data.amount && msg.data.text) || msg.data.request"
+              v-if="
+                (msg.data.amount && msg.data.text) ||
+                  msg.data.request === 'open'
+              "
               :msg="msg"
               :friendOwnerId="friendOwnerId"
             >
             </chat-txn>
+            <div v-if="msg.data.request === 'accept'">
+              <!-- @timetodash replace you with variable depending on sender/receiver, use grey informational bubble from figma -->
+              <!-- TODO amount is mocked and must come from DIP15 L1 data -->
+              You accepted a request of {{ msg.data.amount }} Dash
+            </div>
+            <div v-if="msg.data.request === 'decline'">
+              You declined a request of {{ msg.data.amount }} Dash
+            </div>
             <chat-small-txn
               v-if="!msg.data.request && msg.data.amount && !msg.data.text"
               :direction="msg._direction"

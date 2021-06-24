@@ -91,6 +91,7 @@ import {
   modalController,
 } from "@ionic/vue";
 import { defineComponent, ref } from "vue";
+import useChats from "@/composables/chats";
 
 export default defineComponent({
   name: "ViewRequestModal",
@@ -129,12 +130,24 @@ export default defineComponent({
 
     const declineRequestWrapper = () => {
       emit("declineRequest");
+      // TODO keep modal open onError and show error message
       modalController.dismiss();
-      // chat obj must include request id
     };
 
+    const { sendChat } = useChats();
+
     const sendRequestAmount = () => {
-      // chat obj must include request id
+      // TODO send DIP15 L1 tx
+      // TODO amount is mocked and should come from request msg
+      sendChat(
+        "",
+        props.friendOwnerId,
+        props.msg.data.amount,
+        "accept",
+        props.msg.id.toString()
+      );
+      // TODO keep modal open onError and show error message
+      modalController.dismiss();
     };
 
     return {
@@ -148,8 +161,6 @@ export default defineComponent({
       myOwnerId,
       myBalance,
       cancel,
-      amount,
-      message,
       sendRequestAmount,
     };
   },

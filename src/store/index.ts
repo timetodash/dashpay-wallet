@@ -22,6 +22,8 @@ const state = {
   },
   chats: {
     msgsByOwnerId: {},
+    msgsByDocumentId: {},
+    msgsByReplyToId: {},
     lastTimestamp: 0,
     lastSeenTimestampByOwnerId: {},
   },
@@ -43,17 +45,17 @@ const mutations = {
     state.chats.lastSeenTimestampByOwnerId[friendOwnerId] = lastTimestamp;
   },
   sortChatList(state: any) {
-    console.log("sortChatList start");
+    // console.log("sortChatList start");
     const chatList: any = [];
     Object.entries(state.chats.msgsByOwnerId).forEach((entry) => {
       const friendOwnerId = entry[0];
-      console.log("friendOwnerId :>> ", friendOwnerId);
+      // console.log("friendOwnerId :>> ", friendOwnerId);
 
       const chatMsgs = entry[1] as [];
 
       const lastMessage: any = chatMsgs[chatMsgs.length - 1];
-      console.log("entry[1] :>> ", entry[1]);
-      console.log("lastMessage :>> ", lastMessage);
+      // console.log("entry[1] :>> ", entry[1]);
+      // console.log("lastMessage :>> ", lastMessage);
 
       const direction =
         lastMessage.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
@@ -76,7 +78,7 @@ const mutations = {
         contactRequestSent,
       };
 
-      console.log("chatListItem :>> ", chatListItem);
+      // console.log("chatListItem :>> ", chatListItem);
 
       // Only add items with existing contactRequests
       if (
@@ -91,7 +93,7 @@ const mutations = {
       (a: any, b: any) => b.lastMessage.createdAt - a.lastMessage.createdAt
     );
 
-    console.log("sortChatList chatListSorted :>> ", chatListSorted);
+    // console.log("sortChatList chatListSorted :>> ", chatListSorted);
     // debugger;
 
     chatListSorted.push({ id: "legacy" });
@@ -139,14 +141,28 @@ const mutations = {
     state.contactRequests.lastTimestampReceived = timestamp;
   },
   setContactRequestSentLastTimestamp(state: any, timestamp: number) {
-    console.log("timestamp :>> ", timestamp);
+    // console.log("timestamp :>> ", timestamp);
     state.contactRequests.lastTimestampSent = timestamp;
   },
   setChatMsgs(state: any, chatMsgs: any) {
-    // Collate the chats by the friendOwnerId
-    const myOwnerId = state.accountDPNS.$ownerId;
-
+    // Cache documents by $id
     chatMsgs.forEach((chatMsg: any) => {
+      const documentId = chatMsg.id.toString();
+      state.chats.msgsByDocumentId[documentId] =
+        state.chats.msgsByDocumentId[documentId] || {};
+      state.chats.msgsByDocumentId[documentId] = chatMsg;
+
+      // Cache documents by replyToId
+      if (chatMsg.data.replyToChatId) {
+        const replyToChatId = chatMsg.data.replyToChatId;
+        state.chats.msgsByReplyToId[replyToChatId] =
+          state.chats.msgsByReplyToId[replyToChatId] || {};
+        state.chats.msgsByReplyToId[replyToChatId] = chatMsg;
+      }
+
+      // Collate the chats by the friendOwnerId
+      const myOwnerId = state.accountDPNS.$ownerId;
+
       let friendOwnerId: string;
 
       if (chatMsg.ownerId.toString() === myOwnerId)
@@ -158,15 +174,15 @@ const mutations = {
       ).concat(chatMsg);
     });
 
-    console.log("state.chats.msgsByOwnerId :>> ", state.chats.msgsByOwnerId);
+    // console.log("state.chats.msgsByOwnerId :>> ", state.chats.msgsByOwnerId);
   },
-  setChatMsgsLatTimestamp(state: any, timestamp: Date) {
+  setChatMsgsLastTimestamp(state: any, timestamp: Date) {
     state.chats.lastTimestamp = timestamp;
   },
   setDashpayProfiles(state: any, dashpayProfiles: any) {
-    console.log("setDashpayProfiles", dashpayProfiles);
+    // console.log("setDashpayProfiles", dashpayProfiles);
     dashpayProfiles.forEach((profile: any) => {
-      console.log("profile :>> ", profile);
+      // console.log("profile :>> ", profile);
       state.dashpayProfiles[profile.ownerId.toString()] = profile;
     });
   },
@@ -192,7 +208,7 @@ const actions = {
     });
   },
   async fetchDashpayProfiles(context: any, ownerIds: []) {
-    console.log("fetchDashpayProfiles", ownerIds);
+    // console.log("fetchDashpayProfiles", ownerIds);
 
     const client = getClient();
 
@@ -207,20 +223,15 @@ const actions = {
         })
       );
 
-    console.log("profilePromises :>> ", profilePromises);
+    // console.log("profilePromises :>> ", profilePromises);
 
     const results = (await Promise.all(profilePromises))
       .map((x: any) => x[0])
       .filter((x) => !!x);
 
-    console.log("results :>> ", results);
+    // console.log("results :>> ", results);
 
     context.commit("setDashpayProfiles", results);
-
-    console.log(
-      "context.state.dashpayProfiles :>> ",
-      context.state.dashpayProfiles
-    );
   },
   async syncChats(context: any) {
     const client = getClient();
@@ -253,20 +264,20 @@ const actions = {
       promiseReceived,
     ]);
 
-    console.log("resultSent :>> ", resultSent);
+    // console.log("resultSent :>> ", resultSent);
 
-    console.log("resultReceived :>> ", resultReceived);
+    // console.log("resultReceived :>> ", resultReceived);
 
     const results = [...resultSent, ...resultReceived].sort(
       (a, b) => a.createdAt - b.createdAt
     );
 
-    console.log("results :>> ", results);
+    // console.log("results :>> ", results);
 
     if (results.length > 0) {
       context.commit("setChatMsgs", results);
       context.commit(
-        "setChatMsgsLatTimestamp",
+        "setChatMsgsLastTimestamp",
         results[results.length - 1].createdAt.getTime()
       );
       context.commit("sortChatList");
@@ -281,14 +292,14 @@ const actions = {
 
     const lastTimestampSent = sentByOwnerId[ownerId]?.lastTimestamp || 0;
 
-    console.log("fetchContactRequestsSent", ownerId, lastTimestampSent);
-    console.log("dashpay.contactRequest", {
-      where: [
-        ["$ownerId", "==", ownerId],
-        ["$createdAt", ">", lastTimestampSent],
-      ],
-      orderBy: [["$createdAt", "asc"]],
-    });
+    // console.log("fetchContactRequestsSent", ownerId, lastTimestampSent);
+    // console.log("dashpay.contactRequest", {
+    //   where: [
+    //     ["$ownerId", "==", ownerId],
+    //     ["$createdAt", ">", lastTimestampSent],
+    //   ],
+    //   orderBy: [["$createdAt", "asc"]],
+    // });
     const resultSent = await client?.platform?.documents.get(
       "dashpay.contactRequest",
       {
@@ -300,10 +311,10 @@ const actions = {
       }
     );
 
-    console.log(
-      "fetchContactRequestsSent resultSent :>> ",
-      resultSent.map((x: any) => x.toJSON())
-    );
+    // console.log(
+    //   "fetchContactRequestsSent resultSent :>> ",
+    //   resultSent.map((x: any) => x.toJSON())
+    // );
 
     resultSent.forEach((contactRequest: any) => {
       context.commit("setSocialGraphSent", contactRequest);
@@ -357,9 +368,9 @@ const actions = {
       promiseReceived,
     ]);
 
-    console.log("resultSent :>> ", resultSent);
+    // console.log("resultSent :>> ", resultSent);
 
-    console.log("resultReceived :>> ", resultReceived);
+    // console.log("resultReceived :>> ", resultReceived);
 
     resultSent.forEach((contactRequest: any) => {
       context.commit("setContactRequestSent", contactRequest);
@@ -407,7 +418,7 @@ const actions = {
       "dashUniqueIdentityId",
       ownerId
     );
-    console.log("fetchDPNSDoc dpnsDoc :>> ", dpnsDoc);
+    // console.log("fetchDPNSDoc dpnsDoc :>> ", dpnsDoc);
 
     if (dpnsDoc) context.commit("setDPNS", dpnsDoc);
   },
@@ -472,10 +483,10 @@ const getters = {
 
       Object.entries(sentByOwnerId).forEach(([rootOwnerId, entry]) => {
         const contactRequestsByFindOwnerId = (entry as any).docs;
-        console.log(
-          "contactRequestsByFindOwnerId findOwnerId :>> ",
-          findOwnerId
-        );
+        // console.log(
+        //   "contactRequestsByFindOwnerId findOwnerId :>> ",
+        //   findOwnerId
+        // );
 
         if (findOwnerId in contactRequestsByFindOwnerId) {
           count = count + 1;
@@ -483,10 +494,10 @@ const getters = {
       });
 
       if (findOwnerId in state.contactRequests.sent) isMyFriend = true;
-      console.log(
-        "state.contactRequests.sent):>> ",
-        state.contactRequests.sent
-      );
+      // console.log(
+      //   "state.contactRequests.sent):>> ",
+      //   state.contactRequests.sent
+      // );
 
       if (count > 0) count = count - 1;
 
@@ -522,10 +533,10 @@ const getters = {
 
       Object.entries(sentByOwnerId).forEach(([rootOwnerId, entry]) => {
         const contactRequestsByFindOwnerId = (entry as any).docs;
-        console.log(
-          "contactRequestsByFindOwnerId findOwnerId :>> ",
-          findOwnerId
-        );
+        // console.log(
+        //   "contactRequestsByFindOwnerId findOwnerId :>> ",
+        //   findOwnerId
+        // );
 
         if (findOwnerId in contactRequestsByFindOwnerId) {
           count = count + 1;
@@ -533,10 +544,10 @@ const getters = {
       });
 
       if (findOwnerId in state.contactRequests.sent) isMyFriend = true;
-      console.log(
-        "state.contactRequests.sent):>> ",
-        state.contactRequests.sent
-      );
+      // console.log(
+      //   "state.contactRequests.sent):>> ",
+      //   state.contactRequests.sent
+      // );
 
       return { count, isMyFriend };
     };
@@ -552,7 +563,7 @@ const getters = {
       };
     });
 
-    console.log("suggestedFriendsByOwnerId :>> ", suggestedFriendsByOwnerId);
+    // console.log("suggestedFriendsByOwnerId :>> ", suggestedFriendsByOwnerId);
 
     const suggestedFriends = Object.entries(suggestedFriendsByOwnerId).map(
       (entry: any) => {
@@ -567,19 +578,19 @@ const getters = {
       }
     );
 
-    console.log("suggestedFriends :>> ", suggestedFriends);
+    // console.log("suggestedFriends :>> ", suggestedFriends);
 
-    console.log(
-      "mutualFriends :>> ",
-      suggestedFriends.sort(
-        (a, b) => b._socialMetrics.count - a._socialMetrics.count
-      )
-    );
+    // console.log(
+    //   "mutualFriends :>> ",
+    //   suggestedFriends.sort(
+    //     (a, b) => b._socialMetrics.count - a._socialMetrics.count
+    //   )
+    // );
     const alreadyFriendOwnerIds = getters.getMyFriends.map((x: any) =>
       x.data.toUserId.toString()
     );
 
-    console.log("alreadyFriendOwnerIds :>> ", alreadyFriendOwnerIds);
+    // console.log("alreadyFriendOwnerIds :>> ", alreadyFriendOwnerIds);
 
     return suggestedFriends
       .filter((x) => {
@@ -600,6 +611,12 @@ const getters = {
         };
       }
     );
+  },
+  getChatMsgById: (state: any) => (id: string) => {
+    return state.chats.msgsByDocumentId[id];
+  },
+  getChatMsgByReplyToId: (state: any) => (replyToId: string) => {
+    return state.chats.msgsByReplyToId[replyToId];
   },
 };
 

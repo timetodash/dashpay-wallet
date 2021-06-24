@@ -49,6 +49,12 @@
     </ion-item>
     <ion-button color="tertiary" @click="switchSendRequest">switch</ion-button>
     <ion-input placeholder="Amount" v-model="amount"></ion-input>
+    <ion-item>
+      <ion-label>{{ fiatAmount }}</ion-label>
+    </ion-item>
+    <ion-button color="tertiary" @click="showChooseCurrencyModal(true)">{{
+      fiatSymbol
+    }}</ion-button>
     <ion-input placeholder="Message" v-model="message"></ion-input>
   </ion-content>
   <ion-footer>
@@ -64,9 +70,15 @@
       >Cancel</ion-button
     >
   </ion-footer>
+  <ion-modal
+    :is-open="isChooseCurrencyModalOpen"
+    @didDismiss="showChooseCurrencyModal(false)"
+  >
+    <ChooseCurrencyModal @chooseCurrency="chooseCurrency"></ChooseCurrencyModal>
+  </ion-modal>
 </template>
 
-<script>
+<script lang="ts">
 import useContacts from "@/composables/contacts";
 import useWallet from "@/composables/wallet";
 
@@ -81,9 +93,14 @@ import {
   IonItem,
   IonLabel,
   IonAvatar,
+  IonModal,
   modalController,
 } from "@ionic/vue";
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, computed, onMounted } from "vue";
+
+import useRates from "@/composables/rates";
+
+import ChooseCurrencyModal from "@/components/Settings/ChooseCurrency.vue";
 
 export default defineComponent({
   name: "SendReceiveDashModal",
@@ -99,6 +116,8 @@ export default defineComponent({
     IonFooter,
     IonButton,
     IonInput,
+    IonModal,
+    ChooseCurrencyModal,
   },
   setup(props, { emit }) {
     const amount = ref(0);
@@ -122,6 +141,8 @@ export default defineComponent({
 
     const { myBalance } = useWallet();
 
+    const { fetchRate } = useRates();
+
     const switchSendRequest = () => {
       sendRequestDirection.value =
         sendRequestDirection.value === "send"
@@ -129,10 +150,29 @@ export default defineComponent({
           : (sendRequestDirection.value = "send");
     };
 
+    const isChooseCurrencyModalOpen = ref(false);
+
+    const fiatSymbol = ref("USD");
+
+    const fiatRate = ref(0);
+
+    const fiatAmount = computed(() => amount.value * fiatRate.value);
+
+    const chooseCurrency = async (symbol: string) => {
+      fiatSymbol.value = symbol;
+      fiatRate.value = parseFloat((await fetchRate(fiatSymbol.value)).price);
+    };
+
+    chooseCurrency("USD");
+
+    const showChooseCurrencyModal = (state: boolean) => {
+      isChooseCurrencyModalOpen.value = state;
+    };
+
     const handleSendRequest = () => {
       console.log("sendDash inside modal :>> ", amount.value, message.value);
       emit("handleSendRequest", {
-        amount: parseInt(amount.value),
+        amount: parseInt(amount.value.toString()),
         message: message.value,
         sendRequestDirection: sendRequestDirection.value,
       });
@@ -158,6 +198,11 @@ export default defineComponent({
       amount,
       message,
       sendRequestDirection,
+      isChooseCurrencyModalOpen,
+      fiatSymbol,
+      chooseCurrency,
+      showChooseCurrencyModal,
+      fiatAmount,
     };
   },
 });

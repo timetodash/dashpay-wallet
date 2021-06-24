@@ -26,6 +26,12 @@ export default function useChats() {
 
   const getChatMsgs = computed(() => store.getters.getChatMsgs);
 
+  const getChatMsgById = computed(() => store.getters.getChatMsgById);
+
+  const getChatMsgByReplyToId = computed(
+    () => store.getters.getChatMsgByReplyToId
+  );
+
   async function syncChatsLoop() {
     if (!isRefreshLoopActive) return;
     console.log("syncChatsLoop");
@@ -56,7 +62,8 @@ export default function useChats() {
     chatText: string,
     friendOwnerId: string,
     amount = 0,
-    request = ""
+    request = "",
+    replyToChatId = ""
   ) => {
     console.log("sendChat", { chatText, friendOwnerId, amount, request });
 
@@ -68,8 +75,8 @@ export default function useChats() {
 
     const docProperties = {
       text: chatText,
-      replyToChatId: "",
       txId: "",
+      replyToChatId,
       toOwnerId: friendOwnerId,
       amount: amount || undefined,
       request: request || undefined,
@@ -136,6 +143,8 @@ export default function useChats() {
     stopSyncChats,
     sendChat,
     getChatMsgs,
+    getChatMsgById,
+    getChatMsgByReplyToId,
     sentContactRequest,
     receivedContactRequest,
   };

@@ -17,6 +17,7 @@ import ContactSearch from "@/views/ContactSearch.vue";
 import ContactProfile from "@/views/ContactProfile.vue";
 import Conversation from "@/views/Conversation.vue";
 import ChatLegacyPayment from "@/components/Chat/LegacyPayments/ChatLegacyPayment.vue";
+import Settings from "@/views/Settings.vue";
 
 import Autologin from "@/views/Autologin.vue"; // TODO deploy: remove, this is for dev only
 
@@ -92,6 +93,10 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/legacy",
     component: ChatLegacyPayment,
+  },
+  {
+    path: "/settings",
+    component: Settings,
   },
   {
     // TODO remove for production

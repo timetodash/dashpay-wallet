@@ -26,7 +26,7 @@
         >
           {{ myLabel }}
         </h2>
-        <h3>New balance: {{ myBalance - parseInt(amount) }}</h3>
+        <h3>New balance: {{ duffsInDash(newBalance) }} Dash</h3>
       </ion-label>
     </ion-item>
     <ion-item>
@@ -141,7 +141,17 @@ export default defineComponent({
 
     const { myBalance } = useWallet();
 
-    const { fetchRate } = useRates();
+    const {
+      fetchRate,
+      getFiatSymbol,
+      getFiatRate,
+      duffsInDash,
+      dashInDuffs,
+    } = useRates();
+
+    const newBalance = computed(() => {
+      return myBalance.value - dashInDuffs.value(amount.value);
+    });
 
     const switchSendRequest = () => {
       sendRequestDirection.value =
@@ -151,10 +161,11 @@ export default defineComponent({
     };
 
     const isChooseCurrencyModalOpen = ref(false);
+    console.log("getFiatSymbol.value :>> ", getFiatSymbol.value);
+    const fiatSymbol = ref(getFiatSymbol.value);
 
-    const fiatSymbol = ref("USD");
-
-    const fiatRate = ref(0);
+    const fiatRate = ref(getFiatRate.value(fiatSymbol.value).price);
+    console.log("fiatRate.value :>> ", fiatRate.value);
 
     const fiatAmount = computed(() => amount.value * fiatRate.value);
 
@@ -163,7 +174,7 @@ export default defineComponent({
       fiatRate.value = parseFloat((await fetchRate(fiatSymbol.value)).price);
     };
 
-    chooseCurrency("USD");
+    // chooseCurrency("USD");
 
     const showChooseCurrencyModal = (state: boolean) => {
       isChooseCurrencyModalOpen.value = state;
@@ -172,7 +183,7 @@ export default defineComponent({
     const handleSendRequest = () => {
       console.log("sendDash inside modal :>> ", amount.value, message.value);
       emit("handleSendRequest", {
-        amount: parseInt(amount.value.toString()),
+        amount: amount.value,
         message: message.value,
         sendRequestDirection: sendRequestDirection.value,
       });
@@ -203,6 +214,8 @@ export default defineComponent({
       chooseCurrency,
       showChooseCurrencyModal,
       fiatAmount,
+      newBalance,
+      duffsInDash,
     };
   },
 });

@@ -22,7 +22,7 @@
         >
           {{ myLabel }}
         </h2>
-        <h3>New balance: {{ myBalance - parseInt(msg.data.amount) }}</h3>
+        <h3>New balance: {{ duffsInDash(newBalance) }} Dash</h3>
       </ion-label>
     </ion-item>
     <ion-item>
@@ -43,10 +43,13 @@
         </h3>
       </ion-label>
     </ion-item>
+    <span v-if="newBalance < 0" style="color:red"
+      >Not enough funds to pay this request.</span
+    >
     <ion-input
       placeholder="Amount"
       readonly
-      :value="msg.data.amount"
+      :value="duffsInDash(msg.data.amount)"
     ></ion-input>
     <ion-input
       placeholder="Message"
@@ -56,7 +59,11 @@
   </ion-content>
   <ion-footer>
     <!-- TODO disable button if balance is too low -->
-    <ion-button expand="block" color="tertiary" @click="sendRequestAmount"
+    <ion-button
+      expand="block"
+      color="tertiary"
+      @click="sendRequestAmount"
+      :disabled="newBalance < 0"
       >Send</ion-button
     >
     <ion-button
@@ -76,6 +83,7 @@
 <script>
 import useContacts from "@/composables/contacts";
 import useWallet from "@/composables/wallet";
+import useRates from "@/composables/rates";
 
 import {
   IonContent,
@@ -90,7 +98,7 @@ import {
   IonAvatar,
   modalController,
 } from "@ionic/vue";
-import { defineComponent, ref } from "vue";
+import { defineComponent, computed } from "vue";
 import useChats from "@/composables/chats";
 
 export default defineComponent({
@@ -121,8 +129,13 @@ export default defineComponent({
     } = useContacts();
 
     const { myBalance } = useWallet();
+    const { duffsInDash } = useRates();
 
     //   modalController.dismiss();
+
+    const newBalance = computed(() => {
+      return myBalance.value - parseInt(props.msg.data.amount);
+    });
 
     const cancel = () => {
       modalController.dismiss();
@@ -142,7 +155,7 @@ export default defineComponent({
       sendChat(
         "",
         props.friendOwnerId,
-        props.msg.data.amount,
+        duffsInDash.value(props.msg.data.amount),
         "accept",
         props.msg.id.toString()
       );
@@ -162,6 +175,8 @@ export default defineComponent({
       myBalance,
       cancel,
       sendRequestAmount,
+      duffsInDash,
+      newBalance,
     };
   },
 });

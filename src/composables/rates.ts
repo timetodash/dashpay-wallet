@@ -1,11 +1,45 @@
-import { ref } from "vue";
 import axios from "axios";
+import { strict as assert } from "assert";
+import { useStore } from "vuex";
+import { computed } from "vue";
+import { Storage } from "@capacitor/storage";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Dashcore = require("@dashevo/dashcore-lib");
+const Unit = Dashcore.Unit;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const pairs = ref<any>([]);
+let isRefreshLoopActive = false;
 
 export default function useRates() {
+  const store = useStore();
+
+  const getFiatSymbol = computed(() => store.getters.getFiatSymbol);
+
+  const getFiatRate = computed(() => store.getters.getFiatRate);
+
+  const duffsInDash = computed(() => (duffs: any) => {
+    return Unit.fromSatoshis(duffs).toBTC();
+  });
+
+  const dashInDuffs = computed(() => (dash: any) => {
+    return Unit.fromBTC(dash).toSatoshis();
+  });
+
+  const duffsInFiatString = computed(() => (duffs: any) =>
+    (
+      Unit.fromSatoshis(duffs).toBTC() *
+      parseFloat(getFiatRate.value(getFiatSymbol.value).price)
+    ).toFixed(2)
+  );
+
+  const duffsInFiatNumber = computed(() => (duffs: any) =>
+    Unit.fromSatoshis(duffs).toBTC() *
+    parseFloat(getFiatRate.value(getFiatSymbol.value).price)
+  );
+
+  // const getFiatRate = computed(() => store.getters.getFiatRate);
+
   async function fetchPairs() {
     const result = await axios.get("https://rates2.dashretail.org/symbols");
     const pairs = result.data
@@ -30,8 +64,59 @@ export default function useRates() {
     return rate;
   }
 
+  async function refreshRate() {
+    const rate = await fetchRate(getFiatSymbol.value);
+
+    console.log("refreshRatesLoop rate :>> ", rate);
+
+    store.commit("setFiatRate", rate);
+  }
+
+  async function refreshRatesLoop() {
+    if (!isRefreshLoopActive) return;
+    console.log("refreshRatesLoop");
+    await refreshRate();
+
+    await sleep(5000);
+    refreshRatesLoop();
+  }
+
+  async function startRefreshRatesLoop() {
+    assert(
+      !isRefreshLoopActive,
+      "Error: refreshRatesLoop refresh loop already running!"
+    );
+
+    isRefreshLoopActive = true;
+
+    const fiatSymbol = (
+      await Storage.get({
+        key: `fiatSymbol_${store.getters.myLabel}`,
+      })
+    ).value;
+
+    console.log("fiatSymbol :>> ", fiatSymbol);
+
+    store.commit("setFiatSymbol", fiatSymbol || "USD"); // TODO read system default locale
+
+    refreshRatesLoop();
+  }
+
+  function stopRefreshRatesLoop() {
+    isRefreshLoopActive = false;
+  }
+
   return {
     fetchPairs,
     fetchRate,
+    getFiatSymbol,
+    getFiatRate,
+    duffsInDash,
+    dashInDuffs,
+    duffsInFiatNumber,
+    duffsInFiatString,
+    refreshRate,
+    startRefreshRatesLoop,
+    stopRefreshRatesLoop,
   };
 }

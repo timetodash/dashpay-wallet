@@ -2,6 +2,7 @@ import { ref, computed } from "vue";
 import { strict as assert } from "assert";
 import { getClient, getClientIdentity } from "../lib/DashClient";
 import { useStore } from "vuex";
+import useRates from "@/composables/rates";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { createContactRequest } = require("../lib/crypto/dashpay-crypto");
 
@@ -13,6 +14,8 @@ let isRefreshLoopActive = false;
 
 export default function useChats() {
   const store = useStore();
+
+  const { dashInDuffs, getFiatSymbol, duffsInFiatNumber } = useRates();
 
   console.log("store :>> ", store);
 
@@ -73,13 +76,17 @@ export default function useChats() {
 
     const platform = client.platform;
 
+    const duffs = dashInDuffs.value(amount);
+
     const docProperties = {
       text: chatText,
       txId: "",
       replyToChatId,
       toOwnerId: friendOwnerId,
-      amount: amount || undefined,
+      amount: amount ? duffs : undefined,
       request: request || undefined,
+      fiatSymbol: getFiatSymbol.value || undefined,
+      fiatAmount: duffsInFiatNumber.value(duffs) || undefined,
     };
 
     console.log("sendChat docProperties :>> ", docProperties);

@@ -1,6 +1,6 @@
 <template>
   <ion-avatar slot="start" class="userAvatar"
-    ><img :src="store.getters.myAvatar"
+    ><img :src="myAvatar"
   /></ion-avatar>
   <ion-buttons slot="end">
     <ion-button @click="showMainMenu(true, $event)"
@@ -15,11 +15,11 @@
     </ion-popover>
   </ion-buttons>
   <div class="userName">
-    {{ name }}
+    {{ myLabel }}
     <ion-icon :icon="eyeOutline" style="margin-bottom: -2px"></ion-icon>
     <div class="dashBalance">
-      {{ walletBalance }}
-      <span class="usdBalance">({{ fiatBalance }}) </span>
+      {{ myDashBalance }} Dash
+      <span class="usdBalance">({{ myFiatBalance }} {{ getFiatSymbol }}) </span>
     </div>
   </div>
 </template>
@@ -38,6 +38,10 @@ import { ref } from "vue";
 
 import MainMenu from "@/components/Home/MainMenu.vue";
 
+import useWallet from "@/composables/wallet";
+import useContacts from "@/composables/contacts";
+import useRates from "@/composables/rates";
+
 export default {
   // props: [walletBalance: { type: string, default: "" }],
   props: ["walletBalance", "fiatBalance", "name"],
@@ -52,6 +56,12 @@ export default {
 
   setup() {
     const store = useStore();
+
+    const { myDashBalance, myFiatBalance } = useWallet();
+
+    const { getFiatSymbol } = useRates();
+
+    const { myLabel, myAvatar } = useContacts();
 
     const isMainMenuOpen = ref(false);
 
@@ -71,6 +81,11 @@ export default {
       isMainMenuOpen,
       showMainMenu,
       mainMenuEvent,
+      myLabel,
+      myAvatar,
+      myDashBalance,
+      myFiatBalance,
+      getFiatSymbol,
     };
   },
 };

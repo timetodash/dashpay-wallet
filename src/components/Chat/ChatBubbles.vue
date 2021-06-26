@@ -22,17 +22,16 @@
             <div v-if="msg.data.request === 'accept'">
               <!-- @timetodash replace you with variable depending on sender/receiver, use grey informational bubble from figma -->
               <!-- TODO amount is mocked and must come from DIP15 L1 data -->
-              You accepted a request of {{ msg.data.amount }} Dash
+              {{ getUserLabel(msg.ownerId.toString()) }} accepted to pay
+              {{ duffsInDash(msg.data.amount) }} Dash
             </div>
             <div v-if="msg.data.request === 'decline'">
-              You declined a request of {{ msg.data.amount }} Dash
+              You declined a request of
+              {{ duffsInDash(msg.data.amount) }} Dash
             </div>
             <chat-small-txn
               v-if="!msg.data.request && msg.data.amount && !msg.data.text"
-              :direction="msg._direction"
-              :amount="msg.data.amount"
-              :hours="msg.createdAt.getHours()"
-              :minutes="msg.createdAt.getMinutes()"
+              :msg="msg"
             >
             </chat-small-txn>
           </ion-col>
@@ -48,6 +47,8 @@ import { checkmarkDoneOutline } from "ionicons/icons";
 import ChatMessage from "@/components/Chat/ChatMessage.vue";
 import ChatTxn from "@/components/Chat/ChatTxn.vue";
 import ChatSmallTxn from "@/components/Chat/ChatSmallTxn.vue";
+import useRates from "@/composables/rates";
+import useContacts from "@/composables/contacts";
 // import { reactive } from "vue";
 
 export default {
@@ -61,8 +62,12 @@ export default {
     ChatSmallTxn,
   },
   setup() {
+    const { duffsInDash } = useRates();
+    const { getUserLabel } = useContacts();
     return {
       checkmarkDoneOutline,
+      duffsInDash,
+      getUserLabel,
     };
   },
 };

@@ -66,6 +66,12 @@
       },
       "amount": {
         "type": "number"
+      },
+      "fiatAmount": {
+        "type": "number"
+      },
+      "fiatSymbol": {
+        "type": "string"
       }
     },
     "additionalProperties": false

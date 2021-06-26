@@ -1,7 +1,11 @@
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { strict as assert } from "assert";
 import { getClient } from "../lib/DashClient";
 import { resolveTransaction, DIRECTION } from "@/lib/helpers/Transactions";
+import useRates from "@/composables/rates";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Dashcore = require("@dashevo/dashcore-lib");
+const Unit = Dashcore.Unit;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -14,6 +18,18 @@ const myBalance = ref(0);
 const myTransactionHistory = ref();
 
 export default function useWallet() {
+  const { getFiatSymbol, getFiatRate } = useRates();
+  const myDashBalance = computed(() =>
+    Unit.fromSatoshis(myBalance.value).toBTC()
+  );
+
+  const myFiatBalance = computed(() => {
+    return (
+      Unit.fromSatoshis(myBalance.value).toBTC() *
+      parseFloat(getFiatRate.value(getFiatSymbol.value).price)
+    ).toFixed(2);
+  });
+
   function refreshBalance() {
     myBalance.value = client?.account!.getTotalBalance();
     console.log("balance.value :>> ", myBalance.value);
@@ -86,5 +102,7 @@ export default function useWallet() {
     transactionDisplay,
     myTransactionHistory,
     myBalance,
+    myDashBalance,
+    myFiatBalance,
   };
 }

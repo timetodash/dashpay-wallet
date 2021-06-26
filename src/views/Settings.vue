@@ -59,11 +59,15 @@ import {
   IonButton,
   IonModal,
 } from "@ionic/vue";
+import { Storage } from "@capacitor/storage";
+
 import { arrowBack } from "ionicons/icons";
-// import { useStore } from "vuex";
+import { useStore } from "vuex";
 import { ref } from "vue";
 
 import ChooseCurrencyModal from "@/components/Settings/ChooseCurrency.vue";
+
+import useRates from "@/composables/rates";
 
 export default {
   name: "Settings",
@@ -84,13 +88,21 @@ export default {
   },
 
   setup() {
-    // const store = useStore();
+    const { commit, getters } = useStore();
+    const { refreshRate, getFiatSymbol } = useRates();
     const isChooseCurrencyModalOpen = ref(false);
 
-    const fiatSymbol = ref("USD");
+    const fiatSymbol = ref(getFiatSymbol.value);
 
-    const chooseCurrency = (symbol: string) => {
+    const chooseCurrency = async (symbol: string) => {
       fiatSymbol.value = symbol;
+      commit("setFiatSymbol", symbol);
+      const writeResult = await Storage.set({
+        key: `fiatSymbol_${getters.myLabel}`,
+        value: getFiatSymbol.value,
+      });
+      console.log("writeResult fiatSymbol :>> ", writeResult);
+      refreshRate();
     };
 
     const showChooseCurrencyModal = (state: boolean) => {

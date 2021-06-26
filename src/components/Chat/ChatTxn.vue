@@ -18,8 +18,10 @@
       {{ getChatMsgByReplyToId(msg.id.toString())?.data.request }}
       {{ title }}
     </div>
-    <div class="amount">{{ msg.data.amount }} Dash</div>
-    <div class="usd_amount">~{{ msg.data.amount * 175 }} USD</div>
+    <div class="amount">{{ duffsInDash(msg.data.amount) }} Dash</div>
+    <div class="usd_amount">
+      ~{{ msg.data.fiatAmount }} {{ msg.data.fiatSymbol }}
+    </div>
     <div class="text">{{ msg.data.text }}</div>
     <div class="justify">
       <ion-icon
@@ -78,6 +80,7 @@ import { useStore } from "vuex";
 import ViewRequestModal from "@/components/Chat/ViewRequestModal.vue";
 import useContacts from "@/composables/contacts";
 import useChats from "@/composables/chats";
+import useRates from "@/composables/rates";
 
 export default {
   props: ["msg", "friendOwnerId"],
@@ -92,13 +95,15 @@ export default {
   setup(props: any) {
     const store = useStore();
 
+    const { duffsInDash, duffsInFiatString, getFiatSymbol } = useRates();
+
     const { sendChat, getChatMsgByReplyToId } = useChats();
     const declineRequest = () => {
       // TODO amount is mocked and should come from request msg
       sendChat(
         "",
         props.friendOwnerId,
-        props.msg.data.amount,
+        duffsInDash.value(props.msg.data.amount),
         "decline",
         props.msg.id.toString()
       );
@@ -135,6 +140,9 @@ export default {
       showViewRequestModal,
       isViewRequestModalOpen,
       getChatMsgByReplyToId,
+      duffsInDash,
+      duffsInFiatString,
+      getFiatSymbol,
     };
   },
 };

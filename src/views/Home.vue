@@ -1,13 +1,7 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-toolbar class="app-header"
-        ><HomeHeader
-          :name="name"
-          :walletBalance="walletBalance"
-          :fiatBalance="fiatBalance"
-        ></HomeHeader>
-      </ion-toolbar>
+      <ion-toolbar class="app-header"><HomeHeader></HomeHeader> </ion-toolbar>
     </ion-header>
 
     <ion-content :fullscreen="true">
@@ -65,6 +59,7 @@ import ChatList from "@/components/Chat/ChatList.vue";
 import useWallet from "@/composables/wallet";
 import useContacts from "@/composables/contacts";
 import useChats from "@/composables/chats";
+import useRates from "@/composables/rates";
 
 import {
   initClient,
@@ -98,27 +93,23 @@ export default {
     const store = useStore();
     store.dispatch("fetchDashpayProfiles", [store.state.accountDPNS.$ownerId]);
 
-    const { startRefreshWalletDataLoop, myBalance } = useWallet();
+    const { startRefreshWalletDataLoop } = useWallet();
     const { startSyncContactRequests } = useContacts();
     const { startSyncChats } = useChats();
+    const { startRefreshRatesLoop } = useRates();
 
     store.dispatch("loadLastSeenChatTimestamps");
 
     startSyncChats();
     startRefreshWalletDataLoop();
     startSyncContactRequests();
+    startRefreshRatesLoop();
 
     // onMounted(async () => {
     // });
 
     return {
       identityId: computed(() => store.getters.identityId),
-      name: computed(() => store.getters.name),
-      walletBalance: computed(() => `${myBalance.value / 1e8} Dash`),
-      fiatBalance: computed(
-        () =>
-          `${Math.floor(((myBalance.value || 0) / 1e8) * 178 * 10) / 10} USD`
-      ),
       listCircle,
       personAdd,
       send,

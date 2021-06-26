@@ -28,6 +28,8 @@ const state = {
     lastSeenTimestampByOwnerId: {},
   },
   chatList: [{ id: "legacy" }],
+  fiatRate: {},
+  fiatSymbol: "",
 };
 interface SetLastSeenTimestampByOwnerIdMutation {
   friendOwnerId: string;
@@ -35,6 +37,15 @@ interface SetLastSeenTimestampByOwnerIdMutation {
 }
 
 const mutations = {
+  setFiatSymbol(state: any, symbol: string) {
+    state.fiatSymbol = symbol;
+  },
+  setFiatRate(state: any, rate: any) {
+    state.fiatRate[rate.quoteCurrency] =
+      state.fiatRate[rate.quoteCurrency] || {};
+
+    state.fiatRate[rate.quoteCurrency] = rate;
+  },
   setLastSeenChatTimestampObject(state: any, obj: any) {
     state.chats.lastSeenTimestampByOwnerId = obj;
   },
@@ -617,6 +628,12 @@ const getters = {
   },
   getChatMsgByReplyToId: (state: any) => (replyToId: string) => {
     return state.chats.msgsByReplyToId[replyToId];
+  },
+  getFiatRate: (state: any) => (fiatSymbol: string) => {
+    return state.fiatRate[fiatSymbol] || {};
+  },
+  getFiatSymbol: (state: any) => {
+    return state.fiatSymbol || "USD";
   },
 };
 

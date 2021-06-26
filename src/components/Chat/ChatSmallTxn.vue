@@ -2,31 +2,32 @@
   <div
     class="chatbubble_txn_small"
     :class="{
-      user: direction.toUpperCase() === 'SENT',
-      chat_partner_txn: direction.toUpperCase() === 'RECEIVED',
+      user: msg._direction.toUpperCase() === 'SENT',
+      chat_partner_txn: msg._direction.toUpperCase() === 'RECEIVED',
     }"
   >
     <div class="sameline">
       <ion-icon
-        v-if="direction.toUpperCase() === 'SENT'"
+        v-if="msg._direction.toUpperCase() === 'SENT'"
         class="dash_icon_small"
         :src="require('/public/assets/icons/userSent.svg')"
       ></ion-icon>
       <ion-icon
-        v-else-if="direction.toUpperCase() === 'RECEIVED'"
+        v-else-if="msg._direction.toUpperCase() === 'RECEIVED'"
         class="dash_icon_small"
         :src="require('/public/assets/icons/partnerSent.svg')"
       ></ion-icon>
 
       <div class="leftpadding">
-        <div class="amount">{{ amount }} Dash</div>
-        <div class="usdamount">~{{ (amount * 175).toFixed(2) }} USD</div>
+        <div class="amount">{{ duffsInDash(msg.data.amount) }} Dash</div>
+        <div class="usdamount">
+          ~{{ msg.data.fiatAmount }} {{ msg.data.fiatSymbol }}
+        </div>
       </div>
     </div>
     <div class="alignrow">
       <div class="chat_timestamp">
-        <!-- {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes() }} -->
-        {{ hours }}:{{ minutes }}
+        {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes() }}
       </div>
       <ion-icon
         class="align_checkmark checkmark_color"
@@ -40,16 +41,23 @@
 <script>
 import { IonIcon } from "@ionic/vue";
 import { checkmarkDoneOutline } from "ionicons/icons";
+import useRates from "@/composables/rates";
+
 // import { reactive } from "vue";
 
 export default {
-  props: ["direction", "amount", "hours", "minutes"],
+  props: ["msg"],
   components: {
     IonIcon,
   },
   setup() {
+    const { duffsInDash, duffsInFiatString, getFiatSymbol } = useRates();
+
     return {
       checkmarkDoneOutline,
+      duffsInDash,
+      duffsInFiatString,
+      getFiatSymbol,
     };
   },
 };
@@ -86,8 +94,8 @@ export default {
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  font-weight: 600;
   font-style: normal;
-  font-weight: 500;
   font-size: 12px;
   line-height: 15px;
   /* identical to box height */

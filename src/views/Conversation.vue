@@ -115,7 +115,9 @@ export default {
 
           // Resolve friend if still unknown
           store.dispatch("fetchDPNSDoc", friendOwnerId.value);
-          store.dispatch("fetchDashpayProfiles", [friendOwnerId.value]);
+          store.dispatch("fetchDashpayProfiles", {
+            ownerIds: [friendOwnerId.value],
+          });
         }
       }
     );

@@ -62,7 +62,7 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      if (await getAccounts()) router.push("/login");
+      if (await getAccounts()) router.push("/chooseaccount");
     });
 
     return { slideOpts };

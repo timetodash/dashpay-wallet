@@ -86,7 +86,7 @@ const getAccounts = async () => {
 };
 
 const createAccountId = (mnemonic: string) => {
-  return sha256(Buffer.from(mnemonic)).toString("base64");
+  return sha256(Buffer.from(mnemonic)).toString("base64"); // TODO security review required
 };
 
 export { getAccounts, storeAccount, createAccountId, updateAccount };

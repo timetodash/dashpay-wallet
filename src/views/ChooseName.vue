@@ -94,7 +94,7 @@ import {
   IonSpinner,
 } from "@ionic/vue";
 
-import { getClientOpts, initClient } from "@/lib/DashClient";
+import { getClientOpts, initClient, disconnectClient } from "@/lib/DashClient";
 
 import {
   checkmarkOutline,
@@ -117,7 +117,7 @@ interface NameConstraint {
 }
 
 export default {
-  name: "CreateWallet",
+  name: "ChooseName",
   components: {
     IonHeader,
     IonToolbar,
@@ -271,6 +271,13 @@ export default {
 
     onMounted(async () => {
       await sleep(150); // Don't block the viewport
+
+      try {
+        await disconnectClient();
+      } catch (e) {
+        console.log(e);
+      }
+
       client = await initClient(clientOpts);
       console.log("client :>> ", client);
       hasClient.value = true;

@@ -3,40 +3,52 @@ import { getClient } from "@/lib/DashClient";
 import { Storage } from "@capacitor/storage";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const state = {
-  accountDPNS: null,
-  balance: null,
-  wishName: null,
-  dpns: {},
-  dashpayProfiles: {},
-  socialGraph: {
-    sentByOwnerId: {},
-    suggestedContacts: [], //ordered by common connections
-  },
-  contactRequests: {
-    received: {},
-    sent: {},
-    lastTimestampReceived: 0,
-    lastTimestampSent: 0,
-  },
-  chats: {
-    msgsByOwnerId: {},
-    msgsByDocumentId: {},
-    msgsByReplyToId: {},
-    lastTimestamp: 0,
-    lastSeenTimestampByOwnerId: {},
-  },
-  chatList: [{ id: "legacy" }],
-  fiatRate: {},
-  fiatSymbol: "",
+const getDefaultState = () => {
+  return {
+    accountDPNS: null,
+    balance: null, // TODO deprecated, remove
+    wishName: null,
+    dpns: {},
+    dashpayProfiles: {},
+    socialGraph: {
+      sentByOwnerId: {},
+      suggestedContacts: [], //ordered by common connections
+    },
+    contactRequests: {
+      received: {},
+      sent: {},
+      lastTimestampReceived: 0,
+      lastTimestampSent: 0,
+    },
+    chats: {
+      msgsByOwnerId: {},
+      msgsByDocumentId: {},
+      msgsByReplyToId: {},
+      lastTimestamp: 0,
+      lastSeenTimestampByOwnerId: {},
+    },
+    chatList: [{ id: "legacy" }],
+    fiatRate: {},
+    fiatSymbol: "",
+  };
 };
+
+const state = getDefaultState();
 interface SetLastSeenTimestampByOwnerIdMutation {
   friendOwnerId: string;
   lastTimestamp: number;
 }
 
 const mutations = {
+  resetStateKeepAccountDPNS(state: any) {
+    const newState = getDefaultState();
+    newState.accountDPNS = state.accountDPNS;
+    newState.dpns = state.dpns;
+    Object.assign(state, newState);
+  },
+  resetState(state: any) {
+    Object.assign(state, getDefaultState());
+  },
   setFiatSymbol(state: any, symbol: string) {
     state.fiatSymbol = symbol;
   },
@@ -201,10 +213,14 @@ const mutations = {
 
 const actions = {
   async loadLastSeenChatTimestamps(context: any) {
+    console.log("loadLastSeenChatTimestamps");
     const readResult = await Storage.get({
       key: `lastSeenChatTimestamps_${context.getters.myLabel}`,
     });
-
+    console.log(
+      "loadLastSeenChatTimestamps readResult.value :>> ",
+      readResult.value
+    );
     if (readResult.value) {
       context.commit(
         "setLastSeenChatTimestampObject",
@@ -218,21 +234,28 @@ const actions = {
       value: JSON.stringify(context.state.chats.lastSeenTimestampByOwnerId),
     });
   },
-  async fetchDashpayProfiles(context: any, ownerIds: []) {
-    // console.log("fetchDashpayProfiles", ownerIds);
+  async fetchDashpayProfiles(
+    context: any,
+    { ownerIds = [], forceRefresh = false }
+  ) {
+    console.log("fetchDashpayProfiles", ownerIds);
 
     const client = getClient();
 
-    const profilePromises = ownerIds
-      // Filter out ownerIds with already cached profiles
-      .filter(
-        (ownerId: any) => !(ownerId.toString() in context.state.dashpayProfiles)
-      )
-      .map((ownerId: any) =>
-        client?.platform?.documents.get("dashpay.profile", {
-          where: [["$ownerId", "==", ownerId.toString()]],
-        })
-      );
+    const filteredOwnerIds = forceRefresh
+      ? ownerIds
+      : ownerIds
+          // Filter out ownerIds with already cached profiles
+          .filter(
+            (ownerId: any) =>
+              !(ownerId.toString() in context.state.dashpayProfiles)
+          );
+
+    const profilePromises = filteredOwnerIds.map((ownerId: any) =>
+      client?.platform?.documents.get("dashpay.profile", {
+        where: [["$ownerId", "==", ownerId.toString()]],
+      })
+    );
 
     // console.log("profilePromises :>> ", profilePromises);
 
@@ -240,12 +263,13 @@ const actions = {
       .map((x: any) => x[0])
       .filter((x) => !!x);
 
-    // console.log("results :>> ", results);
+    console.log("fetchDashpayProfile results :>> ", results);
 
     context.commit("setDashpayProfiles", results);
   },
   async syncChats(context: any) {
     const client = getClient();
+
     const myOwnerId = context.state.accountDPNS.$ownerId;
 
     console.log("context.state :>> ", context.state);
@@ -336,7 +360,9 @@ const actions = {
       contactRequest.data.toUserId.toString()
     );
 
-    context.dispatch("fetchDashpayProfiles", resultSentFriendOwnerIds); // use identifier and 'in' operator
+    context.dispatch("fetchDashpayProfiles", {
+      ownerIds: resultSentFriendOwnerIds,
+    }); // use identifier and 'in' operator
 
     if (resultSent.length > 0) {
       await sleep(100);
@@ -398,7 +424,9 @@ const actions = {
       contactRequest.data.toUserId.toString()
     );
 
-    context.dispatch("fetchDashpayProfiles", resultSentFriendOwnerIds); // use identifier and 'in' operator
+    context.dispatch("fetchDashpayProfiles", {
+      ownerIds: resultSentFriendOwnerIds,
+    }); // use identifier and 'in' operator
 
     resultReceived.forEach((contactRequest: any) => {
       context.commit("setContactRequestReceived", contactRequest);
@@ -415,7 +443,9 @@ const actions = {
       (contactRequest: any) => contactRequest.ownerId.toString()
     );
 
-    context.dispatch("fetchDashpayProfiles", resultReceivedFriendOwnerIds); // use identifier and 'in' operator
+    context.dispatch("fetchDashpayProfiles", {
+      ownerIds: resultReceivedFriendOwnerIds,
+    }); // use identifier and 'in' operator
 
     if (resultReceived.length > 0 || resultSent.length > 0)
       context.commit("sortChatList");
@@ -445,6 +475,18 @@ const getters = {
         .avatarUrl ?? "/assets/defaults/avataaar.png"
     );
   },
+  myDisplayName: (state: any) => {
+    return (
+      (state.dashpayProfiles as any)[state.accountDPNS.$ownerId]?.data
+        .displayName ?? ""
+    );
+  },
+  myPublicMessage: (state: any) => {
+    return (
+      (state.dashpayProfiles as any)[state.accountDPNS.$ownerId.toString()]
+        ?.data.publicMessage ?? ""
+    );
+  },
   getUserLabel: (state: any) => (ownerId: string) => {
     return (state.dpns as any)[ownerId]?.data.label ?? ownerId.substr(0, 6);
   },
@@ -455,7 +497,10 @@ const getters = {
       ownerId.substr(0, 6)
     );
   },
+
   getUserAvatar: (state: any) => (ownerId: string) => {
+    if (!ownerId) return "/assets/defaults/avataaar.png";
+
     return (
       (state.dashpayProfiles as any)[ownerId.toString()]?.data.avatarUrl ??
       "/assets/defaults/avataaar.png"

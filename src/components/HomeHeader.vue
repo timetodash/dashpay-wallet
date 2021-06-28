@@ -1,5 +1,8 @@
 <template>
-  <ion-avatar slot="start" class="userAvatar"
+  <ion-avatar
+    slot="start"
+    class="userAvatar"
+    @click="router.push('chooseaccount')"
     ><img :src="myAvatar"
   /></ion-avatar>
   <ion-buttons slot="end">
@@ -34,6 +37,7 @@ import {
 } from "@ionic/vue";
 import { ellipsisVertical, eyeOutline } from "ionicons/icons";
 import { useStore } from "vuex";
+import { useRouter } from "vue-router";
 import { ref } from "vue";
 
 import MainMenu from "@/components/Home/MainMenu.vue";
@@ -56,6 +60,7 @@ export default {
 
   setup() {
     const store = useStore();
+    const router = useRouter();
 
     const { myDashBalance, myFiatBalance } = useWallet();
 
@@ -86,6 +91,7 @@ export default {
       myDashBalance,
       myFiatBalance,
       getFiatSymbol,
+      router,
     };
   },
 };

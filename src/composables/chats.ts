@@ -50,8 +50,6 @@ export default function useChats() {
     );
 
     console.log("startSyncChats");
-    if (!client) client = getClient();
-    console.log("got a client startSyncChats", isRefreshLoopActive);
     isRefreshLoopActive = true;
 
     syncChatsLoop();
@@ -71,10 +69,7 @@ export default function useChats() {
     console.log("sendChat", { chatText, friendOwnerId, amount, request });
 
     const client = getClient();
-
-    const clientIdentity = getClientIdentity();
-
-    const platform = client.platform;
+    console.log("logged in with mnemonic :>> ", client?.wallet?.exportWallet());
 
     const duffs = dashInDuffs.value(amount);
 
@@ -91,9 +86,9 @@ export default function useChats() {
 
     console.log("sendChat docProperties :>> ", docProperties);
 
-    const document = await platform?.documents.create(
+    const document = await client.platform?.documents.create(
       "dashpayWallet.chat",
-      clientIdentity,
+      getClientIdentity(),
       docProperties
     );
 
@@ -109,19 +104,22 @@ export default function useChats() {
     if (!store.getters.getSentContactRequest(friendOwnerId)) {
       const contactRequest = await createContactRequest(
         client,
-        clientIdentity,
+        getClientIdentity(),
         friendOwnerId
       );
 
       documentBatch.create.push(contactRequest);
     }
 
-    console.log("sendChat broadcasting", { documentBatch, clientIdentity });
+    console.log("sendChat broadcasting", {
+      documentBatch,
+      clientIdenity: getClientIdentity(),
+    });
 
     // TODO handle duplicate error if contactRequest exists and resend the chatMsg only
-    const result = await platform?.documents.broadcast(
+    const result = await client.platform?.documents.broadcast(
       documentBatch,
-      clientIdentity
+      getClientIdentity()
     );
 
     console.log("sendChat result :>> ", result);

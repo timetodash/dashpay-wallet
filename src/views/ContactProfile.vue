@@ -132,7 +132,7 @@ export default {
 
     // Resolve friend if still unknown
     store.dispatch("fetchDPNSDoc", friendOwnerId);
-    store.dispatch("fetchDashpayProfiles", [friendOwnerId]);
+    store.dispatch("fetchDashpayProfiles", { ownerIds: [friendOwnerId] });
     store.dispatch("fetchContactRequestsSent", friendOwnerId);
 
     // onMounted(async () => {});

@@ -18,6 +18,8 @@ import ContactProfile from "@/views/ContactProfile.vue";
 import Conversation from "@/views/Conversation.vue";
 import ChatLegacyPayment from "@/components/Chat/LegacyPayments/ChatLegacyPayment.vue";
 import Settings from "@/views/Settings.vue";
+import ChooseAccount from "@/views/ChooseAccount.vue";
+import EditProfile from "@/views/EditProfile.vue";
 
 import Autologin from "@/views/Autologin.vue"; // TODO deploy: remove, this is for dev only
 
@@ -97,6 +99,14 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/settings",
     component: Settings,
+  },
+  {
+    path: "/chooseaccount",
+    component: ChooseAccount,
+  },
+  {
+    path: "/editprofile",
+    component: EditProfile,
   },
   {
     // TODO remove for production

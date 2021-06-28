@@ -1,15 +1,23 @@
 <template>
   <ion-item :account="account" button>
+    <ion-avatar slot="start">
+      <img :src="getUserAvatar(account.accountDPNS?.$ownerId)" />
+    </ion-avatar>
     <ion-label>
-      {{ accountDisplayName }}
+      <h2>{{ accountLabel }}</h2>
+      <h3>
+        {{ accountDisplayName }}
+      </h3>
     </ion-label>
   </ion-item>
 </template>
 
 <script lang="ts">
-import { IonLabel, IonItem } from "@ionic/vue";
+import { IonLabel, IonItem, IonAvatar } from "@ionic/vue";
 
 import { computed } from "vue";
+
+import useContacts from "@/composables/contacts";
 
 export default {
   name: "AccountItem",
@@ -17,17 +25,28 @@ export default {
   components: {
     IonLabel,
     IonItem,
+    IonAvatar,
   },
   setup(props: any) {
-    const accountDisplayName: any = computed(() => {
+    const { getUserDisplayName, getUserAvatar } = useContacts();
+
+    const accountLabel: any = computed(() => {
       if (props.account.accountDPNS) {
         return props.account.accountDPNS.label;
       } else {
-        return props.account.wishName + " (unregistered)";
+        return props.account.wishName;
       }
     });
 
-    return { accountDisplayName };
+    const accountDisplayName: any = computed(() => {
+      if (props.account.accountDPNS) {
+        return getUserDisplayName.value(props.account.accountDPNS.$ownerId);
+      } else {
+        return "(unregistered)";
+      }
+    });
+
+    return { accountDisplayName, accountLabel, getUserAvatar };
   },
 };
 </script>

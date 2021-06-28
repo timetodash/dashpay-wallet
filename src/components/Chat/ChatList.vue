@@ -36,13 +36,11 @@ export default defineComponent({
 
     const client = getClient();
 
-    const clientIdentity = getClientIdentity();
-
     const { chatList } = store.state;
 
     // client?.platform?.documents
     // .get("dashpay.contactRequest", {
-    //   where: [["$ownerId", "==", clientIdentity.getId()]],
+    //   where: [["$ownerId", "==", getClientIdentity.getId()]],
     // })
     // .then((result: any) => {
     //   chatList.value = result;

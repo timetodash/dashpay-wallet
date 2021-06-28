@@ -61,7 +61,7 @@ import { initClient, getClient, getClientOpts } from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
 
 export default {
-  name: "CreateWallet",
+  name: "RecoverWallet",
   components: {
     IonHeader,
     IonToolbar,

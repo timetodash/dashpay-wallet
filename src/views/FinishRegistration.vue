@@ -63,7 +63,7 @@ import { useStore } from "vuex";
 import { updateAccount, createAccountId } from "@/lib/helpers/AccountStorage";
 
 export default {
-  name: "CreateWallet",
+  name: "FinishRegistration",
   components: {
     IonHeader,
     IonToolbar,

@@ -46,7 +46,7 @@ import { useStore } from "vuex";
 import { storeAccount, createAccountId } from "@/lib/helpers/AccountStorage";
 
 export default {
-  name: "CreateWallet",
+  name: "ChoosePassword",
   components: {
     IonHeader,
     IonToolbar,

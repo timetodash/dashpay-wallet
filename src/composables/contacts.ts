@@ -1,6 +1,6 @@
-import { ref, computed } from "vue";
+import { ref, computed, unref } from "vue";
 import { strict as assert } from "assert";
-import { getClient } from "../lib/DashClient";
+import { getClient, getClientIdentity, getClientOpts } from "../lib/DashClient";
 import { useStore } from "vuex";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -30,7 +30,61 @@ export default function useContacts() {
 
   const myAvatar = computed(() => store.getters.myAvatar);
 
+  const myDisplayName = computed(() => store.getters.myDisplayName);
+
+  const myPublicMessage = computed(() => store.getters.myPublicMessage);
+
   const myOwnerId = computed(() => store.getters.myOwnerId);
+
+  const storeDashpayProfile = async (profile: any) => {
+    const existingProfile = store.state.dashpayProfiles[myOwnerId.value];
+    interface DocumentBatch {
+      create: any[];
+      replace: any[];
+      delete: any[];
+    }
+
+    const documentBatch: DocumentBatch = {
+      create: [], // Document(s) to create
+      replace: [], // Document(s) to update
+      delete: [], // Document(s) to delete
+    };
+
+    if (existingProfile) {
+      console.log("existingProfile :>> ", existingProfile);
+
+      existingProfile.data = { ...existingProfile.data, ...profile };
+
+      console.log("existingProfile :>> ", existingProfile);
+
+      documentBatch.replace.push(existingProfile);
+    } else {
+      const document = await getClient().platform?.documents.create(
+        "dashpay.profile",
+        getClientIdentity(),
+        profile
+      );
+      documentBatch.create.push(document);
+    }
+
+    console.log("documentBatch :>> ", documentBatch);
+
+    // Sign and submit the document(s)
+    const result = await getClient().platform?.documents.broadcast(
+      documentBatch,
+      getClientIdentity()
+    );
+    console.log("result storeDashpayProfile :>> ", result);
+    const ownerId = result.ownerId;
+    const resultProfileDocument = { ...result.transitions[0], ownerId };
+
+    // store.commit("setDashpayProfiles", [resultProfileDocument]);
+    store.dispatch("fetchDashpayProfiles", {
+      ownerIds: [ownerId.toString()],
+      forceRefresh: true,
+    });
+    return result;
+  };
 
   async function syncContactRequestsLoop() {
     if (!isRefreshLoopActive) return;
@@ -81,5 +135,8 @@ export default function useContacts() {
     myLabel,
     myAvatar,
     myOwnerId,
+    myDisplayName,
+    myPublicMessage,
+    storeDashpayProfile,
   };
 }

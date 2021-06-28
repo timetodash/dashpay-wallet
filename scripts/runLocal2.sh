@@ -14,6 +14,7 @@ node ./scripts/registerContracts.js
 
 source ./env/datacontracts_$VUE_APP_ENV_RUN.env
 
+export VUE_APP_AUTOFAUCET="http://127.0.0.1:5050/drip/"
 export VUE_APP_DASHPAY_CONTRACT_ID=$VUE_APP_DASHPAY_CONTRACT_ID_local
 
 echo

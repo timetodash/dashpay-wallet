@@ -77,7 +77,7 @@ export default function useRates() {
     console.log("refreshRatesLoop");
     await refreshRate();
 
-    await sleep(5000);
+    await sleep(50000);
     refreshRatesLoop();
   }
 

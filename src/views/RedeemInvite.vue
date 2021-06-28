@@ -58,7 +58,7 @@ import { getClient } from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
 
 export default {
-  name: "CreateWallet",
+  name: "RedeemInvite",
   components: {
     IonHeader,
     IonToolbar,
@@ -88,6 +88,11 @@ export default {
         // this.$axios.get(`http://autofaucet-1.dashevo.io:5050/drip/${address}`),
         // this.$axios.get(`http://autofaucet-2.dashevo.io:5050/drip/${address}`),
       ];
+      console.log(
+        "`${process.env.VUE_APP_AUTOFAUCET}${address}`  :>> ",
+        `${process.env.VUE_APP_AUTOFAUCET}${address}`
+      );
+      console.log("reqs :>> ", reqs);
 
       const result = await Promise.race(reqs);
       console.log("... faucet dropped.", result, ...reqs);

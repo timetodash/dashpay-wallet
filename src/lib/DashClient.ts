@@ -14,6 +14,8 @@ const disconnectClient = async function() {
   await client.disconnect();
 
   client = undefined;
+  identity = undefined;
+  identityId = undefined;
 
   return; // TODO handle errors
 };
@@ -21,21 +23,15 @@ const disconnectClient = async function() {
 const getClient = function() {
   assert(client, "Error: Client is not initialized!");
 
-  assert(client.wallet, "Error: Client is not initialized without a wallet!");
+  // assert(client.wallet, "Error: Client is initialized without a wallet!");
 
   return client;
 };
 
-const getClientOpts = function(mnemonic: string | null) {
-  return {
+const getClientOpts = function(mnemonic: string | null | undefined) {
+  const clientOpts = {
     // passFakeAssetLockProofForTests: true,
     dapiAddresses: JSON.parse(process.env.VUE_APP_DAPIADDRESSES!),
-    wallet: {
-      mnemonic: mnemonic,
-      // unsafeOptions: {
-      //   skipSynchronizationBeforeHeight: 506776,
-      // },
-    },
     apps: {
       dpns: { contractId: process.env.VUE_APP_DPNS_CONTRACT_ID },
       dashpayWallet: {
@@ -49,6 +45,17 @@ const getClientOpts = function(mnemonic: string | null) {
       },
     },
   };
+
+  if (mnemonic || mnemonic === null) {
+    (clientOpts as any).wallet = {
+      mnemonic,
+      // unsafeOptions: {
+      //   skipSynchronizationBeforeHeight: 506776,
+      // },
+    };
+  }
+
+  return clientOpts;
 };
 
 const setClientIdentity = function(newIdentity: any): void {
@@ -74,7 +81,7 @@ const initClient = async function(clientOpts: any) {
   // TODO handle errors
   assert(!client, "Error: Client already initialized!");
 
-  assert(clientOpts.wallet, "Error: clientOpts is missing wallet config!");
+  // assert(clientOpts.wallet, "Error: clientOpts is missing wallet config!");
 
   console.log("clientOpts :>> ", clientOpts);
 
@@ -86,16 +93,20 @@ const initClient = async function(clientOpts: any) {
     console.log(name, (entry as any).contractId.toString())
   );
 
-  client.account = await client.getWalletAccount();
+  if (client.wallet) {
+    client.account = await client.getWalletAccount();
 
-  await fetchClientIdentity();
+    await fetchClientIdentity();
 
-  console.log("client.account :>> ", client.account);
+    console.log("client.account :>> ", client.account);
+  }
+
   return getClient();
 };
 
 const getClientIdentity = function() {
   console.log("identity :>> ", identity);
+  console.log("identity.getId() :>> ", identity.getId());
   return identity;
 };
 

@@ -1,5 +1,11 @@
 <template>
   <ion-list>
+    <ion-item
+      button
+      @click="popoverController.dismiss() && router.push('/editprofile')"
+    >
+      <ion-label>Edit Profile</ion-label>
+    </ion-item>
     <ion-item>
       <ion-label>Show my QR code</ion-label>
     </ion-item>

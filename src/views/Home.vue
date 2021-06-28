@@ -91,14 +91,11 @@ export default {
     // router.push("/settings");
 
     const store = useStore();
-    store.dispatch("fetchDashpayProfiles", [store.state.accountDPNS.$ownerId]);
 
     const { startRefreshWalletDataLoop } = useWallet();
     const { startSyncContactRequests } = useContacts();
     const { startSyncChats } = useChats();
     const { startRefreshRatesLoop } = useRates();
-
-    store.dispatch("loadLastSeenChatTimestamps");
 
     startSyncChats();
     startRefreshWalletDataLoop();

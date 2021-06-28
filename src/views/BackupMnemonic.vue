@@ -55,7 +55,7 @@ import { Client } from "dash/dist/src/SDK/Client/index";
 // const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default {
-  name: "CreateWallet",
+  name: "BackupMnemonic",
   components: {
     IonHeader,
     IonToolbar,

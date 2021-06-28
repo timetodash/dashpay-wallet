@@ -2,6 +2,9 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
+        <ion-buttons slot="start"
+          ><ion-back-button :icon="arrowBack"></ion-back-button
+        ></ion-buttons>
         <ion-title>Login</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -46,21 +49,26 @@ import {
   IonTitle,
   IonContent,
   IonButton,
+  IonButtons,
+  IonBackButton,
   IonFooter,
 } from "@ionic/vue";
 
-import { getClientOpts, initClient } from "@/lib/DashClient";
+import { getClientOpts, initClient, disconnectClient } from "@/lib/DashClient";
 
 import { Client } from "dash/dist/src/SDK/Client/index";
 
+import { arrowBack } from "ionicons/icons";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const decrypt = require("@dashevo/wallet-lib/src/types/Account/methods/decrypt");
 
 export default {
-  name: "Login",
+  name: "ChooseAccount",
   components: {
     AccountList,
     PasswordPrompt,
+    IonButtons,
+    IonBackButton,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -77,11 +85,33 @@ export default {
 
     const password = ref("");
 
+    const accounts = ref([]);
+    // onMounted(async () => {});
+
+    const selectedAccount = ref();
+
+    function selectAccount(account: any) {
+      console.log("selectAccountFired");
+      selectedAccount.value = account;
+      console.log("selectedAccount.value :>> ", selectedAccount.value);
+      store.commit("setWishName", account.wishName);
+    }
+
     const recoverWallet = async (mnemonic: string) => {
       console.log("recover wallet");
 
+      try {
+        await disconnectClient();
+      } catch (e) {
+        console.log(e);
+      }
+
       const clientOpts = getClientOpts(mnemonic);
       client = await initClient(clientOpts);
+      console.log(
+        "logged in with mnemonic :>> ",
+        client?.wallet?.exportWallet()
+      );
 
       const account = client.account as any;
 
@@ -108,6 +138,13 @@ export default {
         if (dpnsDoc) {
           store.commit("setAccountDPNS", dpnsDoc.toJSON());
           store.commit("setDPNS", dpnsDoc);
+          store.commit("resetStateKeepAccountDPNS");
+
+          store.dispatch("loadLastSeenChatTimestamps");
+          store.dispatch("fetchDashpayProfiles", {
+            ownerIds: [store.state.accountDPNS.$ownerId],
+          });
+
           router.push("/home");
         } else {
           router.push("/finishregistration");
@@ -119,24 +156,13 @@ export default {
           router.push("/redeeminvite");
         }
       }
+      selectedAccount.value = undefined;
 
       // console.log("balance, mnemonic :>> ", unref(balance), unref(mnemonic));
 
       // NEXT finish sign up or go to home
       // router.push("/home");
     };
-
-    const accounts = ref([]);
-    // onMounted(async () => {});
-
-    const selectedAccount = ref();
-
-    function selectAccount(account: any) {
-      console.log("selectAccountFired");
-      selectedAccount.value = account;
-      console.log("selectedAccount.value :>> ", selectedAccount.value);
-      store.commit("setWishName", account.wishName);
-    }
 
     const decryptMnemonic = function() {
       const mnemonic = decrypt(
@@ -157,6 +183,7 @@ export default {
       selectAccount,
       password,
       decryptMnemonic,
+      arrowBack,
     };
   },
 };

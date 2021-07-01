@@ -42,6 +42,7 @@ import {
 import { getClient } from "@/lib/DashClient";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
+import useWallet from "@/composables/wallet";
 
 import { storeAccount, createAccountId } from "@/lib/helpers/AccountStorage";
 
@@ -65,6 +66,8 @@ export default {
     const router = useRouter();
 
     const store = useStore();
+
+    const { myBalance } = useWallet();
 
     const formPassword = ref("");
 
@@ -93,13 +96,31 @@ export default {
 
       await storeAccount({
         wishName: store.state.wishName,
+        accountDPNS: store.state.accountDPNS,
         id: accountId,
         encMnemonic,
       });
 
       checkMessage.value = "Wallet saved on device";
 
-      setTimeout(() => router.push("/backupmnemonic"), 1200);
+      setTimeout(() => {
+        // We recovered a mnemonic, we don't need to backup the mnemonic
+        if (store.state.isMnemonicBackedUp) {
+          // The recovered mnemonic already has a dpns entry, go straight to home screen
+          if (store.getters.myLabel) router.push("/home");
+          // The recovered mnemonic is missing an identity or dpns entry, finish registration or redeem invite first
+          else if (myBalance.value > 1e5) {
+            router.push("/finishregistration");
+          } else {
+            router.push("/redeeminvite");
+          }
+        }
+
+        // We registered a new account, we must backup the mnemonic
+        else {
+          router.push("/backupmnemonic");
+        }
+      }, 1200);
     };
 
     return { formPassword, checkPassword, checkMessage };

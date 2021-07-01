@@ -49,6 +49,9 @@ const updateAccount = async (accountUpdate: LocalAccountUpdate) => {
   return writeResult;
 };
 const storeAccount = async (account: LocalAccount) => {
+  // Don't store account if neither the dpns entry or the wishname is provided
+  if (!account.accountDPNS && !account.wishName) return;
+
   let accounts = [];
 
   // Read stored accounts

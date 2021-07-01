@@ -36,9 +36,9 @@ export default {
     const refreshAccountList = async () => {
       accounts.value = await getAccounts();
 
-      const ownerIds = Object.entries(accounts.value).map(
-        (x: any) => (x[1] as any).accountDPNS.$ownerId
-      );
+      const ownerIds = Object.entries(accounts.value)
+        .filter((x: any) => (x[1] as any).accountDPNS?.$ownerId)
+        .map((x: any) => (x[1] as any).accountDPNS.$ownerId);
 
       console.log("account ownerIds", ownerIds);
 

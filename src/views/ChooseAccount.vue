@@ -27,7 +27,10 @@
       </ion-toolbar>
       <ion-toolbar v-else>
         <ion-button color="tertiary" router-link="/choosename" expand="block"
-          >Sign Up</ion-button
+          >Create New Account</ion-button
+        >
+        <ion-button color="tertiary" router-link="/recoverwallet" expand="block"
+          >Add existing Wallet</ion-button
         >
       </ion-toolbar>
     </ion-footer>

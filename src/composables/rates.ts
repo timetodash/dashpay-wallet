@@ -51,7 +51,7 @@ export default function useRates() {
         return a.fiatSymbol > b.fiatSymbol;
       });
 
-    console.log("pairs :>> ", pairs);
+    // console.log("pairs :>> ", pairs);
     return pairs;
   }
 
@@ -60,21 +60,21 @@ export default function useRates() {
       `https://rates2.dashretail.org/rates?source=dashretail&symbol=dash${fiatSymbol}`
     );
     const rate = result.data[0];
-    console.log("rate :>> ", rate);
+    // console.log("rate :>> ", rate);
     return rate;
   }
 
   async function refreshRate() {
     const rate = await fetchRate(getFiatSymbol.value);
 
-    console.log("refreshRatesLoop rate :>> ", rate);
+    // console.log("refreshRatesLoop rate :>> ", rate);
 
     store.commit("setFiatRate", rate);
   }
 
   async function refreshRatesLoop() {
     if (!isRefreshLoopActive) return;
-    console.log("refreshRatesLoop");
+    // console.log("refreshRatesLoop");
     await refreshRate();
 
     await sleep(50000);
@@ -95,7 +95,7 @@ export default function useRates() {
       })
     ).value;
 
-    console.log("fiatSymbol :>> ", fiatSymbol);
+    // console.log("fiatSymbol :>> ", fiatSymbol);
 
     store.commit("setFiatSymbol", fiatSymbol || "USD"); // TODO read system default locale
 

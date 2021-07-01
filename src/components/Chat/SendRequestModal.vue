@@ -3,7 +3,7 @@
     <ion-toolbar>
       <ion-title
         ><span
-          style="text-transform:capitalize; color:#6A67FB; font-weight:bold"
+          style="text-transform: capitalize; color: #6a67fb; font-weight: bold"
           >{{ sendRequestDirection }}</span
         >
         Dash
@@ -20,9 +20,9 @@
       <ion-label>
         <h2
           class="
-                flex
-                ion-align-items-center ion-justify-content-between ion-nowrap
-              "
+            flex
+            ion-align-items-center ion-justify-content-between ion-nowrap
+          "
         >
           {{ myLabel }}
         </h2>
@@ -36,9 +36,9 @@
       <ion-label>
         <h2
           class="
-                flex
-                ion-align-items-center ion-justify-content-between ion-nowrap
-              "
+            flex
+            ion-align-items-center ion-justify-content-between ion-nowrap
+          "
         >
           {{ getUserLabel(friendOwnerId) }}
         </h2>
@@ -100,7 +100,7 @@ import { defineComponent, ref, computed, onMounted } from "vue";
 
 import useRates from "@/composables/rates";
 
-import ChooseCurrencyModal from "@/components/Settings/ChooseCurrency.vue";
+import ChooseCurrencyModal from "@/components/Settings/ChooseCurrencyModal.vue";
 
 export default defineComponent({
   name: "SendReceiveDashModal",
@@ -141,13 +141,8 @@ export default defineComponent({
 
     const { myBalance } = useWallet();
 
-    const {
-      fetchRate,
-      getFiatSymbol,
-      getFiatRate,
-      duffsInDash,
-      dashInDuffs,
-    } = useRates();
+    const { fetchRate, getFiatSymbol, getFiatRate, duffsInDash, dashInDuffs } =
+      useRates();
 
     const newBalance = computed(() => {
       return myBalance.value - dashInDuffs.value(amount.value);

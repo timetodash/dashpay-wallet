@@ -21,13 +21,20 @@
 import { IonIcon } from "@ionic/vue";
 import { checkmarkDoneOutline } from "ionicons/icons";
 
+import useRates from "@/composables/rates";
+import useContacts from "@/composables/contacts";
+
 export default {
   props: ["msg"],
   components: {
     IonIcon,
   },
   setup() {
+    const { duffsInDash } = useRates();
+    const { getUserLabel } = useContacts();
     return {
+      duffsInDash,
+      getUserLabel,
       checkmarkDoneOutline,
     };
   },
@@ -40,7 +47,7 @@ export default {
 }
 .nowrap {
   display: flex;
-  wrap: nowrap;
+  flex-wrap: nowrap;
   float: right;
 }
 ion-icon {

@@ -19,13 +19,14 @@
 </template>
 
 <script lang="ts">
-import ChatListItem from "@/components/Chat/ChatListItem.vue";
-import ChatListItemLegacy from "@/components/Chat/ChatListItemLegacy.vue";
-import { getClient, getClientIdentity } from "@/lib/DashClient";
 import { defineComponent, ref } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
+
 import useContacts from "@/composables/contacts";
+
+import ChatListItem from "@/components/Chat/ChatListItem.vue";
+import ChatListItemLegacy from "@/components/Chat/ChatListItemLegacy.vue";
 
 export default defineComponent({
   components: { ChatListItem, ChatListItemLegacy },
@@ -34,27 +35,7 @@ export default defineComponent({
 
     const router = useRouter();
 
-    const client = getClient();
-
     const { chatList } = store.state;
-
-    // client?.platform?.documents
-    // .get("dashpay.contactRequest", {
-    //   where: [["$ownerId", "==", getClientIdentity.getId()]],
-    // })
-    // .then((result: any) => {
-    //   chatList.value = result;
-
-    //   result.forEach((contactRequest: any) =>
-    //     store.dispatch(
-    //       "fetchDPNSDoc",
-    //       contactRequest.data.toUserId.toString()
-    //     )
-    //   );
-
-    //   chatList.value.push({ id: "legacy" });
-    //   console.log("chatList.value :>> ", chatList.value);
-    // });
 
     return {
       chatList,

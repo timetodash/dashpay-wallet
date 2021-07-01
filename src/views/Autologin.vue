@@ -51,6 +51,8 @@ export default {
 
       store.commit("setDPNS", dpnsDoc);
 
+      store.dispatch("loadLastSeenChatTimestamps");
+
       router.push("/home");
     });
 

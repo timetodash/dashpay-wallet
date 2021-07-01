@@ -51,11 +51,11 @@ export default function useContacts() {
     };
 
     if (existingProfile) {
-      console.log("existingProfile :>> ", existingProfile);
+      // console.log("existingProfile :>> ", existingProfile);
 
       existingProfile.data = { ...existingProfile.data, ...profile };
 
-      console.log("existingProfile :>> ", existingProfile);
+      // console.log("existingProfile :>> ", existingProfile);
 
       documentBatch.replace.push(existingProfile);
     } else {
@@ -67,14 +67,14 @@ export default function useContacts() {
       documentBatch.create.push(document);
     }
 
-    console.log("documentBatch :>> ", documentBatch);
+    // console.log("documentBatch :>> ", documentBatch);
 
     // Sign and submit the document(s)
     const result = await getClient().platform?.documents.broadcast(
       documentBatch,
       getClientIdentity()
     );
-    console.log("result storeDashpayProfile :>> ", result);
+    // console.log("result storeDashpayProfile :>> ", result);
     const ownerId = result.ownerId;
     const resultProfileDocument = { ...result.transitions[0], ownerId };
 
@@ -88,7 +88,7 @@ export default function useContacts() {
 
   async function syncContactRequestsLoop() {
     if (!isRefreshLoopActive) return;
-    console.log("syncContactRequestsLoop");
+    // console.log("syncContactRequestsLoop");
 
     await store.dispatch("syncContactRequests");
 
@@ -111,9 +111,9 @@ export default function useContacts() {
       "Error: syncConttactRequests refresh loop already running!"
     );
 
-    console.log("startSyncContactRequests");
+    // console.log("startSyncContactRequests");
     if (!client) client = getClient();
-    console.log("got a client startSyncContactRequests", isRefreshLoopActive);
+    // console.log("got a client startSyncContactRequests", isRefreshLoopActive);
     isRefreshLoopActive = true;
 
     syncContactRequestsLoop();

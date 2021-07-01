@@ -94,7 +94,12 @@ import {
   IonSpinner,
 } from "@ionic/vue";
 
-import { getClientOpts, initClient, disconnectClient } from "@/lib/DashClient";
+import {
+  getClientOpts,
+  initClient,
+  disconnectClient,
+  getClient,
+} from "@/lib/DashClient";
 
 import {
   checkmarkOutline,
@@ -105,8 +110,6 @@ import {
 
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
-
-import { Client } from "dash/dist/src/SDK/Client/index";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -135,8 +138,6 @@ export default {
     IonSpinner,
   },
   setup() {
-    let client: Client;
-
     const clientOpts = getClientOpts(null);
 
     const router = useRouter();
@@ -247,7 +248,7 @@ export default {
 
       mostRecentCheckTimestamp.value = thisCheckTimestamp;
 
-      const dpnsDoc = await client.platform?.names.resolve(
+      const dpnsDoc = await getClient().platform?.names.resolve(
         `${formName.value}.dash`
       );
 
@@ -272,15 +273,21 @@ export default {
     onMounted(async () => {
       await sleep(150); // Don't block the viewport
 
-      try {
-        await disconnectClient();
-      } catch (e) {
-        console.log(e);
-      }
+      if (!getClient()?.wallet) {
+        console.log("no wallet, we will create a new mnemonic");
 
-      client = await initClient(clientOpts);
-      console.log("client :>> ", client);
+        try {
+          await disconnectClient();
+        } catch (e) {
+          console.log(e);
+        }
+
+        await initClient(clientOpts);
+      }
+      console.log("getClient :>> ", getClient());
+
       hasClient.value = true;
+
       console.log("hasClient.value :>> ", hasClient.value);
     });
 

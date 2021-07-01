@@ -57,7 +57,12 @@ import {
   IonFooter,
 } from "@ionic/vue";
 
-import { initClient, getClient, getClientOpts } from "@/lib/DashClient";
+import {
+  initClient,
+  getClient,
+  getClientOpts,
+  disconnectClient,
+} from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
 
 export default {
@@ -82,7 +87,9 @@ export default {
     let client: Client;
 
     const mnemonic = ref(
-      "strike health super useless much garment soon pride rebel club coast motor"
+      // "access glad stomach deal tray entire mean grunt boy shoot want shrimp"
+      "now tourist leopard scorpion inside nation bitter click wide razor say drastic"
+      // "cheese below differ village purity elite icon process cricket left shuffle atom"
     );
 
     const balance = ref<number>();
@@ -94,12 +101,21 @@ export default {
     // onMounted(async () => {});
 
     const recoverWallet = async (event: any) => {
+      store.commit("resetState");
+
       console.log("event :>> ", event);
+      try {
+        await disconnectClient();
+      } catch (e) {
+        console.log(e);
+      }
+
       const clientOpts = getClientOpts(mnemonic.value);
 
       await initClient(clientOpts);
 
       client = getClient();
+
       const account = client.account as any;
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -123,8 +139,12 @@ export default {
       } else {
         identityId.value = " No Identity registered.";
       }
-
-      console.log("balance, mnemonic :>> ", unref(balance), unref(mnemonic));
+      store.commit("setIsMnemonicBackedUp", true); // User recovered from mnemonic, so it's backed up
+      if (!store.getters.myOwnerId || !store.getters.myLabel) {
+        router.push("/choosename");
+      } else {
+        router.push("/choosepassword");
+      }
     };
 
     return { mnemonic, balance, identityId, name, recoverWallet, router };

@@ -4,9 +4,10 @@
     :class="{
       user: msg._direction.toUpperCase() === 'SENT',
       chat_partner_txn: msg._direction.toUpperCase() === 'RECEIVED',
+      user_txn: msg._direction.toUpperCase() === 'SENT',
     }"
   >
-    <div class="sameline">
+    <div class="flex ion-nowrap">
       <ion-icon
         v-if="msg._direction.toUpperCase() === 'SENT'"
         class="dash_icon_small"
@@ -27,7 +28,7 @@
     </div>
     <div class="alignrow">
       <div class="chat_timestamp">
-        {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes() }}
+        {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes(2) }}
       </div>
       <ion-icon
         class="align_checkmark checkmark_color"
@@ -73,12 +74,7 @@ export default {
   margin-bottom: 6px;
   width: 174px;
   justify-content: space-between;
-  box-shadow: 0px 2px 4px rgba(106, 103, 251, 0.3);
   border-radius: 100px;
-}
-.sameline {
-  display: flex;
-  wrap: nowrap;
 }
 .dash_icon_small {
   width: 27px;

@@ -2,13 +2,11 @@
   <ion-header>
     <ion-toolbar>
       <ion-title
-        ><span style=" color:#6A67FB; font-weight:bold">Accept Request</span>
+        ><span style="color: #6a67fb; font-weight: bold">Accept Request</span>
       </ion-title>
     </ion-toolbar>
   </ion-header>
   <ion-content class="ion-padding">
-    <!-- @timetodash: move items in sub components and show my own item on top conditional on sendRequestDirection -->
-    <!-- @timetodash: use dashcore-lib Unit class and a computed property for New Balance, substract for send, add for receive -->
     <ion-item>
       <ion-avatar slot="start">
         <img :src="myAvatar" />
@@ -16,9 +14,9 @@
       <ion-label>
         <h2
           class="
-                flex
-                ion-align-items-center ion-justify-content-between ion-nowrap
-              "
+            flex
+            ion-align-items-center ion-justify-content-between ion-nowrap
+          "
         >
           {{ myLabel }}
         </h2>
@@ -32,9 +30,9 @@
       <ion-label>
         <h2
           class="
-                flex
-                ion-align-items-center ion-justify-content-between ion-nowrap
-              "
+            flex
+            ion-align-items-center ion-justify-content-between ion-nowrap
+          "
         >
           {{ getUserLabel(friendOwnerId) }}
         </h2>
@@ -43,7 +41,7 @@
         </h3>
       </ion-label>
     </ion-item>
-    <span v-if="newBalance < 0" style="color:red"
+    <span v-if="newBalance < 0" style="color: red"
       >Not enough funds to pay this request.</span
     >
     <ion-input
@@ -51,6 +49,7 @@
       readonly
       :value="duffsInDash(msg.data.amount)"
     ></ion-input>
+    <!-- msg.data.fiatAmount; also used in sendRequestModal -->
     <ion-input
       placeholder="Message"
       readonly

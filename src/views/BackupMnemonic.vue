@@ -25,7 +25,7 @@
           :disabled="!backupConfirmed"
           color="tertiary"
           expand="block"
-          router-link="/redeeminvite"
+          @click="next"
           >Next</ion-button
         >
       </ion-toolbar>
@@ -50,7 +50,8 @@ import {
 } from "@ionic/vue";
 
 import { getClient } from "@/lib/DashClient";
-import { Client } from "dash/dist/src/SDK/Client/index";
+import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 
 // const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -72,8 +73,8 @@ export default {
   },
   setup() {
     console.log(process.env.VUE_APP_DAPIADDRESSES);
-
-    let client: Client;
+    const router = useRouter();
+    const store = useStore();
 
     const mnemonic = ref("");
 
@@ -81,15 +82,23 @@ export default {
 
     const backupConfirmed = ref(false);
 
+    const next = () => {
+      if (!store.getters.myOwnerId || !store.getters.myLabel) {
+        router.push("/finishregistration");
+      } else {
+        router.push("/home");
+      }
+    };
+
     onMounted(async () => {
-      client = getClient();
+      mnemonic.value = getClient()
+        .wallet!.exportWallet()
+        .toString();
 
-      mnemonic.value = client.wallet!.exportWallet().toString();
-
-      balance.value = client.account!.getTotalBalance();
+      balance.value = getClient().account!.getTotalBalance();
     });
 
-    return { mnemonic, balance, backupConfirmed };
+    return { mnemonic, balance, backupConfirmed, next };
   },
 };
 </script>

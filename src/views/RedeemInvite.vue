@@ -101,7 +101,7 @@ export default {
 
     onMounted(async () => {
       console.log("hello");
-      await redeemInvite();
+      await redeemInvite(); // TODO reenable
       isRedeemed.value = true;
     });
 

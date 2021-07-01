@@ -8,6 +8,7 @@ const getDefaultState = () => {
     accountDPNS: null,
     balance: null, // TODO deprecated, remove
     wishName: null,
+    isMnemonicBackedUp: false,
     dpns: {},
     dashpayProfiles: {},
     socialGraph: {
@@ -40,6 +41,9 @@ interface SetLastSeenTimestampByOwnerIdMutation {
 }
 
 const mutations = {
+  setIsMnemonicBackedUp(state: any, newState: boolean) {
+    state.isMnemonicBackedUp = newState;
+  },
   resetStateKeepAccountDPNS(state: any) {
     const newState = getDefaultState();
     newState.accountDPNS = state.accountDPNS;
@@ -238,7 +242,7 @@ const actions = {
     context: any,
     { ownerIds = [], forceRefresh = false }
   ) {
-    console.log("fetchDashpayProfiles", ownerIds);
+    // console.log("fetchDashpayProfiles", ownerIds);
 
     const client = getClient();
 
@@ -263,7 +267,7 @@ const actions = {
       .map((x: any) => x[0])
       .filter((x) => !!x);
 
-    console.log("fetchDashpayProfile results :>> ", results);
+    // console.log("fetchDashpayProfile results :>> ", results);
 
     context.commit("setDashpayProfiles", results);
   },
@@ -471,7 +475,7 @@ const getters = {
   myOwnerId: (state: any) => state.accountDPNS?.$ownerId,
   myAvatar: (state: any) => {
     return (
-      (state.dashpayProfiles as any)[state.accountDPNS.$ownerId]?.data
+      (state.dashpayProfiles as any)[state.accountDPNS?.$ownerId]?.data
         .avatarUrl ?? "/assets/defaults/avataaar.png"
     );
   },
@@ -529,6 +533,20 @@ const getters = {
         chat.createdAt > lastTimestamp &&
         chat.ownerId.toString() === friendOwnerId
     ).length;
+  },
+  getHasNewTx: (state: any) => (friendOwnerId: string) => {
+    const lastTimestamp = new Date(
+      state.chats.lastSeenTimestampByOwnerId[friendOwnerId] || 0
+    );
+
+    return (
+      state.chats.msgsByOwnerId[friendOwnerId].filter(
+        (chat: any) =>
+          chat.createdAt > lastTimestamp &&
+          chat.ownerId.toString() === friendOwnerId &&
+          chat.data.amount
+      ).length > 0
+    );
   },
   getUserFriends: (state: any) => (friendOwnerId: string) => {
     const getSocialMetrics = (findOwnerId: string) => {

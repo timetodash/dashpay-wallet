@@ -24,26 +24,26 @@
       <p>
         {{ chatListItem.lastMessage.data.text }}
         <ion-chip
-          v-if="true"
+          v-if="chatListItem.lastMessage.data.amount"
           :class="{
-            received: true,
-            sent: false,
+            received: chatListItem.direction === 'RECEIVED',
+            sent: chatListItem.direction === 'SENT',
           }"
-          >{{ chatListItem.amount }} Dash
+          >{{ duffsInDash(chatListItem.lastMessage.data.amount) }} Dash
           <ion-icon
             class="sent-receive-icon"
-            v-if="true"
+            v-if="chatListItem.direction === 'RECEIVED'"
             :src="require('/public/assets/icons/receiveDash.svg')"
           />
           <ion-icon
-            v-if="false"
+            v-else
             class="sent-receive-icon"
             :src="require('/public/assets/icons/sendDash.svg')"
           />
         </ion-chip>
         <ion-badge v-if="newMsgCount > 0">{{ newMsgCount }}</ion-badge>
         <ion-icon
-          v-if="true"
+          v-if="hasNewTx"
           class="dash-viewed"
           :src="require('/public/assets/icons/D.svg')"
         />
@@ -68,6 +68,8 @@ import { useStore } from "vuex";
 
 import { computed } from "vue";
 
+import useRates from "@/composables/rates";
+
 export default {
   components: {
     IonItem,
@@ -79,14 +81,18 @@ export default {
   },
   props: ["chatListItem"],
   setup(props) {
-    console.log("props :>> ", props);
-    console.log("props :>> ", props.chatListItem);
-    console.log("props :>> ", props.chatListItem.friendOwnerId);
     const store = useStore();
+
+    const { duffsInDash } = useRates();
+
     const { getUserLabel, getUserAvatar } = store.getters;
 
     const newMsgCount = computed(() =>
       store.getters.getNewChatMsgCount(props.chatListItem.friendOwnerId)
+    );
+
+    const hasNewTx = computed(() =>
+      store.getters.getHasNewTx(props.chatListItem.friendOwnerId)
     );
 
     return {
@@ -95,6 +101,8 @@ export default {
       unlink,
       store,
       newMsgCount,
+      hasNewTx,
+      duffsInDash,
     };
   },
 };

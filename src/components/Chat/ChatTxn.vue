@@ -3,8 +3,11 @@
     class="chatbubble chatbubble_txn_big"
     :class="{
       user: msg._direction === 'SENT',
+      user_txn: msg._direction === 'SENT' && !msg.data.request,
       chat_partner_txn: msg._direction === 'RECEIVED' && !msg.data.request,
-      request: msg.data.request,
+      request: msg.data.request === 'accept' || msg.data.request === 'open',
+      request_declined:
+        getChatMsgByReplyToId(msg.id.toString())?.data.request === 'decline',
     }"
   >
     <div
@@ -14,13 +17,33 @@
         request_title: msg.data.request,
       }"
     >
-      <!-- @timetodash use request === decline || accepted to syle the card -->
-      {{ getChatMsgByReplyToId(msg.id.toString())?.data.request }}
-      {{ title }}
+      <div
+        v-if="
+          getChatMsgByReplyToId(msg.id.toString())?.data.request === 'decline'
+        "
+      >
+        Request (Declined)
+      </div>
+      <div
+        v-if="
+          getChatMsgByReplyToId(msg.id.toString())?.data.request === 'accept'
+        "
+      >
+        Request <span class="purple">(Accepted)</span>
+      </div>
+      <div
+        v-if="
+          getChatMsgByReplyToId(msg.id.toString())?.data.request !==
+            'decline' &&
+          getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'accept'
+        "
+      >
+        {{ title }}
+      </div>
     </div>
     <div class="amount">{{ duffsInDash(msg.data.amount) }} Dash</div>
     <div class="usd_amount">
-      ~{{ msg.data.fiatAmount }} {{ msg.data.fiatSymbol }}
+      ~{{ msg.data.fiatAmount?.toFixed(2) }} {{ msg.data.fiatSymbol }}
     </div>
     <div class="text">{{ msg.data.text }}</div>
     <div class="justify">
@@ -48,8 +71,14 @@
       </div>
     </div>
   </div>
+  <!-- {{ getChatMsgByReplyToId(msg.id.toString())?.data.request }} -->
   <ion-row
-    v-if="msg.data.request && msg._direction === 'RECEIVED'"
+    v-if="
+      msg.data.request &&
+      msg._direction === 'RECEIVED' &&
+      getChatMsgByReplyToId(msg.id.toString())?.data.request !==
+        ('decline' || 'accept')
+    "
     class="ion-no-wrap"
   >
     <ion-chip class="decline" @click="declineRequest"
@@ -77,7 +106,7 @@ import { checkmarkDoneOutline, closeOutline } from "ionicons/icons";
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
 
-import ViewRequestModal from "@/components/Chat/ViewRequestModal.vue";
+import ViewRequestModal from "@/components/TransactionModals/ViewRequestModal.vue";
 import useContacts from "@/composables/contacts";
 import useChats from "@/composables/chats";
 import useRates from "@/composables/rates";
@@ -152,7 +181,6 @@ export default {
 .chatbubble_txn_big {
   min-height: 77px;
   width: 222px;
-  box-shadow: 0px 2px 4px rgba(106, 103, 251, 0.3);
 }
 .title {
   /* font-family: Inter; */
@@ -167,6 +195,10 @@ export default {
 }
 .request_title {
   color: #999999;
+}
+.request_declined {
+  background: #f5f5f7;
+  opacity: 0.55;
 }
 .amount {
   /* font-family: Inter; */
@@ -203,7 +235,7 @@ export default {
 .text {
   /* font-family: Inter; */
   display: flex;
-  wrap: wrap;
+  flex-wrap: wrap;
   justify-content: center;
   font-style: normal;
   font-weight: normal;

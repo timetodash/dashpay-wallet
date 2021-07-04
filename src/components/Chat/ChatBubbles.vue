@@ -13,27 +13,24 @@
             <chat-txn
               v-if="
                 (msg.data.amount && msg.data.text) ||
-                  msg.data.request === 'open'
+                msg.data.request === 'open'
               "
               :msg="msg"
               :friendOwnerId="friendOwnerId"
             >
             </chat-txn>
-            <div v-if="msg.data.request === 'accept'">
-              <!-- @timetodash replace you with variable depending on sender/receiver, use grey informational bubble from figma -->
-              <!-- TODO amount is mocked and must come from DIP15 L1 data -->
-              {{ getUserLabel(msg.ownerId.toString()) }} accepted to pay
-              {{ duffsInDash(msg.data.amount) }} Dash
-            </div>
-            <div v-if="msg.data.request === 'decline'">
-              You declined a request of
-              {{ duffsInDash(msg.data.amount) }} Dash
-            </div>
+
             <chat-small-txn
               v-if="!msg.data.request && msg.data.amount && !msg.data.text"
               :msg="msg"
             >
             </chat-small-txn>
+            <request-response
+              v-if="
+                msg.data.request === 'decline' || msg.data.request === 'accept'
+              "
+              :msg="msg"
+            ></request-response>
           </ion-col>
         </ion-row>
       </ion-grid>
@@ -47,8 +44,7 @@ import { checkmarkDoneOutline } from "ionicons/icons";
 import ChatMessage from "@/components/Chat/ChatMessage.vue";
 import ChatTxn from "@/components/Chat/ChatTxn.vue";
 import ChatSmallTxn from "@/components/Chat/ChatSmallTxn.vue";
-import useRates from "@/composables/rates";
-import useContacts from "@/composables/contacts";
+import RequestResponse from "../TransactionModals/RequestResponse.vue";
 // import { reactive } from "vue";
 
 export default {
@@ -60,14 +56,11 @@ export default {
     ChatMessage,
     ChatTxn,
     ChatSmallTxn,
+    RequestResponse,
   },
   setup() {
-    const { duffsInDash } = useRates();
-    const { getUserLabel } = useContacts();
     return {
       checkmarkDoneOutline,
-      duffsInDash,
-      getUserLabel,
     };
   },
 };

@@ -2,15 +2,12 @@
   <div v-if="!receivedContactRequest">
     You can send Dash once your friend responds
   </div>
-  <ion-button
-    fill="outline"
-    color="tertiary"
+  <IncomingRequests
     v-if="receivedContactRequest && !sentContactRequest && !isSendingAccept"
-    @click="acceptAndSayHi"
+    @acceptAndSayHi="acceptAndSayHi"
   >
-    Accept friendship & say "hi"
-  </ion-button>
-  <div class="oneline">
+  </IncomingRequests>
+  <div class="flex ion-nowrap">
     <ion-input
       placeholder="Messsage... "
       v-model="chatText"
@@ -39,9 +36,10 @@
 </template>
 
 <script>
-import { IonInput, IonIcon, IonButton } from "@ionic/vue";
+import { IonInput, IonIcon } from "@ionic/vue";
 import { happyOutline, attachOutline, send } from "ionicons/icons";
 import { ref } from "vue";
+import IncomingRequests from "@/components/TransactionModals/IncomingRequests.vue";
 
 export default {
   props: ["receivedContactRequest", "sentContactRequest"],
@@ -49,7 +47,7 @@ export default {
   components: {
     IonInput,
     IonIcon,
-    IonButton,
+    IncomingRequests,
   },
   setup(props, context) {
     const chatText = ref("");
@@ -67,7 +65,7 @@ export default {
       sendChatWrapper();
     };
 
-    const showSendRequestDashSheet = function() {
+    const showSendRequestDashSheet = function () {
       props.receivedContactRequest &&
         context.emit("showSendRequestDashSheet", true);
     };
@@ -111,9 +109,5 @@ ion-input {
   height: 36px;
   margin-left: 11px;
   padding-right: 16px;
-}
-.oneline {
-  display: flex;
-  flex: nowrap;
 }
 </style>

@@ -62,7 +62,7 @@ import useChats from "@/composables/chats";
 import ChatBubbles from "@/components/Chat/ChatBubbles.vue";
 import ChatHeader from "@/components/Chat/ChatHeader.vue";
 import ChatFooter from "@/components/Chat/ChatFooter.vue";
-import SendRequestDashModal from "@/components/Chat/SendRequestModal.vue";
+import SendRequestDashModal from "@/components/TransactionModals/SendRequestModal.vue";
 
 // import { Client } from "dash/dist/src/SDK/Client/index";
 

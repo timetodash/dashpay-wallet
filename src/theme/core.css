@@ -1,10 +1,6 @@
 .flex {
   display: flex;
 }
-.nowrap {
-  display: flex;
-  wrap: nowrap;
-}
 ion-header {
   padding-top: 16px;
   padding-left: 0px;
@@ -26,15 +22,19 @@ ion-toolbar {
   background: linear-gradient(180deg, #f2edfd 0%, #eeedff 100%);
   float: right;
 }
+.user_txn{
+  filter: drop-shadow(0px 2px 4px rgba(106, 103, 251, 0.3));
+}
 .chat_partner {
   background: #f1f1f3;
 }
 .request {
   background: #ffffff;
-  box-shadow: 0px 2px 5px rgba(129, 129, 129, 0.3);
+  box-shadow: 0px 2px 4px rgba(106, 103, 251, 0.3);
 }
 .chat_partner_txn {
   background: linear-gradient(180deg, #f2f8fd 0%, #edfff9 100%);
+  filter: drop-shadow(0px 2px 4px rgba(54, 191, 172, 0.3));
 }
 
 .chatbubble {
@@ -58,15 +58,95 @@ ion-toolbar {
   color: #8b8b8b;
   margin-right: 4px;
 
-  /* flex: none;
-  order: 0;
-  flex-grow: 0; */
 }
 .align_checkmark {
   display: flex;
-  wrap: nowrap;
+  flex-wrap: nowrap;
   align-items: flex-end;
 }
 .checkmark_color {
   color: rgba(0, 0, 0, 0.4);
+}
+
+/* SendRequestDashModal styles */
+.enter-dash {
+  width: 132px;
+  text-align: end;
+  height: 34px;
+  /* font-family: Inter; */
+  font-style: normal;
+  --placeholder-font-weight: 600;
+  font-size: 28px;
+  line-height: 34px;
+  --placeholder-color: #000000;
+  flex: none;
+  /* margin-top: 34px; */
+  margin-bottom: 5px;
+  margin-right: 6px;
+  text-align: end;
+}
+.dash-label {
+  height: 37px;
+  width: 170px;
+  /* font-family: Inter; */
+  font-style: normal;
+  /* --placeholder-font-weight: 600; */
+  font-size: 28px;
+  line-height: 34px;
+  --placeholder-color: #000000;
+  /* order: 1; */
+  /* margin-top: 34px; */
+  margin-bottom: 5px;
+  display: flex;
+  align-items: flex-start;
+}
+.wrapper {
+  display: flex;
+  justify-content: center;
+}
+.enter-fiat {
+  /* font-family: Inter; */
+  width: 132px;
+  margin: 0px 0px 0px auto;
+  height: 18px;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 18px;
+  color: #a3a3a3;
+  align-items: center;
+
+  flex: none;
+  text-align: end;
+  margin-right: 6px;
+}
+.fiat-label {
+  width: 170px;
+  height: 18px;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 18px;
+  color: #a3a3a3;
+  /* font-family: Inter; */
+  display: flex;
+  align-items: flex-start;
+  order: 1;
+  margin-bottom: 10px;
+  /* margin-right: 35%; */
+  /* text-align: flex-start; */
+}
+.convert {
+  height: 18px;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 18px;
+  color: #a3a3a3;
+}
+.green {
+  color: #34bba8;
+}
+.purple {
+  color: #6c69fc;
 }

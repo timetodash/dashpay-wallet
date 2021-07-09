@@ -65,7 +65,7 @@ import { arrowBack } from "ionicons/icons";
 import { useStore } from "vuex";
 import { ref } from "vue";
 
-import ChooseCurrencyModal from "@/components/Settings/ChooseCurrency.vue";
+import ChooseCurrencyModal from "@/components/Settings/ChooseCurrencyModal.vue";
 
 import useRates from "@/composables/rates";
 

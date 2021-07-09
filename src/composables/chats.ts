@@ -39,7 +39,7 @@ export default function useChats() {
     if (!isRefreshLoopActive) return;
     console.log("syncChatsLoop");
     store.dispatch("syncChats");
-    await sleep(10000);
+    await sleep(5000);
     syncChatsLoop();
   }
 

@@ -242,7 +242,7 @@ const actions = {
     context: any,
     { ownerIds = [], forceRefresh = false }
   ) {
-    // console.log("fetchDashpayProfiles", ownerIds);
+    console.log("fetchDashpayProfiles", ownerIds);
 
     const client = getClient();
 
@@ -267,14 +267,17 @@ const actions = {
       .map((x: any) => x[0])
       .filter((x) => !!x);
 
-    // console.log("fetchDashpayProfile results :>> ", results);
+    console.log("fetchDashpayProfile results :>> ", results);
 
     context.commit("setDashpayProfiles", results);
+    return results; // TODO returned cached entries as well
   },
   async syncChats(context: any) {
     const client = getClient();
 
-    const myOwnerId = context.state.accountDPNS.$ownerId;
+    const myOwnerId = context.state.accountDPNS?.$ownerId;
+
+    if (!myOwnerId) return; // Don't sync while we are not logged in
 
     console.log("context.state :>> ", context.state);
 
@@ -324,7 +327,6 @@ const actions = {
   },
   // async syncSocialGraph(context: any) {},
   async fetchContactRequestsSent(context: any, ownerId: any) {
-    // TODO implement a way to do a forced resync from `createdAt === 0`
     const client = getClient();
 
     const sentByOwnerId = state.socialGraph.sentByOwnerId as any;
@@ -378,6 +380,8 @@ const actions = {
     const client = getClient();
 
     console.log("context.state :>> ", context.state);
+
+    if (!context.state.accountDPNS) return; // Don't sync if we are not logged in
 
     const {
       lastTimestampReceived,
@@ -591,12 +595,26 @@ const getters = {
       };
     });
   },
-  getMyFriends: (state: any) => {
-    return Object.entries(state.contactRequests.sent).map((entry: any) => {
-      const contactRequest = entry[1];
+  getMyFriends: (state: any, getters: any) => {
+    return Object.entries(state.contactRequests.sent)
+      .map((entry: any) => {
+        const contactRequest = entry[1];
 
-      return contactRequest;
-    });
+        return contactRequest;
+      })
+      .filter((x) => x.data.toUserId.toString() !== getters.myOwnerId)
+      .sort((a: any, b: any) => {
+        const aLabel = getters.getUserLabel(a.data.toUserId.toString());
+        const bLabel = getters.getUserLabel(b.data.toUserId.toString());
+
+        if (aLabel < bLabel) {
+          return -1;
+        }
+        if (aLabel > bLabel) {
+          return 1;
+        }
+        return 0;
+      });
   },
   getSuggestedFriends: (state: any, getters: any) => {
     const getSocialMetrics = (findOwnerId: string) => {
@@ -668,7 +686,10 @@ const getters = {
 
     return suggestedFriends
       .filter((x) => {
-        return !alreadyFriendOwnerIds.includes(x.data.toUserId.toString());
+        return (
+          !alreadyFriendOwnerIds.includes(x.data.toUserId.toString()) &&
+          !(x.data.toUserId.toString() === getters.myOwnerId)
+        );
       })
       .sort((a, b) => b._socialMetrics.count - a._socialMetrics.count);
   },

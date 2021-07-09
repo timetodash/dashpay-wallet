@@ -5,6 +5,15 @@
     </ion-header>
 
     <ion-content :fullscreen="true">
+      <ion-toolbar class="searchbar" v-if="!isProfileCompleted">
+        <img
+          @click="router.push('/editprofile')"
+          :src="require('/public/assets/banners/complete-profile.svg')"
+          alt=""
+          style="width: 400px; height: 68px; margin-top: 10px;"
+        />
+      </ion-toolbar>
+
       <ion-toolbar class="searchbar">
         <ion-searchbar></ion-searchbar>
       </ion-toolbar>
@@ -102,6 +111,14 @@ export default {
     startSyncContactRequests();
     startRefreshRatesLoop();
 
+    const isProfileCompleted = computed(() => {
+      return (
+        store.getters.myAvatar !== "/assets/defaults/avataaar.png" &&
+        store.getters.myDisplayName &&
+        store.getters.myPublicMessage
+      );
+    });
+
     // onMounted(async () => {
     // });
 
@@ -115,6 +132,7 @@ export default {
       router,
       scan,
       add,
+      isProfileCompleted,
     };
   },
 };

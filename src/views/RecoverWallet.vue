@@ -2,39 +2,21 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Import Wallet</ion-title>
+        <ion-title>Add existing Wallet</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-item>
-        <ion-label position="floating">Enter mnemonic</ion-label>
-        <ion-textarea v-model="mnemonic"></ion-textarea>
-      </ion-item>
-      <ion-card style="margin-top: 40px">
-        <ion-item>Your Name is: {{ name }}</ion-item>
-        <ion-item> Your balance is: {{ balance }}</ion-item>
-        <ion-item>Your IdentityId is: {{ identityId }}</ion-item>
-      </ion-card>
+      <mnemonic-form @mnemonicEntered="recoverWallet"></mnemonic-form>
+      <ion-loading :is-open="isWalletLoading" message="Loading Wallet...">
+      </ion-loading>
     </ion-content>
-    <ion-footer class="ion-no-border">
+    <!-- <ion-footer class="ion-no-border">
       <ion-toolbar>
-        <ion-button color="primary" @click="recoverWallet()" expand="block"
-          >Recover</ion-button
-        >
-        <ion-button
-          color="secondary"
-          @click="() => router.push('/redeeminvite')"
-          expand="block"
-          >Redeem invite</ion-button
-        >
-        <ion-button
-          color="tertiary"
-          @click="() => router.push('/home')"
-          expand="block"
-          >Home</ion-button
+        <ion-button color="tertiary" @click="recoverWallet()" expand="block"
+          >Next</ion-button
         >
       </ion-toolbar>
-    </ion-footer>
+    </ion-footer> -->
   </ion-page>
 </template>
 
@@ -43,7 +25,10 @@ import { onMounted, ref, unref } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
+import MnemonicForm from "@/components/MnemonicForm.vue";
+
 import {
+  IonLoading,
   IonPage,
   IonHeader,
   IonToolbar,
@@ -53,7 +38,6 @@ import {
   IonLabel,
   IonTextarea,
   IonItem,
-  IonCard,
   IonFooter,
 } from "@ionic/vue";
 
@@ -63,7 +47,8 @@ import {
   getClientOpts,
   disconnectClient,
 } from "@/lib/DashClient";
-import { Client } from "dash/dist/src/SDK/Client/index";
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default {
   name: "RecoverWallet",
@@ -73,81 +58,72 @@ export default {
     IonTitle,
     IonContent,
     IonPage,
-    IonButton,
-    IonLabel,
-    IonTextarea,
-    IonItem,
-    IonCard,
-    IonFooter,
+    // IonButton,
+    // IonFooter,
+    MnemonicForm,
+    IonLoading,
   },
   setup() {
     const router = useRouter();
     const store = useStore();
 
-    let client: Client;
-
-    const mnemonic = ref(
-      // "access glad stomach deal tray entire mean grunt boy shoot want shrimp"
-      "now tourist leopard scorpion inside nation bitter click wide razor say drastic"
-      // "cheese below differ village purity elite icon process cricket left shuffle atom"
-    );
+    const isWalletLoading = ref(false);
 
     const balance = ref<number>();
 
     const identityId = ref<string>();
 
-    const name = ref<string>();
-
-    // onMounted(async () => {});
-
     const recoverWallet = async (event: any) => {
+      isWalletLoading.value = true;
+
       store.commit("resetState");
 
-      console.log("event :>> ", event);
+      await sleep(150); // Don't block the viewport
+
       try {
         await disconnectClient();
       } catch (e) {
         console.log(e);
       }
 
-      const clientOpts = getClientOpts(mnemonic.value);
+      const clientOpts = getClientOpts(event);
 
       await initClient(clientOpts);
 
-      client = getClient();
-
-      const account = client.account as any;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // mnemonic.value = client.wallet!.exportWallet().toString();
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      mnemonic.value = client.wallet!.exportWallet().toString();
+      balance.value = getClient().account!.getTotalBalance();
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      balance.value = client.account!.getTotalBalance();
-
-      [identityId.value] = await account.identities.getIdentityIds();
+      [identityId.value] = ((await getClient()
+        .account) as any).identities.getIdentityIds();
 
       if (identityId.value) {
-        const [dpnsDoc] = await client.platform?.names.resolveByRecord(
+        const [dpnsDoc] = await getClient().platform?.names.resolveByRecord(
           "dashUniqueIdentityId",
           identityId.value
         );
 
-        name.value = dpnsDoc?.data.label ?? "No Name registered";
-
         store.commit("setAccountDPNS", dpnsDoc.toJSON());
         store.commit("setDPNS", dpnsDoc);
-      } else {
-        identityId.value = " No Identity registered.";
       }
+
       store.commit("setIsMnemonicBackedUp", true); // User recovered from mnemonic, so it's backed up
+
       if (!store.getters.myOwnerId || !store.getters.myLabel) {
         router.push("/choosename");
       } else {
         router.push("/choosepassword");
       }
+      isWalletLoading.value = false;
     };
 
-    return { mnemonic, balance, identityId, name, recoverWallet, router };
+    return {
+      recoverWallet,
+      router,
+      isWalletLoading,
+    };
   },
 };
 </script>

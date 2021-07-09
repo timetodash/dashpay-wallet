@@ -99,13 +99,15 @@
           @click="router.push(`/conversation/${contact.$ownerId}`)"
         >
           <ion-avatar slot="start">
-            <img :src="avatarUrl(contact)" />
+            <img :src="getUserAvatar(contact.$ownerId)" />
           </ion-avatar>
           <ion-label>
-            <h2>{{ contact.label }}</h2>
-            <h3>{{ displayName(contact) }}</h3>
+            <h2>{{ getUserLabel(contact.$ownerId) }}</h2>
+            <h3>
+              {{ getUserDisplayName(contact.$ownerId) }}
+            </h3>
             <p>
-              {{ publicMessage(contact) }}
+              {{ getUserPublicMessage(contact.$ownerId) }}
             </p>
           </ion-label>
         </ion-item>
@@ -170,6 +172,8 @@ import { useStore } from "vuex";
 
 import { updateAccount, createAccountId } from "@/lib/helpers/AccountStorage";
 import useContacts from "@/composables/contacts";
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const SCROLL_SIZE = 25;
 
@@ -274,11 +278,20 @@ export default {
 
       scrollPage.value++;
 
-      (await resolveContacts(client, contacts.value)).forEach(
-        (profile: any) => {
-          if (profile) profiles[profile.$ownerId] = profile;
-        }
+      console.log("contacts.value :>> ", contacts.value);
+
+      console.log(
+        "          contacts.value.map((x: any) => x.$ownerId) :>> ",
+        contacts.value.map((x: any) => x.$ownerId)
       );
+      (
+        await store.dispatch("fetchDashpayProfiles", {
+          ownerIds: contacts.value.map((x: any) => x.$ownerId),
+        })
+      ).forEach((profile: any) => {
+        if (profile) profiles[profile.ownerId.toString()] = profile.toJSON();
+      });
+      // TODO use getter for dashpayprofile information
     };
 
     const searchContacts = async (event: any) => {
@@ -341,6 +354,7 @@ export default {
     };
     onMounted(async () => {
       // client = await initClient(clientOpts);
+      await sleep(150); // Don't block the viewport
       loadScrollData("");
     });
 

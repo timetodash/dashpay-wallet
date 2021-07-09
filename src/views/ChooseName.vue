@@ -75,7 +75,14 @@
 </template>
 
 <script lang="ts">
-import { onMounted, ref, reactive, watch, computed } from "vue";
+import {
+  onMounted,
+  onBeforeUnmount,
+  ref,
+  reactive,
+  watch,
+  computed,
+} from "vue";
 
 import {
   IonPage,
@@ -145,6 +152,10 @@ export default {
     const store = useStore();
 
     const formName = ref("");
+
+    onBeforeUnmount(() => {
+      formName.value = "";
+    });
 
     const isCheckingName = ref(false);
 
@@ -271,19 +282,19 @@ export default {
     }
 
     onMounted(async () => {
-      await sleep(150); // Don't block the viewport
-
-      if (!getClient()?.wallet) {
-        console.log("no wallet, we will create a new mnemonic");
-
-        try {
-          await disconnectClient();
-        } catch (e) {
-          console.log(e);
-        }
-
+      try {
+        getClient();
+        // If we add an existing account, the client will already have a wallet
+        // If we create a new account, the client should be in undefined state
+        // if (!getClient().wallet) {
+        //   await disconnectClient();
+        //   await initClient(clientOpts);
+        // }
+      } catch (e) {
+        await sleep(150); // Don't block the viewport
         await initClient(clientOpts);
       }
+
       console.log("getClient :>> ", getClient());
 
       hasClient.value = true;

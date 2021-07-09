@@ -78,13 +78,11 @@ export default {
 
     const mnemonic = ref("");
 
-    const balance = ref<number>();
-
     const backupConfirmed = ref(false);
 
     const next = () => {
       if (!store.getters.myOwnerId || !store.getters.myLabel) {
-        router.push("/finishregistration");
+        router.push("/redeeminvite");
       } else {
         router.push("/home");
       }
@@ -94,11 +92,9 @@ export default {
       mnemonic.value = getClient()
         .wallet!.exportWallet()
         .toString();
-
-      balance.value = getClient().account!.getTotalBalance();
     });
 
-    return { mnemonic, balance, backupConfirmed, next };
+    return { mnemonic, backupConfirmed, next };
   },
 };
 </script>

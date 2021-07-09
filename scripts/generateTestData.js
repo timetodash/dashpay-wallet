@@ -49,6 +49,36 @@ const users = [
       "displayName": "Edward Eeeeee....."
     }
   },
+  {
+    mnemonic:
+      'frog brush settle aerobic fold subject favorite boost hammer height ginger season',
+    label: 'ash', // + Date.now(),
+    dashpayProfile: {
+      "avatarUrl": "https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortCurly&accessoriesType=Prescription02&hairColor=Blonde&facialHairType=MoustacheMagnum&facialHairColor=Black&clotheType=ShirtCrewNeck&clotheColor=Red&eyeType=EyeRoll&eyebrowType=RaisedExcited&mouthType=Tongue&skinColor=Pale",
+      "publicMessage": "Know thyself by knowing you Trust Protector",
+      "displayName": "Ash Dash"
+    }
+  },
+  {
+    mnemonic:
+      'peace squirrel mandate charge wish fever gossip left country frame fiscal lunch',
+    label: 'Dashameter', // + Date.now(),
+    dashpayProfile: {
+      "avatarUrl": "https://avataaars.io/?avatarStyle=Circle&topType=LongHairBun&accessoriesType=Blank&hairColor=Platinum&facialHairType=BeardLight&facialHairColor=Platinum&clotheType=ShirtVNeck&clotheColor=Blue02&eyeType=Side&eyebrowType=DefaultNatural&mouthType=Smile&skinColor=Light",
+      "publicMessage": "Dash by the meter",
+      "displayName": "FaDashtic"
+    }
+  },
+  {
+    mnemonic:
+      'puppy devote coconut feed major blind panda space aunt merit brain glimpse',
+    label: 'lina', // + Date.now(),
+    dashpayProfile: {
+      "avatarUrl": "https://avataaars.io/?avatarStyle=Circle&topType=LongHairStraight2&accessoriesType=Sunglasses&hairColor=Brown&facialHairType=Blank&clotheType=Overall&clotheColor=White&eyeType=Side&eyebrowType=SadConcerned&mouthType=Twinkle&skinColor=Light",
+      "publicMessage": "Mined by greatness, sent by instant.",
+      "displayName": "Alina the great"
+    }
+  },
 ]
 
 const chatMessages = [

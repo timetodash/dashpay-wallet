@@ -26,7 +26,7 @@
         >
       </ion-toolbar>
       <ion-toolbar v-else>
-        <ion-button color="tertiary" router-link="/choosename" expand="block"
+        <ion-button color="tertiary" @click="createAccount" expand="block"
           >Create New Account</ion-button
         >
         <ion-button color="tertiary" router-link="/recoverwallet" expand="block"
@@ -178,6 +178,12 @@ export default {
       recoverWallet(mnemonic);
     };
 
+    const createAccount = async () => {
+      store.commit("resetState");
+      await disconnectClient();
+      router.push("/choosename");
+    };
+
     return {
       recoverWallet,
       router,
@@ -187,6 +193,7 @@ export default {
       password,
       decryptMnemonic,
       arrowBack,
+      createAccount,
     };
   },
 };

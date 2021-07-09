@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import { IonLabel, IonItem, IonAvatar, IonChip, IonIcon } from "@ionic/vue";
+import { IonLabel, IonItem, IonAvatar, IonIcon } from "@ionic/vue";
 
 import { checkmark } from "ionicons/icons";
 
@@ -32,7 +32,6 @@ export default {
     IonLabel,
     IonItem,
     IonAvatar,
-    IonChip,
     IonIcon,
   },
   setup(props: any) {

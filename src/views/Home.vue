@@ -122,6 +122,10 @@ export default {
     // onMounted(async () => {
     // });
 
+    store.dispatch("fetchDashpayProfiles", {
+      ownerIds: [store.state.accountDPNS.$ownerId],
+    });
+
     return {
       identityId: computed(() => store.getters.identityId),
       listCircle,

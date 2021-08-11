@@ -7,6 +7,16 @@
     @acceptAndSayHi="acceptAndSayHi"
   >
   </IncomingRequests>
+  <div v-if="store.getters.getActiveReplyToId(friendOwnerId)">
+    <!-- @timetodash: implement frame 262 -->
+    Responding to:
+    {{
+      store.getters.getChatMsgById(
+        store.getters.getActiveReplyToId(friendOwnerId)
+      )?.data?.text
+    }}
+    <span @click="resetReplyToId(friendOwnerId)">X</span>
+  </div>
   <div class="flex ion-nowrap">
     <ion-input
       placeholder="Messsage... "
@@ -36,13 +46,15 @@
 </template>
 
 <script>
+import { useStore } from "vuex";
+
 import { IonInput, IonIcon } from "@ionic/vue";
 import { happyOutline, attachOutline, send } from "ionicons/icons";
 import { ref } from "vue";
 import IncomingRequests from "@/components/TransactionModals/IncomingRequests.vue";
 
 export default {
-  props: ["receivedContactRequest", "sentContactRequest"],
+  props: ["receivedContactRequest", "sentContactRequest", "friendOwnerId"],
   emits: ["sendChatWrapper", "showSendRequestDashSheet"],
   components: {
     IonInput,
@@ -51,6 +63,7 @@ export default {
   },
   setup(props, context) {
     const chatText = ref("");
+    const store = useStore();
 
     const isSendingAccept = ref(false);
 
@@ -65,11 +78,17 @@ export default {
       sendChatWrapper();
     };
 
-    const showSendRequestDashSheet = function () {
+    const showSendRequestDashSheet = function() {
       props.receivedContactRequest &&
         context.emit("showSendRequestDashSheet", true);
     };
-
+    const resetReplyToId = function(friendOwnerId) {
+      // reset the friend's replyToId
+      store.commit("setActiveReplyToId", {
+        friendOwnerId: friendOwnerId,
+        replyToId: undefined,
+      });
+    };
     return {
       happyOutline,
       attachOutline,
@@ -77,8 +96,10 @@ export default {
       sendChatWrapper,
       acceptAndSayHi,
       showSendRequestDashSheet,
+      resetReplyToId,
       isSendingAccept,
       chatText,
+      store,
     };
   },
 };

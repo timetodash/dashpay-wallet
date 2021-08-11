@@ -130,7 +130,7 @@
 </template>
 
 <script lang="ts">
-import { onMounted, ref, reactive } from "vue";
+import { onMounted, ref, reactive, computed } from "vue";
 import { people } from "ionicons/icons";
 import {
   IonIcon,
@@ -238,7 +238,18 @@ export default {
       getUserPublicMessage,
       getMyFriends,
       getSuggestedFriends,
+      myOwnerId,
     } = useContacts();
+
+    const filteredFriendIds = computed(() => {
+      const myFriendIds = getMyFriends.value.map((x: any) =>
+        x.data.toUserId.toString()
+      );
+      const suggestedFriendIds = getSuggestedFriends.value.map((x: any) =>
+        x.data.toUserId.toString()
+      );
+      return [myOwnerId.value, ...myFriendIds, ...suggestedFriendIds]; // TODO add blocked ownerIds
+    });
 
     const loadScrollData = async (event: any) => {
       const queryOpts = {
@@ -266,9 +277,11 @@ export default {
       // Newer data was loaded, so don't display stale results
       if (thisData != mostRecentData.value) return;
 
+      console.log("filteredFriendIds :>> ", filteredFriendIds);
+
       const resultJson = result
         .map((x: any) => x.toJSON())
-        .filter((x: any) => x.$ownerId !== clientIdentity.getId().toString());
+        .filter((x: any) => !filteredFriendIds.value.includes(x.$ownerId));
 
       resultJson.forEach((el: any) => {
         contacts.value.push(el);

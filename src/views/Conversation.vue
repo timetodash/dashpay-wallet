@@ -32,6 +32,7 @@
       <chat-footer
         :receivedContactRequest="receivedContactRequest(friendOwnerId)"
         :sentContactRequest="sentContactRequest(friendOwnerId)"
+        :friendOwnerId="friendOwnerId"
         @send-chat-wrapper="sendChatWrapper"
         @showSendRequestDashSheet="showSendRequestDashSheet"
       ></chat-footer>
@@ -179,7 +180,26 @@ export default {
       { text: "Request", handler: showRequestDashModal },
     ];
     const sendChatWrapper = (message: string, amount: number, request: any) => {
-      sendChat(message, friendOwnerId.value, amount, request);
+      // TODO add types
+
+      const replyToChatId = store.getters.getActiveReplyToId(
+        friendOwnerId.value
+      );
+
+      console.log(
+        "message: string, amount: number, request: any",
+        message,
+        amount,
+        request,
+        replyToChatId
+      );
+      sendChat(message, friendOwnerId.value, amount, request, replyToChatId);
+
+      // reset the friend's replyToId
+      store.commit("setActiveReplyToId", {
+        friendOwnerId: friendOwnerId.value,
+        replyToId: undefined,
+      });
     };
     const handleSendRequest = (event: any) => {
       console.log("event :>> ", event);
@@ -192,7 +212,7 @@ export default {
         event.amount,
         request
       );
-      sendChatWrapper(event.message, event.amount, request);
+      sendChatWrapper(event.message, event.amount, request); // TODO add replyToChatId for requests
     };
 
     // onMounted(async () => {});

@@ -31,6 +31,7 @@ const getDefaultState = () => {
     chatList: [{ id: "legacy" }],
     fiatRate: {},
     fiatSymbol: "",
+    activeReplyToIds: {}, // The msgId we reply to, one per contact
   };
 };
 
@@ -40,7 +41,15 @@ interface SetLastSeenTimestampByOwnerIdMutation {
   lastTimestamp: number;
 }
 
+interface SetActiveReplyToIdMutation {
+  friendOwnerId: string; // TODO use id regexp
+  replyToId: string | undefined;
+}
+
 const mutations = {
+  setActiveReplyToId(state: any, payload: SetActiveReplyToIdMutation) {
+    state.activeReplyToIds[payload.friendOwnerId] = payload.replyToId;
+  },
   setIsMnemonicBackedUp(state: any, newState: boolean) {
     state.isMnemonicBackedUp = newState;
   },
@@ -237,6 +246,24 @@ const actions = {
       key: `lastSeenChatTimestamps_${context.getters.myLabel}`,
       value: JSON.stringify(context.state.chats.lastSeenTimestampByOwnerId),
     });
+  },
+  async fetchMsgById(context: any, payload: any) {
+    // TODO desctructure and add type
+    const msgId = payload.msgId;
+    const ownerId = payload.ownerId;
+
+    if (context.state.chats.msgsByDocumentId[msgId]) return; // If cache exists, don't hit DAPI again
+
+    const client = getClient();
+
+    const msg = await client?.platform?.documents.get("dashpayWallet.chat", {
+      where: [
+        ["toOwnerId", "==", ownerId], // TODO support replying to my own msgs
+        ["$id", "==", msgId],
+      ],
+    });
+
+    context.commit("setChatMsgs", msg);
   },
   async fetchDashpayProfiles(
     context: any,
@@ -712,6 +739,9 @@ const getters = {
   },
   getChatMsgByReplyToId: (state: any) => (replyToId: string) => {
     return state.chats.msgsByReplyToId[replyToId];
+  },
+  getActiveReplyToId: (state: any) => (friendOwnerId: string) => {
+    return state.activeReplyToIds[friendOwnerId];
   },
   getFiatRate: (state: any) => (fiatSymbol: string) => {
     return state.fiatRate[fiatSymbol] || {};

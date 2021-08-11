@@ -6,14 +6,20 @@
           v-for="msg in chatMsgs"
           :key="msg.id.toString()"
           class="row_padding"
+          @click="setReplyToId(msg)"
         >
           <ion-col>
+            <div v-if="msg.data.replyToChatId">
+              {{
+                store.getters.getChatMsgById(msg.data.replyToChatId)?.data.text
+              }}
+            </div>
             <chat-message v-if="msg.data.text && !msg.data.amount" :msg="msg">
             </chat-message>
             <chat-txn
               v-if="
                 (msg.data.amount && msg.data.text) ||
-                msg.data.request === 'open'
+                  msg.data.request === 'open'
               "
               :msg="msg"
               :friendOwnerId="friendOwnerId"
@@ -39,13 +45,13 @@
 </template>
 
 <script>
+import { useStore } from "vuex";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { checkmarkDoneOutline } from "ionicons/icons";
 import ChatMessage from "@/components/Chat/ChatMessage.vue";
 import ChatTxn from "@/components/Chat/ChatTxn.vue";
 import ChatSmallTxn from "@/components/Chat/ChatSmallTxn.vue";
 import RequestResponse from "../TransactionModals/RequestResponse.vue";
-// import { reactive } from "vue";
 
 export default {
   props: ["chatMsgs", "friendOwnerId"],
@@ -58,9 +64,30 @@ export default {
     ChatSmallTxn,
     RequestResponse,
   },
-  setup() {
+  setup(props) {
+    const store = useStore();
+
+    const setReplyToId = (msg) => {
+      store.commit("setActiveReplyToId", {
+        friendOwnerId: props.friendOwnerId,
+        replyToId: msg.id.toString(),
+      });
+    };
+
+    // Resolve reply to msgs
+    // TODO load in single query
+    props.chatMsgs.map((msg) => {
+      if (!msg.data.replyToChatId) return;
+      store.dispatch("fetchMsgById", {
+        ownerId: props.friendOwnerId,
+        msgId: msg.data.replyToChatId,
+      });
+    });
+
     return {
       checkmarkDoneOutline,
+      setReplyToId,
+      store,
     };
   },
 };

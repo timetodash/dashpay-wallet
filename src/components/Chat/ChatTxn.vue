@@ -35,7 +35,7 @@
         v-if="
           getChatMsgByReplyToId(msg.id.toString())?.data.request !==
             'decline' &&
-          getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'accept'
+            getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'accept'
         "
       >
         {{ title }}
@@ -75,9 +75,9 @@
   <ion-row
     v-if="
       msg.data.request &&
-      msg._direction === 'RECEIVED' &&
-      getChatMsgByReplyToId(msg.id.toString())?.data.request !==
-        ('decline' || 'accept')
+        msg._direction === 'RECEIVED' &&
+        getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'accept' &&
+        getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'decline'
     "
     class="ion-no-wrap"
   >

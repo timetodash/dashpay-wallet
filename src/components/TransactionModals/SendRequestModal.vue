@@ -171,8 +171,13 @@ export default defineComponent({
     FiatCurrency,
   },
   setup(props, { emit }) {
-    const { fetchRate, getFiatSymbol, getFiatRate, duffsInDash, dashInDuffs } =
-      useRates();
+    const {
+      fetchRate,
+      getFiatSymbol,
+      getFiatRate,
+      duffsInDash,
+      dashInDuffs,
+    } = useRates();
 
     const amount = ref(0);
     const fiatAmount = ref(0);
@@ -392,6 +397,7 @@ ion-item {
   font-weight: bold;
   font-size: 14px;
   line-height: 18px;
+  text-transform: capitalize;
 
   color: #ffffff;
 }

@@ -2,19 +2,28 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Save your backup phrase</ion-title>
+        <ion-buttons slot="start"
+          ><ion-back-button
+            style="color: #6c69fc"
+            :icon="arrowBack"
+          ></ion-back-button
+        ></ion-buttons>
+        <ion-title class="headername">Save your backup phrase</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content :fullscreen="true" class="ion-padding">
+    <ion-content :fullscreen="true">
       <ion-item>
-        <ion-label position="floating">Backup phrase</ion-label>
-        <ion-textarea readonly auto-grow :value="mnemonic"></ion-textarea>
+        <ion-label position="floating" class="smalldescription"
+          >Backup phrase</ion-label
+        >
+        <ion-textarea rows="3" readonly :value="mnemonic"></ion-textarea>
       </ion-item>
-      <ion-item>
+      <ion-item lines="none">
         <ion-label>I securely stored my phrase</ion-label>
         <ion-toggle
           @ionChange="backupConfirmed = !backupConfirmed"
           :checked="backupConfirmed"
+          color="tertiary"
         >
         </ion-toggle>
       </ion-item>
@@ -23,6 +32,7 @@
       <ion-toolbar>
         <ion-button
           :disabled="!backupConfirmed"
+          class="ion-padding-horizontal capitalize"
           color="tertiary"
           expand="block"
           @click="next"
@@ -42,12 +52,16 @@ import {
   IonTitle,
   IonContent,
   IonButton,
+  IonButtons,
+  IonBackButton,
   IonItem,
   IonFooter,
   IonLabel,
   IonTextarea,
   IonToggle,
 } from "@ionic/vue";
+
+import { arrowBack } from "ionicons/icons";
 
 import { getClient } from "@/lib/DashClient";
 import { useRouter } from "vue-router";
@@ -65,8 +79,9 @@ export default {
     IonTextarea,
     IonPage,
     IonButton,
+    IonButtons,
+    IonBackButton,
     IonItem,
-    // IonCard,
     IonFooter,
     IonLabel,
     IonToggle,
@@ -89,12 +104,22 @@ export default {
     };
 
     onMounted(async () => {
-      mnemonic.value = getClient()
-        .wallet!.exportWallet()
-        .toString();
+      mnemonic.value = getClient().wallet!.exportWallet().toString();
     });
 
-    return { mnemonic, backupConfirmed, next };
+    return { mnemonic, backupConfirmed, next, arrowBack };
   },
 };
 </script>
+
+<style scoped>
+.smalldescription {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 18px;
+  /* font-size: 14px; figma */
+  line-height: 17px;
+  color: #68717b;
+  margin-top: 20px;
+}
+</style>

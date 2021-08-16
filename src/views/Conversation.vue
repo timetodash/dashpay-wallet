@@ -5,7 +5,7 @@
         <chat-header :friendOwnerId="friendOwnerId"></chat-header>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ion-padding">
+    <ion-content class="ion-padding-start ion-padding-end">
       <ChatBubbles
         :chatMsgs="getChatMsgs(friendOwnerId)"
         :friendOwnerId="friendOwnerId"
@@ -241,7 +241,7 @@ export default {
 </script>
 
 <style scoped>
-ion-header {
+/* ion-header {
   padding-top: 16px;
   padding-left: 0px;
   background-color: #f7f7f7;
@@ -250,12 +250,12 @@ ion-header {
 
 ion-toolbar {
   --background: primary;
-}
+} */
 /* removes the shadow below the header */
-.header-md::after {
+/* .header-md::after {
   height: 0px;
   border-style: solid 2px;
-}
+} */
 ion-footer {
   padding: 0px 0px 8px 16px;
 }

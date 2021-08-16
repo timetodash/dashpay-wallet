@@ -1,23 +1,48 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Choose a password</ion-title>
-      </ion-toolbar>
-    </ion-header>
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-item class="ion-margin-top">
-        <ion-label position="floating">Choose a password</ion-label>
-        <ion-input type="password" v-model="formPassword"></ion-input>
+      <div class="flex ion-nowrap ion-padding-bottom">
+        <ion-icon
+          :icon="closeOutline"
+          class="close"
+          @click="router.push('choosename')"
+        ></ion-icon>
+        <div class="unlock">Choose Password</div>
+      </div>
+
+      <ion-avatar slot="start" class="avatar">
+        <!-- <img :src="store.getters.getUserAvatar(pass in account chosen as prop)" /> -->
+      </ion-avatar>
+
+      <ion-item class="ion-margin-top password" lines="none">
+        <ion-input
+          debounce="500"
+          v-model="formPassword"
+          enterkeyhint="next"
+          placeholder="Enter password"
+          show-clear-button="never"
+          type="password"
+        >
+        </ion-input>
       </ion-item>
+      <div>
+        <ion-icon
+          class="lock"
+          :src="require('/public/assets/icons/unlock.svg')"
+        />
+      </div>
     </ion-content>
-    <ion-footer class="ion-no-border">
-      <ion-toolbar>
+    <ion-footer class="ion-no-border ion-padding">
+      <!-- <ion-toolbar>
         <ion-title>{{ checkMessage }}</ion-title>
-      </ion-toolbar>
+      </ion-toolbar> -->
       <ion-toolbar>
-        <ion-button expand="block" color="tertiary" @click="checkPassword()"
-          >Pick Password</ion-button
+        <ion-button
+          expand="block"
+          class="capitalize"
+          color="tertiary"
+          @click="checkPassword()"
+          >Next</ion-button
         >
       </ion-toolbar>
     </ion-footer>
@@ -28,15 +53,15 @@
 import { ref } from "vue";
 import {
   IonPage,
-  IonHeader,
   IonToolbar,
-  IonTitle,
   IonContent,
   IonButton,
-  IonLabel,
+  IonAvatar,
   IonInput,
   IonItem,
   IonFooter,
+  IonIcon,
+  modalController,
 } from "@ionic/vue";
 
 import { getClient } from "@/lib/DashClient";
@@ -46,19 +71,20 @@ import useWallet from "@/composables/wallet";
 
 import { storeAccount, createAccountId } from "@/lib/helpers/AccountStorage";
 
+import { closeOutline } from "ionicons/icons";
+
 export default {
   name: "ChoosePassword",
   components: {
-    IonHeader,
     IonToolbar,
-    IonTitle,
     IonContent,
     IonPage,
     IonFooter,
     IonButton,
-    IonLabel,
     IonInput,
     IonItem,
+    IonIcon,
+    IonAvatar,
   },
   setup() {
     const client = getClient();
@@ -73,7 +99,13 @@ export default {
 
     const checkMessage = ref("");
 
+    const { getUserLabel, getUserAvatar } = store.getters;
+
     // onMounted(async () => {});
+
+    const cancel = () => {
+      modalController.dismiss();
+    };
 
     const checkPassword = async () => {
       console.log("store.state.wishName :>> ", store.state.wishName);
@@ -123,7 +155,66 @@ export default {
       }, 1200);
     };
 
-    return { formPassword, checkPassword, checkMessage };
+    return {
+      getUserLabel,
+      getUserAvatar,
+      formPassword,
+      checkPassword,
+      checkMessage,
+      closeOutline,
+      cancel,
+      router,
+    };
   },
 };
 </script>
+
+<style scoped>
+.avatar {
+  width: 85px;
+  height: 85px;
+}
+ion-input {
+  --padding-start: 12px; /* did not work, so used css class below */
+  --width: 350px;
+  height: 45px;
+  --background: #f5f5f7;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+ion-item.sc-ion-input-md-h:not(.item-label),
+ion-item:not(.item-label) .sc-ion-input-md-h {
+  --padding-start: 12px;
+  --width: 328px;
+}
+.unlock {
+  font-style: normal;
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 19px;
+  position: fixed;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  color: #000000;
+}
+
+.close {
+  width: 25px;
+  height: 25px;
+  color: #6c69fc;
+}
+.lock {
+  position: absolute;
+  left: 156px;
+  top: 394px;
+  width: 48px;
+  height: 62px;
+}
+.password {
+  margin-top: 150px;
+}
+</style>

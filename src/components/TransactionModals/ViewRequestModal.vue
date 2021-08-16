@@ -1,7 +1,11 @@
 <template>
   <ion-content class="ion-padding">
     <div class="flex ion-nowrap ion-padding-bottom">
-      <ion-icon :icon="closeOutline" class="close" @click="cancel"></ion-icon>
+      <ion-icon
+        :icon="closeOutline"
+        class="close"
+        @click="router.push('/choosename')"
+      ></ion-icon>
       <div class="title purple flex ion-nowrap">
         <ion-icon
           class="header-icon"

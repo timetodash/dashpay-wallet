@@ -2,72 +2,88 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Choose a Dash Name</ion-title>
+        <ion-buttons slot="start"
+          ><ion-icon
+            class="back"
+            :icon="arrowBack"
+            @click="router.push('/chooseaccount')"
+          ></ion-icon
+        ></ion-buttons>
+        <ion-title class="headername">Choose your Dash username</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-item class="ion-margin-top">
-        <ion-searchbar
-          debounce="500"
-          v-model="formName"
-          enterkeyhint="next"
-          placeholder="username"
-          :searchIcon="person"
-          show-clear-button="never"
-          @ionChange="checkIsNameAvailable"
-        ></ion-searchbar>
-      </ion-item>
+      <div class="flex ion-justify-content-center">
+        <ion-icon
+          :src="require('/public/assets/icons/illustration.svg')"
+          class="illustration"
+        ></ion-icon>
+      </div>
       <ion-list>
-        <ion-item>
-          <ion-icon
-            slot="start"
-            :icon="nameConstraintIcons.isThreeCharsLong"
-            :color="constraintColor(nameConstraints.isThreeCharsLong)"
-          ></ion-icon>
-          <ion-label
-            :color="constraintColor(nameConstraints.isThreeCharsLong)"
-            >{{ nameIsCorrectLengthText }}</ion-label
+        <ion-item class="ion-margin-top" lines="none">
+          <ion-input
+            debounce="500"
+            v-model="formName"
+            enterkeyhint="next"
+            placeholder="username"
+            show-clear-button="never"
+            @ionChange="checkIsNameAvailable"
           >
+          </ion-input>
         </ion-item>
-        <ion-item>
-          <ion-icon
-            slot="start"
-            :icon="nameConstraintIcons.isValidRegexp"
-            :color="constraintColor(nameConstraints.isValidRegexp)"
-          ></ion-icon>
-          <ion-label :color="constraintColor(nameConstraints.isValidRegexp)"
-            >Letters, numbers and hyphen only</ion-label
-          >
-        </ion-item>
-        <ion-item>
-          <ion-icon
-            v-if="!isCheckingName"
-            slot="start"
-            :icon="nameConstraintIcons.isAvailable"
-            :color="constraintColor(nameConstraints.isAvailable)"
-          ></ion-icon>
-          <ion-spinner v-else name="dots" color="tertiary"></ion-spinner>
-          <ion-label
-            :color="
-              isCheckingName
-                ? 'tertiary'
-                : constraintColor(nameConstraints.isAvailable)
-            "
-            >Username available</ion-label
-          >
-        </ion-item>
+        <ion-list>
+          <ion-item class="char" lines="none" style="margin: 0px">
+            <ion-icon
+              slot="start"
+              :icon="nameConstraintIcons.isThreeCharsLong"
+              :color="constraintColor(nameConstraints.isThreeCharsLong)"
+            ></ion-icon>
+            <ion-label
+              :color="constraintColor(nameConstraints.isThreeCharsLong)"
+              >{{ nameIsCorrectLengthText }}</ion-label
+            >
+          </ion-item>
+          <ion-item class="char" lines="none">
+            <ion-icon
+              slot="start"
+              :icon="nameConstraintIcons.isValidRegexp"
+              :color="constraintColor(nameConstraints.isValidRegexp)"
+            ></ion-icon>
+            <ion-label :color="constraintColor(nameConstraints.isValidRegexp)"
+              >Letters, numbers and hyphen only</ion-label
+            >
+          </ion-item>
+          <ion-item class="char" lines="none">
+            <ion-icon
+              v-if="!isCheckingName"
+              slot="start"
+              :icon="nameConstraintIcons.isAvailable"
+              :color="constraintColor(nameConstraints.isAvailable)"
+            ></ion-icon>
+            <ion-spinner v-else name="dots" color="tertiary"></ion-spinner>
+            <ion-label
+              :color="
+                isCheckingName
+                  ? 'tertiary'
+                  : constraintColor(nameConstraints.isAvailable)
+              "
+              >Username available</ion-label
+            >
+          </ion-item>
+        </ion-list>
       </ion-list>
     </ion-content>
     <ion-footer class="ion-no-border">
       <ion-toolbar>
         <ion-button
+          class="ion-padding-horizontal capitalize"
           :disabled="
             !(hasClient && nameConstraints.isAvailable && !isCheckingName)
           "
           expand="block"
           color="tertiary"
           @click="pickName()"
-          >Pick name</ion-button
+          >Next</ion-button
         >
       </ion-toolbar>
     </ion-footer>
@@ -91,9 +107,9 @@ import {
   IonTitle,
   IonContent,
   IonButton,
+  IonButtons,
   IonLabel,
-  // IonInput,
-  IonSearchbar,
+  IonInput,
   IonIcon,
   IonList,
   IonItem,
@@ -113,6 +129,7 @@ import {
   banOutline,
   ellipsisHorizontal,
   person,
+  arrowBack,
 } from "ionicons/icons";
 
 import { useRouter } from "vue-router";
@@ -136,12 +153,12 @@ export default {
     IonPage,
     IonFooter,
     IonButton,
+    IonButtons,
+    IonItem,
     IonLabel,
     IonList,
     IonIcon,
-    // IonInput,
-    IonSearchbar,
-    IonItem,
+    IonInput,
     IonSpinner,
   },
   setup() {
@@ -316,14 +333,70 @@ export default {
       isCheckingName,
       pickName,
       nameIsCorrectLengthText,
+      arrowBack,
+      router,
     };
   },
 };
 </script>
 <style scoped>
+.back {
+  margin-left: 16px;
+  width: 22px;
+  height: 22px;
+  color: #6c69fc;
+}
+:host {
+  --min-height: 0px;
+  --background: white;
+}
 ion-spinner {
   width: 24px;
   height: 24px;
   margin-right: 32px;
+}
+.illustration {
+  /* position: absolute; */
+  /* left: 56px;
+  top: 83px; */
+  /* margin: auto; */
+  width: 248px;
+  height: 233px;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+.char {
+  /* font-family: Inter; */
+  font-style: normal;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 15px;
+  color: #68717b;
+  margin: 0;
+}
+ion-icon {
+  font-size: 12px;
+}
+item-native {
+  padding-inline-start: 0px;
+}
+ion-input {
+  --padding-start: 12px; /* did not work, so used css class below */
+  width: 328px;
+  --background: #f5f5f7;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+ion-item.sc-ion-input-md-h:not(.item-label),
+ion-item:not(.item-label) .sc-ion-input-md-h {
+  --padding-start: 12px;
+}
+ion-label {
+  margin: 0px 0px;
+}
+.item-native {
+  --min-height: 0px;
 }
 </style>

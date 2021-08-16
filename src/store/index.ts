@@ -300,11 +300,11 @@ const actions = {
     return results; // TODO returned cached entries as well
   },
   async syncChats(context: any) {
-    const client = getClient();
-
     const myOwnerId = context.state.accountDPNS?.$ownerId;
 
     if (!myOwnerId) return; // Don't sync while we are not logged in
+
+    const client = getClient();
 
     console.log("context.state :>> ", context.state);
 
@@ -404,11 +404,11 @@ const actions = {
     }
   },
   async syncContactRequests(context: any) {
+    if (!context.state.accountDPNS) return; // Don't sync if we are not logged in
+
     const client = getClient();
 
     console.log("context.state :>> ", context.state);
-
-    if (!context.state.accountDPNS) return; // Don't sync if we are not logged in
 
     const {
       lastTimestampReceived,

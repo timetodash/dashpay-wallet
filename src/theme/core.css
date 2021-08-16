@@ -4,9 +4,8 @@
 ion-header {
   padding-top: 16px;
   padding-left: 0px;
-  background-color: #f7f7f7;
-  border-bottom: 1px solid #e3e3e3;
-  border-top: none;
+  background-color: #ffffff;
+  border: none;
 }
 
 ion-toolbar {
@@ -149,4 +148,26 @@ ion-toolbar {
 }
 .purple {
   color: #6c69fc;
+}
+
+.headername {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 19px;
+  color: #000000;
+  padding-left: 15px;
+}
+.mediumdescription {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 19px;
+  text-align: center;
+  letter-spacing: -0.004em;
+  color: #68717B;
+}
+
+.capitalize {
+  text-transform: capitalize;
 }

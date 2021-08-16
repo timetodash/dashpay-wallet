@@ -5,7 +5,11 @@
       user: msg._direction === 'SENT',
       user_txn: msg._direction === 'SENT' && !msg.data.request,
       chat_partner_txn: msg._direction === 'RECEIVED' && !msg.data.request,
-      request: msg.data.request === 'accept' || msg.data.request === 'open',
+      request: msg.data.request === 'open',
+      request_accepted_user:
+        msg.data.request === 'accept' && msg._direction === 'SENT',
+      request_accepted_partner:
+        msg.data.request === 'accept' && msg._direction === 'RECEIVED',
       request_declined:
         getChatMsgByReplyToId(msg.id.toString())?.data.request === 'decline',
     }"
@@ -29,7 +33,14 @@
           getChatMsgByReplyToId(msg.id.toString())?.data.request === 'accept'
         "
       >
-        Request <span class="purple">(Accepted)</span>
+        Request
+        <span
+          :class="{
+            green: msg._direction === 'SENT',
+            purple: msg._direction === 'RECEIVED',
+          }"
+          >(Accepted)</span
+        >
       </div>
       <div
         v-if="
@@ -37,6 +48,10 @@
             'decline' &&
             getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'accept'
         "
+        :class="{
+          green: msg._direction === 'SENT' && !msg.data.request,
+          purple: msg._direction === 'RECEIVED' && !msg.data.request,
+        }"
       >
         {{ title }}
       </div>
@@ -196,9 +211,18 @@ export default {
 .request_title {
   color: #999999;
 }
+.request_accepted_user {
+  background: #ffffff;
+  filter: drop-shadow(0px 2px 4px rgba(54, 191, 172, 0.3)); /* green shadow */
+}
+.request_accepted_partner {
+  background: #ffffff;
+  box-shadow: 0px 2px 4px rgba(106, 103, 251, 0.3);
+}
 .request_declined {
   background: #f5f5f7;
   opacity: 0.55;
+  box-shadow: 0px 0px 0px;
 }
 .amount {
   /* font-family: Inter; */

@@ -1,12 +1,17 @@
 <template>
   <ion-list>
-    <ion-list-header>Accounts</ion-list-header>
+    <ion-list-header class="accounts ion-no-padding">Accounts</ion-list-header>
+    <!-- <ion-modal
+      :is-open="isAccountItemOpen"
+      @didDismiss="showAccountItem(false)"
+    > -->
     <AccountItem
       v-for="account in accounts"
       :key="account.encMnemonic"
       :account="account"
       @click="$emit('selectAccount', account)"
     />
+    <!-- </ion-modal> -->
   </ion-list>
 </template>
 
@@ -27,8 +32,15 @@ export default {
     IonList,
     AccountItem,
     IonListHeader,
+    // IonModal,
   },
   setup() {
+    const isAccountItemOpen = ref(false);
+
+    const showAccountItem = async (state = true) => {
+      isAccountItemOpen.value = state;
+    };
+
     const accounts = ref([]);
 
     const store = useStore();
@@ -65,7 +77,22 @@ export default {
 
     return {
       accounts,
+      isAccountItemOpen,
+      showAccountItem,
     };
   },
 };
 </script>
+
+<style scoped>
+.accounts {
+  /* font-family: Inter; */
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 17px;
+  color: #636363;
+  display: flex;
+  align-items: flex-end;
+}
+</style>

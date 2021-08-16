@@ -78,7 +78,7 @@ export default function useWallet() {
     refreshBalance();
     refreshTransactionHistory();
     await sleep(10000);
-    // refreshWalletDataLoop(); TODO turn back on
+    refreshWalletDataLoop();
   }
 
   function startRefreshWalletDataLoop() {

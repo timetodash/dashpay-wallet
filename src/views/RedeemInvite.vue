@@ -2,19 +2,35 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Redeem Invite</ion-title>
+        <ion-buttons slot="start"
+          ><ion-back-button
+            style="color: #6c69fc"
+            :icon="arrowBack"
+          ></ion-back-button
+        ></ion-buttons>
+        <ion-title class="headername">Redeem Invite</ion-title>
       </ion-toolbar>
     </ion-header>
     <!-- <ion-content :fullscreen="true"> </ion-content> -->
-    <ion-content fullscreen center text-center>
+    <ion-content :fullscreen="true" center text-center class="align">
       <ion-grid>
-        <ion-row class="ion-align-items-center">
+        <ion-row>
           <ion-col>
-            <h1 v-if="!isRedeemed" text-uppercase no-padding no-margin>
-              Redeeming invite code..
+            <h1 class="smalldescription">Your balance</h1>
+            <h1 no-padding no-margin class="bigdescription">
+              {{ myDashBalance }} Dash
+            </h1>
+            <h1
+              v-if="!isRedeemed"
+              text-uppercase
+              no-padding
+              no-margin
+              class="mediumdescription"
+            >
+              Redeeming invite code...
             </h1>
 
-            <h3 v-else no-padding no-margin>
+            <h3 v-else no-padding no-margin class="mediumdescription">
               Success, we can now finish the registration.
             </h3>
           </ion-col>
@@ -26,8 +42,9 @@
         <ion-button
           expand="block"
           color="tertiary"
+          class="create ion-padding-horizontal"
           @click="() => router.push('/finishregistration')"
-          >Finish</ion-button
+          >Create Account</ion-button
         >
       </ion-toolbar>
     </ion-footer>
@@ -35,15 +52,21 @@
 </template>
 
 <script lang="ts">
-import { onMounted, ref, unref } from "vue";
+import useWallet from "@/composables/wallet";
+
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import axios from "axios";
+
+import { arrowBack } from "ionicons/icons";
 
 import {
   IonPage,
   IonHeader,
   IonToolbar,
+  IonButtons,
+  IonBackButton,
   IonTitle,
   IonContent,
   IonButton,
@@ -63,6 +86,8 @@ export default {
     IonHeader,
     IonToolbar,
     IonTitle,
+    IonBackButton,
+    IonButtons,
     IonContent,
     IonPage,
     IonButton,
@@ -72,6 +97,8 @@ export default {
     IonFooter,
   },
   setup() {
+    const { myDashBalance } = useWallet();
+
     const client = getClient();
 
     const router = useRouter();
@@ -105,7 +132,48 @@ export default {
       isRedeemed.value = true;
     });
 
-    return { redeemInvite, router, isRedeemed };
+    return { myDashBalance, redeemInvite, router, isRedeemed, arrowBack };
   },
 };
 </script>
+
+<style scoped>
+.smalldescription {
+  /* font-family: Inter; */
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  letter-spacing: -0.003em;
+  color: #818c99;
+  text-align: center;
+
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  margin: 0px 4px;
+}
+.bigdescription {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 34px;
+  color: #000000;
+  margin: auto;
+  text-align: center;
+}
+.create {
+  text-transform: capitalize;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 17px;
+  text-align: center;
+}
+.align {
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  top: 35%;
+}
+</style>

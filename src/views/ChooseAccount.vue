@@ -1,49 +1,70 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="ion-no-border">
         <ion-buttons slot="start"
-          ><ion-back-button :icon="arrowBack"></ion-back-button
+          ><ion-back-button
+            style="color: #6c69fc"
+            :icon="arrowBack"
+          ></ion-back-button
         ></ion-buttons>
-        <ion-title>Login</ion-title>
+        <ion-title class="headername">Login</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content :fullscreen="true" class="ion-padding">
-      <AccountList v-if="!selectedAccount" @selectAccount="selectAccount" />
-      <PasswordPrompt v-model="password" :account="selectedAccount" v-else />
-    </ion-content>
-    <ion-footer class="ion-no-border">
-      <ion-toolbar v-if="selectedAccount">
-        <ion-button color="tertiary" @click="decryptMnemonic()" expand="block"
-          >Login</ion-button
-        >
-        <ion-button
-          color="secondary"
-          @click="selectAccount(null)"
-          expand="block"
-          fill="outline"
-          >Cancel</ion-button
-        >
-      </ion-toolbar>
-      <ion-toolbar v-else>
-        <ion-button color="tertiary" @click="createAccount" expand="block"
+    <ion-content class="ion-padding-start">
+      <AccountList @selectAccount="selectAccount" />
+      <ion-modal :is-open="isAccountOpen" @didDismiss="showAccountModal(false)">
+        <PasswordPromptModal
+          v-model="password"
+          :account="selectedAccount"
+          @decryptMnemonic="decryptMnemonic"
+        />
+      </ion-modal>
+      <div>
+        <div class="newaccount" @click="createAccount">
+          <ion-icon
+            :src="require('/public/assets/icons/newaccount.svg')"
+            class="add"
+          ></ion-icon>
+          Create new account
+        </div>
+        <div class="newaccount" @click="router.push('/recoverwallet')">
+          <ion-icon
+            :src="require('/public/assets/icons/addwallet.svg')"
+            class="add"
+          ></ion-icon>
+          Add an existing wallet
+        </div>
+      </div>
+      <!-- <ion-button color="tertiary" router-link="/choosename" expand="block"
           >Create New Account</ion-button
-        >
-        <ion-button color="tertiary" router-link="/recoverwallet" expand="block"
-          >Add existing Wallet</ion-button
-        >
+        > -->
+      <!-- <ion-button color="tertiary" router-link="/recoverwallet" expand="block"
+        >Add existing Wallet</ion-button
+      > -->
+    </ion-content>
+    <ion-footer class="ion-no-border ion-padding-horizontal">
+      <ion-toolbar v-if="isLoggedIn">
+        <div class="flex ion-nowrap ion-align-items-center" @click="logout">
+          <ion-icon
+            :src="require('/public/assets/icons/logout.svg')"
+            class="logout"
+          ></ion-icon>
+          <div class="logout-text">Log out</div>
+        </div>
       </ion-toolbar>
     </ion-footer>
   </ion-page>
 </template>
 
 <script lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
 import AccountList from "@/components/Login/AccountList.vue";
-import PasswordPrompt from "@/components/Login/PasswordPrompt.vue";
+// import PasswordPrompt from "@/components/Login/PasswordPrompt.vue";
+import PasswordPromptModal from "@/components/Login/PasswordPromptModal.vue";
 
 import {
   IonPage,
@@ -51,10 +72,12 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
+  IonIcon,
   IonButton,
   IonButtons,
   IonBackButton,
   IonFooter,
+  IonModal,
 } from "@ionic/vue";
 
 import { getClientOpts, initClient, disconnectClient } from "@/lib/DashClient";
@@ -69,35 +92,54 @@ export default {
   name: "ChooseAccount",
   components: {
     AccountList,
-    PasswordPrompt,
+    PasswordPromptModal,
     IonButtons,
     IonBackButton,
     IonHeader,
     IonToolbar,
     IonTitle,
     IonContent,
+    IonIcon,
     IonPage,
-    IonButton,
+    // IonButton,
     IonFooter,
+    IonModal,
   },
   setup() {
     const router = useRouter();
+
     const store = useStore();
+
+    const isAccountOpen = ref(false);
 
     let client: Client;
 
     const password = ref("");
 
     const accounts = ref([]);
+
     // onMounted(async () => {});
 
     const selectedAccount = ref();
 
+    const showAccountModal = (state: boolean) => (isAccountOpen.value = state);
+
     function selectAccount(account: any) {
-      console.log("selectAccountFired");
+      store.commit("resetState");
+
+      try {
+        disconnectClient();
+      } catch (e) {
+        console.log("no client connected");
+      }
+
       selectedAccount.value = account;
+
       console.log("selectedAccount.value :>> ", selectedAccount.value);
+
       store.commit("setWishName", account.wishName);
+
+      showAccountModal(true);
     }
 
     const recoverWallet = async (mnemonic: string) => {
@@ -110,7 +152,9 @@ export default {
       }
 
       const clientOpts = getClientOpts(mnemonic);
+
       client = await initClient(clientOpts);
+
       console.log(
         "logged in with mnemonic :>> ",
         client?.wallet?.exportWallet()
@@ -121,6 +165,7 @@ export default {
       const balance = client.account!.getTotalBalance();
 
       console.log("balance :>> ", balance);
+
       console.log(
         "client.wallet.exportWallet() :>> ",
         client.wallet?.exportWallet()
@@ -160,14 +205,9 @@ export default {
         }
       }
       selectedAccount.value = undefined;
-
-      // console.log("balance, mnemonic :>> ", unref(balance), unref(mnemonic));
-
-      // NEXT finish sign up or go to home
-      // router.push("/home");
     };
 
-    const decryptMnemonic = function() {
+    const decryptMnemonic = async function () {
       const mnemonic = decrypt(
         "aes",
         selectedAccount.value.encMnemonic,
@@ -175,7 +215,8 @@ export default {
       );
 
       console.log("mnemonic :>> ", mnemonic);
-      recoverWallet(mnemonic);
+      await recoverWallet(mnemonic);
+      showAccountModal(false);
     };
 
     const createAccount = async () => {
@@ -184,7 +225,16 @@ export default {
       router.push("/choosename");
     };
 
+    const logout = () => {
+      store.commit("resetState");
+      disconnectClient();
+    };
+
+    const isLoggedIn = computed(() => !!store.state.accountDPNS);
+
     return {
+      isLoggedIn,
+      logout,
       recoverWallet,
       router,
       accounts,
@@ -194,7 +244,55 @@ export default {
       decryptMnemonic,
       arrowBack,
       createAccount,
+      isAccountOpen,
+      showAccountModal,
     };
   },
 };
 </script>
+
+<style scoped>
+ion-header {
+  padding-top: 16px;
+  padding-left: 0px;
+  background-color: #ffffff;
+  border: none;
+}
+
+ion-toolbar {
+  --background: primary;
+}
+.newaccount {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  letter-spacing: -0.003em;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  margin-top: 13px;
+  margin-bottom: 30px;
+}
+.add {
+  height: 25px;
+  width: 25px;
+  /* display: flex;
+  align-items: center; */
+  margin-right: 13px;
+}
+.logout {
+  height: 29px;
+  width: 29px;
+  margin-left: 3px;
+}
+.logout-text {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  letter-spacing: -0.003em;
+  color: #6c69fc;
+  margin-left: 10px;
+}
+</style>

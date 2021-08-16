@@ -1,7 +1,7 @@
 <template>
   <div class="scroll_container">
     <div>
-      <ion-grid class="ion-no-padding">
+      <ion-grid style="padding: 0px">
         <ion-row
           v-for="msg in chatMsgs"
           :key="msg.id.toString()"

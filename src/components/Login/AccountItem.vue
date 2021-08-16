@@ -1,16 +1,22 @@
 <template>
-  <ion-item :account="account" button>
+  <ion-item :account="account" class="ion-no-padding" button>
     <ion-avatar slot="start">
       <img :src="getUserAvatar(account.accountDPNS?.$ownerId)" />
     </ion-avatar>
-    <ion-label>
-      <h2>
-        <ion-icon :icon="checkmark" v-if="loggedInAccount"></ion-icon>
-        {{ accountLabel }}
-      </h2>
-      <h3>
-        {{ accountDisplayName }}
-      </h3>
+    <ion-label class="ion-nowrap">
+      <div style="position: relative">
+        <ion-icon
+          v-if="loggedInAccount"
+          :src="require('/public/assets/icons/account.svg')"
+          class="active"
+        ></ion-icon>
+        <h2 class="accountname">
+          {{ accountLabel }}
+        </h2>
+        <h3 class="displayname">
+          {{ accountDisplayName }}
+        </h3>
+      </div>
     </ion-label>
   </ion-item>
 </template>
@@ -71,3 +77,30 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.accountname {
+  font-style: normal;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 18px;
+  color: #000000;
+}
+.displayname {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 15px;
+  color: #929598;
+}
+.active {
+  float: right;
+  display: flex;
+  height: 23px;
+  width: 23px;
+  position: absolute;
+  top: 50%;
+  right: 0px;
+  transform: translate(0%, -50%);
+}
+</style>

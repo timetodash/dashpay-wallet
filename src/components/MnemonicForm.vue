@@ -1,9 +1,8 @@
 <template>
-  <div class="center">
+  <div>
     <h1 class="title">Enter your seed phrase</h1>
     <span class="subtitle">
-      Please enter your seed phrase to <br />
-      import your existing wallet
+      Please enter your seed phrase to import your existing wallet.
     </span>
 
     <div class="words">
@@ -28,36 +27,40 @@
       </div>
     </div>
 
-    <div class="filtered">
-      <div class="filtered-scrollbar" ref="suggestionContainer">
-        <div
-          class="filtered-button"
-          v-bind:class="
-            mnemonic[index.field] === word || i === index.suggestion
-              ? 'filtered-button--active'
-              : ''
-          "
-          v-bind:key="i"
-          v-bind:ref="setSuggestions"
-          v-for="(word, i) in suggestions"
-          @click="set(word)"
-        >
-          {{ word }}
+    <ion-footer>
+      <div class="filtered">
+        <div class="filtered-scrollbar" ref="suggestionContainer">
+          <div
+            class="filtered-button"
+            v-bind:class="
+              mnemonic[index.field] === word || i === index.suggestion
+                ? 'filtered-button--active'
+                : ''
+            "
+            v-bind:key="i"
+            v-bind:ref="setSuggestions"
+            v-for="(word, i) in suggestions"
+            @click="set(word)"
+          >
+            {{ word }}
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- <div
+      <!-- <div
       class="next"
       v-bind:class="focus || mnemonic.length < 12 ? 'next--disabled' : ''"
       v-on:click="$emit('mnemonic-entered', mnemonic)"
     >
       Next
     </div> -->
+    </ion-footer>
   </div>
 </template>
 
 <script>
+import { IonFooter } from "@ionic/vue";
+
 const whitelist = [
   "abandon",
   "ability",
@@ -2110,6 +2113,7 @@ const whitelist = [
 ];
 
 export default {
+  components: { IonFooter },
   beforeUpdate() {
     this.refs = {
       fields: [],
@@ -2138,7 +2142,7 @@ export default {
     };
   },
   methods: {
-    filter: function(e, value) {
+    filter: function (e, value) {
       this.suggestions = this.whitelist.filter((word) => {
         return value && word.startsWith(value);
       });
@@ -2155,7 +2159,7 @@ export default {
         this.index.suggestion = 0;
       }
     },
-    keydown: function(e) {
+    keydown: function (e) {
       if (e.keyCode !== 9) {
         return;
       }
@@ -2186,7 +2190,7 @@ export default {
     // 13 = Enter
     // 16 = Shift
     // 32 = Spacebar
-    keyup: function(e) {
+    keyup: function (e) {
       let mnemonic = this.mnemonic;
       const value = e.target.value.trim();
 
@@ -2302,7 +2306,7 @@ export default {
         }
       });
     },
-    refocus: function(e) {
+    refocus: function (e) {
       if (this.focus) {
         if (e.target !== this.focus) {
           this.$nextTick(() => {
@@ -2313,7 +2317,7 @@ export default {
         this.index.field = e.target.getAttribute("index");
       }
     },
-    set: function(word) {
+    set: function (word) {
       this.refs.fields[this.index.field].focus();
 
       this.mnemonic[this.index.field] = word;
@@ -2333,17 +2337,17 @@ export default {
         this.refs.fields[this.index.field].focus();
       });
     },
-    setFields: function(el) {
+    setFields: function (el) {
       if (el) {
         this.refs.fields.push(el);
       }
     },
-    setSuggestions: function(el) {
+    setSuggestions: function (el) {
       if (el) {
         this.refs.suggestions.push(el);
       }
     },
-    setWords: function(el) {
+    setWords: function (el) {
       if (el) {
         this.refs.words.push(el);
       }
@@ -2356,14 +2360,14 @@ export default {
 .center {
   display: flex;
   flex-direction: column;
-  margin: 0 auto;
+  /* margin: 0 auto; */
   max-width: 480px;
   min-height: 87vh;
-  text-align: center;
+  /* text-align: center; */
 }
 .filtered {
   height: 42px; /* Top button padding + bottom button padding + line-height = hidden horizontal scrollbar */
-  margin-top: auto;
+  /* margin-top: auto; */
   overflow: hidden;
   width: 100%;
 }
@@ -2406,18 +2410,30 @@ export default {
   pointer-events: none;
 }
 .subtitle {
-  color: #888;
   margin-top: 8px;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 17px;
+  color: #888888;
 }
 .title {
-  color: #000;
-  font-size: 24px;
-  margin: 40px 0 0;
+  margin: 35px 0 13px;
+  display: flex;
+  justify-content: flex-start;
+
+  font-style: normal;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 19px;
+  display: flex;
+  align-items: center;
+  color: #000000;
 }
 .words,
 .word,
 .word-text {
-  width: 320px;
+  width: 328px;
 }
 .words {
   margin: 40px auto 0;

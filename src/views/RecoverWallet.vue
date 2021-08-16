@@ -1,12 +1,18 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Add existing Wallet</ion-title>
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="ion-no-border">
+        <ion-buttons slot="start"
+          ><ion-back-button
+            style="color: #6c69fc"
+            :icon="arrowBack"
+          ></ion-back-button
+        ></ion-buttons>
+        <ion-title class="title">Add an existing wallet</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true" class="ion-padding">
-      <mnemonic-form @mnemonicEntered="recoverWallet"></mnemonic-form>
+      <MnemonicForm @mnemonicEntered="recoverWallet"></MnemonicForm>
       <ion-loading :is-open="isWalletLoading" message="Loading Wallet...">
       </ion-loading>
     </ion-content>
@@ -34,11 +40,8 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonButton,
-  IonLabel,
-  IonTextarea,
-  IonItem,
-  IonFooter,
+  IonBackButton,
+  IonButtons,
 } from "@ionic/vue";
 
 import {
@@ -47,6 +50,8 @@ import {
   getClientOpts,
   disconnectClient,
 } from "@/lib/DashClient";
+
+import { arrowBack } from "ionicons/icons";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -58,10 +63,10 @@ export default {
     IonTitle,
     IonContent,
     IonPage,
-    // IonButton,
-    // IonFooter,
-    MnemonicForm,
+    IonBackButton,
+    IonButtons,
     IonLoading,
+    MnemonicForm,
   },
   setup() {
     const router = useRouter();
@@ -96,8 +101,9 @@ export default {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       balance.value = getClient().account!.getTotalBalance();
 
-      [identityId.value] = ((await getClient()
-        .account) as any).identities.getIdentityIds();
+      [identityId.value] = (
+        (await getClient().account) as any
+      ).identities.getIdentityIds();
 
       if (identityId.value) {
         const [dpnsDoc] = await getClient().platform?.names.resolveByRecord(
@@ -123,6 +129,7 @@ export default {
       recoverWallet,
       router,
       isWalletLoading,
+      arrowBack,
     };
   },
 };

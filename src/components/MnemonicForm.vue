@@ -1,8 +1,9 @@
 <template>
-  <div>
+  <div class="center">
     <h1 class="title">Enter your seed phrase</h1>
     <span class="subtitle">
-      Please enter your seed phrase to import your existing wallet.
+      Please enter your seed phrase to <br />
+      import your existing wallet
     </span>
 
     <div class="words">
@@ -27,40 +28,28 @@
       </div>
     </div>
 
-    <ion-footer>
-      <div class="filtered">
-        <div class="filtered-scrollbar" ref="suggestionContainer">
-          <div
-            class="filtered-button"
-            v-bind:class="
-              mnemonic[index.field] === word || i === index.suggestion
-                ? 'filtered-button--active'
-                : ''
-            "
-            v-bind:key="i"
-            v-bind:ref="setSuggestions"
-            v-for="(word, i) in suggestions"
-            @click="set(word)"
-          >
-            {{ word }}
-          </div>
+    <div class="filtered">
+      <div class="filtered-scrollbar" ref="suggestionContainer">
+        <div
+          class="filtered-button"
+          v-bind:class="
+            mnemonic[index.field] === word || i === index.suggestion
+              ? 'filtered-button--active'
+              : ''
+          "
+          v-bind:key="i"
+          v-bind:ref="setSuggestions"
+          v-for="(word, i) in suggestions"
+          @click="set(word)"
+        >
+          {{ word }}
         </div>
       </div>
-
-      <!-- <div
-      class="next"
-      v-bind:class="focus || mnemonic.length < 12 ? 'next--disabled' : ''"
-      v-on:click="$emit('mnemonic-entered', mnemonic)"
-    >
-      Next
-    </div> -->
-    </ion-footer>
+    </div>
   </div>
 </template>
 
 <script>
-import { IonFooter } from "@ionic/vue";
-
 const whitelist = [
   "abandon",
   "ability",
@@ -2113,16 +2102,12 @@ const whitelist = [
 ];
 
 export default {
-  components: { IonFooter },
   beforeUpdate() {
     this.refs = {
       fields: [],
       suggestions: [],
       words: [],
     };
-  },
-  unmounted() {
-    this.mnemonic = [""];
   },
   data() {
     return {
@@ -2142,7 +2127,10 @@ export default {
     };
   },
   methods: {
-    filter: function (e, value) {
+    destroyed: function() {
+      this.mnemonic = [""];
+    },
+    filter: function(e, value) {
       this.suggestions = this.whitelist.filter((word) => {
         return value && word.startsWith(value);
       });
@@ -2159,7 +2147,7 @@ export default {
         this.index.suggestion = 0;
       }
     },
-    keydown: function (e) {
+    keydown: function(e) {
       if (e.keyCode !== 9) {
         return;
       }
@@ -2180,7 +2168,7 @@ export default {
         }
 
         this.$nextTick(() => {
-          this.focus = this.refs.words[this.index.field];
+          this.focus = this.refs.fields[this.index.field];
           this.refs.fields[this.index.field].focus();
         });
       }
@@ -2190,14 +2178,15 @@ export default {
     // 13 = Enter
     // 16 = Shift
     // 32 = Spacebar
-    keyup: function (e) {
-      let mnemonic = this.mnemonic;
+    keyup: function(e) {
+      let error = false,
+        mnemonic = this.mnemonic;
       const value = e.target.value.trim();
 
       if (e.keyCode === 9) {
         e.preventDefault();
 
-        if (!value && e.shiftKey) {
+        if (e.shiftKey) {
           return;
         }
       }
@@ -2231,8 +2220,6 @@ export default {
           if (selected) {
             selected.scrollIntoView();
           }
-
-          e.target.focus();
         }
       }
 
@@ -2255,12 +2242,27 @@ export default {
             .split(/[ ,]+/)
             .map((s) => s.trim())
             .filter((s) => s);
+
+          for (let i = 0, n = mnemonic.length; i < n; i++) {
+            const word = mnemonic[i];
+
+            if (!this.whitelist.includes(word)) {
+              error = i;
+
+              if (i > 0) {
+                mnemonic = mnemonic.slice(0, i);
+              } else {
+                mnemonic = [mnemonic.join(" ")].filter((w) => w);
+              }
+              break;
+            }
+          }
         }
         // Invalid Entry, Bail
         else if (this.suggestions.length === 0 || (!value && e.keyCode !== 9)) {
           return;
         }
-        // Insert Word Using Active Index
+        // Insert Word Using Active Suggestion Index
         else {
           mnemonic.splice(
             this.index.field,
@@ -2272,7 +2274,10 @@ export default {
         mnemonic.splice(this.index.field, 1, value);
       }
 
-      if (parseInt(this.index.field) + 1 === this.mnemonic.length) {
+      if (
+        error === false &&
+        parseInt(this.index.field) + 1 === this.mnemonic.length
+      ) {
         mnemonic.push("");
       }
 
@@ -2286,29 +2291,40 @@ export default {
       this.index.suggestion = 0;
       this.index.field++;
 
-      // get index of next whitespace
+      // Index Of Next Whitespace
       const index = mnemonic.indexOf("");
 
       this.index.field = index !== -1 ? index : this.index.field;
+
+      if (this.index.field < 0 || this.index.field > mnemonic.length - 1) {
+        this.index.field = mnemonic.length - 1;
+      }
 
       if (this.index.field >= 12) {
         this.index.field = 11;
       }
 
       this.$nextTick(() => {
-        this.refs.fields[this.index.field].focus();
+        if (error !== false) {
+          this.focus = this.refs.fields[error];
+          this.refs.words[error].classList.add("word--error");
+        } else {
+          this.refs.fields[this.index.field].focus();
+        }
 
         if (this.mnemonic.filter((w) => whitelist.includes(w)).length === 12) {
           this.$emit("mnemonicEntered", this.mnemonic.join(" "));
+          this.mnemonic = [""];
           // setTimeout(() => {
-          //   this.$emit("mnemonicEntered", this.mnemonic.join(" "));
-          // }, 250);
+          //   this.suggestions = [];
+          //   alert(this.mnemonic.join(" "));
+          // }, 100);
         }
       });
     },
-    refocus: function (e) {
+    refocus: function(e) {
       if (this.focus) {
-        if (e.target !== this.focus) {
+        if (e.target != this.focus) {
           this.$nextTick(() => {
             this.focus.focus();
           });
@@ -2317,7 +2333,7 @@ export default {
         this.index.field = e.target.getAttribute("index");
       }
     },
-    set: function (word) {
+    set: function(word) {
       this.refs.fields[this.index.field].focus();
 
       this.mnemonic[this.index.field] = word;
@@ -2337,21 +2353,24 @@ export default {
         this.refs.fields[this.index.field].focus();
       });
     },
-    setFields: function (el) {
+    setFields: function(el) {
       if (el) {
         this.refs.fields.push(el);
       }
     },
-    setSuggestions: function (el) {
+    setSuggestions: function(el) {
       if (el) {
         this.refs.suggestions.push(el);
       }
     },
-    setWords: function (el) {
+    setWords: function(el) {
       if (el) {
         this.refs.words.push(el);
       }
     },
+  },
+  mounted() {
+    this.refs.fields[0].focus();
   },
 };
 </script>
@@ -2360,14 +2379,14 @@ export default {
 .center {
   display: flex;
   flex-direction: column;
-  /* margin: 0 auto; */
+  margin: 0 auto;
   max-width: 480px;
-  min-height: 87vh;
-  /* text-align: center; */
+  min-height: 100vh;
+  text-align: center;
 }
 .filtered {
   height: 42px; /* Top button padding + bottom button padding + line-height = hidden horizontal scrollbar */
-  /* margin-top: auto; */
+  margin-top: auto;
   overflow: hidden;
   width: 100%;
 }
@@ -2410,30 +2429,18 @@ export default {
   pointer-events: none;
 }
 .subtitle {
+  color: #888;
   margin-top: 8px;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 17px;
-  color: #888888;
 }
 .title {
-  margin: 35px 0 13px;
-  display: flex;
-  justify-content: flex-start;
-
-  font-style: normal;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 19px;
-  display: flex;
-  align-items: center;
-  color: #000000;
+  color: #000;
+  font-size: 24px;
+  margin: 40px 0 0;
 }
 .words,
 .word,
 .word-text {
-  width: 328px;
+  width: 320px;
 }
 .words {
   margin: 40px auto 0;

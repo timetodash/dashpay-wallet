@@ -1,8 +1,5 @@
 <template>
-  <div
-    v-for="chatListItem in store.state.chatList"
-    :key="chatListItem.friendOwnerId"
-  >
+  <div v-for="chatListItem in chatList" :key="chatListItem.friendOwnerId">
     <ChatListItemLegacy
       v-if="chatListItem.id === 'legacy'"
       :chatListItem="chatListItem"
@@ -30,15 +27,14 @@ import ChatListItemLegacy from "@/components/Chat/ChatListItemLegacy.vue";
 
 export default defineComponent({
   components: { ChatListItem, ChatListItemLegacy },
+  props: ["chatList"],
+
   setup() {
     const store = useStore();
 
     const router = useRouter();
 
-    const { chatList } = store.state;
-
     return {
-      chatList,
       router,
       store,
     };

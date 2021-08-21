@@ -64,7 +64,13 @@ import {
   modalController,
 } from "@ionic/vue";
 
-import { getClient } from "@/lib/DashClient";
+import {
+  getClient,
+  disconnectClient,
+  getClientOpts,
+  initClient,
+} from "@/lib/DashClient";
+
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import useWallet from "@/composables/wallet";
@@ -87,8 +93,6 @@ export default {
     IonAvatar,
   },
   setup() {
-    const client = getClient();
-
     const router = useRouter();
 
     const store = useStore();
@@ -111,19 +115,30 @@ export default {
       console.log("store.state.wishName :>> ", store.state.wishName);
       console.log("formPassword.value :>> ", formPassword.value);
 
+      try {
+        await disconnectClient();
+      } catch (e) {
+        console.log(e);
+      }
+      const clientOpts = getClientOpts(null);
+
+      await initClient(clientOpts);
+
       console.log(
-        "client.wallet!.exportWallet() :>> ",
-        client.wallet!.exportWallet()
+        "getClient().wallet!.exportWallet() :>> ",
+        getClient().wallet!.exportWallet()
       );
 
-      const encMnemonic = client.account!.encrypt(
+      const encMnemonic = getClient().account!.encrypt(
         "aes",
-        client.wallet?.exportWallet(),
+        getClient().wallet?.exportWallet(),
         formPassword.value
       );
 
       const accountId = createAccountId(
-        client.wallet!.exportWallet().toString()
+        getClient()
+          .wallet!.exportWallet()
+          .toString()
       );
 
       await storeAccount({

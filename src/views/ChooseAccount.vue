@@ -3,10 +3,13 @@
     <ion-header class="ion-no-border">
       <ion-toolbar class="ion-no-border">
         <ion-buttons slot="start"
-          ><ion-back-button
+          ><ion-icon
+            v-if="isLoggedIn"
             style="color: #6c69fc"
+            class="back"
             :icon="arrowBack"
-          ></ion-back-button
+            @click="router.push('/home')"
+          ></ion-icon
         ></ion-buttons>
         <ion-title class="headername">Login</ion-title>
       </ion-toolbar>
@@ -28,7 +31,7 @@
           ></ion-icon>
           Create new account
         </div>
-        <div class="newaccount" @click="router.push('/recoverwallet')">
+        <div class="newaccount" @click="addAccount">
           <ion-icon
             :src="require('/public/assets/icons/addwallet.svg')"
             class="add"
@@ -36,12 +39,6 @@
           Add an existing wallet
         </div>
       </div>
-      <!-- <ion-button color="tertiary" router-link="/choosename" expand="block"
-          >Create New Account</ion-button
-        > -->
-      <!-- <ion-button color="tertiary" router-link="/recoverwallet" expand="block"
-        >Add existing Wallet</ion-button
-      > -->
     </ion-content>
     <ion-footer class="ion-no-border ion-padding-horizontal">
       <ion-toolbar v-if="isLoggedIn">
@@ -73,14 +70,18 @@ import {
   IonTitle,
   IonContent,
   IonIcon,
-  IonButton,
+  // IonButton,
   IonButtons,
-  IonBackButton,
   IonFooter,
   IonModal,
 } from "@ionic/vue";
 
-import { getClientOpts, initClient, disconnectClient } from "@/lib/DashClient";
+import {
+  getClient,
+  getClientOpts,
+  initClient,
+  disconnectClient,
+} from "@/lib/DashClient";
 
 import { Client } from "dash/dist/src/SDK/Client/index";
 
@@ -94,7 +95,7 @@ export default {
     AccountList,
     PasswordPromptModal,
     IonButtons,
-    IonBackButton,
+    // IonButton,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -125,7 +126,7 @@ export default {
     const showAccountModal = (state: boolean) => (isAccountOpen.value = state);
 
     function selectAccount(account: any) {
-      store.commit("resetState");
+      store.commit("resetStateKeepDashpayProfiles");
 
       try {
         disconnectClient();
@@ -207,7 +208,7 @@ export default {
       selectedAccount.value = undefined;
     };
 
-    const decryptMnemonic = async function () {
+    const decryptMnemonic = async function() {
       const mnemonic = decrypt(
         "aes",
         selectedAccount.value.encMnemonic,
@@ -220,13 +221,33 @@ export default {
     };
 
     const createAccount = async () => {
-      store.commit("resetState");
-      await disconnectClient();
+      store.commit("resetStateKeepDashpayProfiles");
+
+      try {
+        getClient();
+        if (getClient().wallet) await disconnectClient();
+      } catch (e) {
+        const clientOpts = getClientOpts(undefined);
+
+        await initClient(clientOpts);
+      }
+
       router.push("/choosename");
     };
 
+    const addAccount = async () => {
+      store.commit("resetStateKeepDashpayProfiles");
+
+      try {
+        await disconnectClient();
+      } catch (e) {
+        console.log(e);
+      }
+
+      router.push("/recoverwallet");
+    };
     const logout = () => {
-      store.commit("resetState");
+      store.commit("resetStateKeepDashpayProfiles");
       disconnectClient();
     };
 
@@ -244,6 +265,7 @@ export default {
       decryptMnemonic,
       arrowBack,
       createAccount,
+      addAccount,
       isAccountOpen,
       showAccountModal,
     };

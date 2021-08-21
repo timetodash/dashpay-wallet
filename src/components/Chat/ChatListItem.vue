@@ -14,6 +14,9 @@
           :src="unlink"
         ></ion-icon>
         {{ getUserLabel(chatListItem.friendOwnerId) }}
+        <span style="font-weight: 400">
+          {{ getUserDisplayName(chatListItem.friendOwnerId) }}</span
+        >
 
         <div class="message-time" :class="{ primary: !!newMsgCount }">
           {{ chatListItem.lastMessage.createdAt.getHours() }}:{{
@@ -85,7 +88,7 @@ export default {
 
     const { duffsInDash } = useRates();
 
-    const { getUserLabel, getUserAvatar } = store.getters;
+    const { getUserDisplayName, getUserLabel, getUserAvatar } = store.getters;
 
     const newMsgCount = computed(() =>
       store.getters.getNewChatMsgCount(props.chatListItem.friendOwnerId)
@@ -96,6 +99,7 @@ export default {
     );
 
     return {
+      getUserDisplayName,
       getUserLabel,
       getUserAvatar,
       unlink,

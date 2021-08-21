@@ -15,10 +15,10 @@
       </ion-toolbar>
 
       <ion-toolbar class="searchbar">
-        <ion-searchbar></ion-searchbar>
+        <ion-searchbar v-model="filterInput"></ion-searchbar>
       </ion-toolbar>
 
-      <ChatList></ChatList>
+      <ChatList :chatList="filteredChatList"></ChatList>
 
       <ion-fab horizontal="end" vertical="bottom" slot="fixed">
         <ion-fab-button class="compose" @click="router.push(`/contactSearch`)">
@@ -44,6 +44,7 @@
 import { onMounted, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
+import { search } from "ss-search";
 
 import {
   IonPage,
@@ -101,6 +102,8 @@ export default {
 
     const store = useStore();
 
+    const filterInput = ref("");
+
     const { startRefreshWalletDataLoop } = useWallet();
     const { startSyncContactRequests } = useContacts();
     const { startSyncChats } = useChats();
@@ -117,6 +120,21 @@ export default {
         store.getters.myDisplayName &&
         store.getters.myPublicMessage
       );
+    });
+
+    const filteredChatList = computed(() => {
+      if (filterInput.value) {
+        console.log("returning filtered list, filterInput", filterInput);
+        // return [store.state.chatList[0]];
+        return search(
+          store.state.chatList,
+          ["searchLabel", "searchDisplayName"],
+          filterInput.value
+        );
+      } else {
+        console.log("returning entire list, filterInput", filterInput);
+        return store.state.chatList;
+      }
     });
 
     // onMounted(async () => {
@@ -137,6 +155,8 @@ export default {
       scan,
       add,
       isProfileCompleted,
+      filterInput,
+      filteredChatList,
     };
   },
 };

@@ -59,6 +59,12 @@ const mutations = {
     newState.dpns = state.dpns;
     Object.assign(state, newState);
   },
+  resetStateKeepDashpayProfiles(state: any) {
+    const newState = getDefaultState();
+    newState.dashpayProfiles = state.dashpayProfiles;
+    newState.dpns = state.dpns;
+    Object.assign(state, newState);
+  },
   resetState(state: any) {
     Object.assign(state, getDefaultState());
   },
@@ -104,6 +110,13 @@ const mutations = {
       const friendshipState =
         contactRequestReceived && contactRequestSent ? "LINKED" : "UNLINKED";
 
+      const searchLabel =
+        (state.dpns as any)[friendOwnerId]?.data.label ??
+        friendOwnerId.substr(0, 6);
+
+      const searchDisplayName = (state.dashpayProfiles as any)[friendOwnerId]
+        ?.data.displayName;
+
       const chatListItem = {
         id: lastMessage.id.toString(),
         friendOwnerId,
@@ -112,6 +125,8 @@ const mutations = {
         friendshipState,
         contactRequestReceived,
         contactRequestSent,
+        searchLabel,
+        searchDisplayName,
       };
 
       // console.log("chatListItem :>> ", chatListItem);
@@ -296,7 +311,11 @@ const actions = {
 
     console.log("fetchDashpayProfile results :>> ", results);
 
-    context.commit("setDashpayProfiles", results);
+    if (results.length > 0) {
+      context.commit("setDashpayProfiles", results);
+      context.commit("sortChatList"); // TODO optimize performance
+    }
+
     return results; // TODO returned cached entries as well
   },
   async syncChats(context: any) {
@@ -496,7 +515,10 @@ const actions = {
     );
     // console.log("fetchDPNSDoc dpnsDoc :>> ", dpnsDoc);
 
-    if (dpnsDoc) context.commit("setDPNS", dpnsDoc);
+    if (dpnsDoc) {
+      context.commit("setDPNS", dpnsDoc);
+      context.commit("sortChatList"); // TODO increase performance
+    }
   },
 };
 

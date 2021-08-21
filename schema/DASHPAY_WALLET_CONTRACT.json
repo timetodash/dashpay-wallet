@@ -1,5 +1,7 @@
 {
   "chat": {
+    "type": "object",
+
     "indices": [
       {
         "properties": [

@@ -1,10 +1,11 @@
 {
   "profile": {
+    "type": "object",
     "indices": [
       {
         "properties": [
           {
-            "$ownerId": "desc"
+            "$ownerId": "asc"
           }
         ],
         "unique": true
@@ -52,6 +53,7 @@
     "additionalProperties": false
   },
   "contactInfo": {
+    "type": "object",
     "indices": [
       {
         "properties": [
@@ -112,6 +114,7 @@
     "additionalProperties": false
   },
   "contactRequest": {
+    "type": "object",
     "indices": [
       {
         "properties": [

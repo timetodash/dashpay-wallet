@@ -162,7 +162,7 @@ export default {
     IonSpinner,
   },
   setup() {
-    const clientOpts = getClientOpts(null);
+    const clientOpts = getClientOpts(undefined);
 
     const router = useRouter();
 
@@ -276,6 +276,14 @@ export default {
 
       mostRecentCheckTimestamp.value = thisCheckTimestamp;
 
+      try {
+        getClient();
+      } catch (e) {
+        const clientOpts = getClientOpts(undefined);
+
+        await initClient(clientOpts);
+      }
+
       const dpnsDoc = await getClient().platform?.names.resolve(
         `${formName.value}.dash`
       );
@@ -299,6 +307,7 @@ export default {
     }
 
     onMounted(async () => {
+      console.log("onMounted ChooseAccount.vue");
       try {
         getClient();
         // If we add an existing account, the client will already have a wallet
@@ -340,12 +349,12 @@ export default {
 };
 </script>
 <style scoped>
-.back {
+/* .back {
   margin-left: 16px;
   width: 22px;
   height: 22px;
   color: #6c69fc;
-}
+} */
 :host {
   --min-height: 0px;
   --background: white;

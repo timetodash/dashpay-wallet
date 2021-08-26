@@ -8,11 +8,11 @@
         messagebold: chatListItem.direction === 'RECEIVED',
       }"
     >
-      <h1>
-        <ion-icon
-          v-if="chatListItem.friendshipState === 'UNLINKED'"
-          :src="unlink"
-        ></ion-icon>
+      <h1
+        :class="{
+          unlinked: chatListItem.friendshipState === 'UNLINKED',
+        }"
+      >
         {{ getUserLabel(chatListItem.friendOwnerId) }}
         <span style="font-weight: 400">
           {{ getUserDisplayName(chatListItem.friendOwnerId) }}</span
@@ -26,30 +26,46 @@
       </h1>
       <p>
         {{ chatListItem.lastMessage.data.text }}
+        <!-- {{ chatListItem.lastMessage.data.request }} -->
         <ion-chip
           v-if="chatListItem.lastMessage.data.amount"
           :class="{
             received: chatListItem.direction === 'RECEIVED',
             sent: chatListItem.direction === 'SENT',
+            requested: chatListItem.lastMessage.data.request === 'open',
           }"
           >{{ duffsInDash(chatListItem.lastMessage.data.amount) }} Dash
-          <ion-icon
-            class="sent-receive-icon"
-            v-if="chatListItem.direction === 'RECEIVED'"
-            :src="require('/public/assets/icons/receiveDash.svg')"
-          />
-          <ion-icon
-            v-else
-            class="sent-receive-icon"
-            :src="require('/public/assets/icons/sendDash.svg')"
-          />
+          <div v-if="!chatListItem.lastMessage.data.request">
+            <ion-icon
+              class="sent-receive-icon"
+              v-if="chatListItem.direction === 'RECEIVED'"
+              :src="require('/public/assets/icons/receiveDash.svg')"
+            />
+            <ion-icon
+              v-if="chatListItem.direction === 'SENT'"
+              class="sent-receive-icon"
+              :src="require('/public/assets/icons/sendDash.svg')"
+            />
+          </div>
         </ion-chip>
         <ion-badge v-if="newMsgCount > 0">{{ newMsgCount }}</ion-badge>
         <ion-icon
-          v-if="hasNewTx"
+          v-if="hasNewTx && !chatListItem.lastMessage.data.request"
           class="dash-viewed"
           :src="require('/public/assets/icons/D.svg')"
         />
+        <ion-icon
+          v-if="hasNewTx && chatListItem.lastMessage.data.request === 'open'"
+          class="dash-viewed"
+          :src="require('/public/assets/icons/requested.svg')"
+        />
+        <!-- v-if for edge case: don't show gray unlink D if it's a new Tx && you are unlinked. 
+        Once user sees the tx, display unlink D in place of new Tx D -->
+        <ion-icon
+          v-if="chatListItem.friendshipState === 'UNLINKED' && !hasNewTx"
+          class="unlink"
+          :src="require('/public/assets/icons/unlink.svg')"
+        ></ion-icon>
       </p>
     </ion-label>
   </ion-item>
@@ -123,7 +139,7 @@ export default {
   font-style: normal;
   font-weight: 600;
   line-height: 17px;
-  color: #000000;
+  /* color: #000000; */
 }
 .sc-ion-label-md-s p {
   /* font-family: Inter; */
@@ -147,7 +163,7 @@ export default {
 .squareborder {
   border-radius: 10px;
 }
-.messagebold > p {
+.messagebold {
   font-weight: 500;
   color: #000000;
 }
@@ -156,12 +172,17 @@ export default {
   width: 8px;
   height: 10px;
 }
+.unlink {
+  width: 20px;
+  height: 20px;
+  float: right;
+}
 
 .received {
   background: #eaf9f9;
   color: #36bfac;
   border-radius: 11.5px;
-  display: flex no-wrap;
+  display: flex nowrap;
   justify-content: center;
   align-items: center;
   padding: 4px 11px;
@@ -177,7 +198,7 @@ export default {
   background: #f2f4ff;
   color: #6a67fb;
   border-radius: 11.5px;
-  display: flex no-wrap;
+  display: flex nowrap;
   justify-content: center;
   align-items: center;
   padding: 4px 11px;
@@ -188,6 +209,13 @@ export default {
   font-size: 12px;
   line-height: 15px;
   letter-spacing: -0.003em;
+}
+.requested {
+  background: #ffffff;
+  border: 0.5px solid #818c99;
+  box-sizing: border-box;
+  border-radius: 11.5px;
+  color: #68717b;
 }
 .dash-viewed {
   width: 20px;
@@ -204,5 +232,8 @@ ion-badge {
 }
 .primary {
   color: #6a67fb;
+}
+.unlinked {
+  color: #818c99;
 }
 </style>

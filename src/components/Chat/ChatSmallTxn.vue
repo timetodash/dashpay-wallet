@@ -2,19 +2,21 @@
   <div
     class="chatbubble_txn_small"
     :class="{
-      user: msg._direction.toUpperCase() === 'SENT',
-      chat_partner_txn: msg._direction.toUpperCase() === 'RECEIVED',
-      user_txn: msg._direction.toUpperCase() === 'SENT',
+      user: msg._direction?.toUpperCase() === 'SENT',
+      chat_partner_txn: msg._direction?.toUpperCase() === 'RECEIVED',
+      user_txn: msg._direction?.toUpperCase() === 'SENT',
     }"
+    @mouseover="hover = true"
+    @mouseleave="hover = false"
   >
     <div class="flex ion-nowrap">
       <ion-icon
-        v-if="msg._direction.toUpperCase() === 'SENT'"
+        v-if="msg._direction?.toUpperCase() === 'SENT'"
         class="dash_icon_small"
         :src="require('/public/assets/icons/userSent.svg')"
       ></ion-icon>
       <ion-icon
-        v-else-if="msg._direction.toUpperCase() === 'RECEIVED'"
+        v-else-if="msg._direction?.toUpperCase() === 'RECEIVED'"
         class="dash_icon_small"
         :src="require('/public/assets/icons/partnerSent.svg')"
       ></ion-icon>
@@ -22,10 +24,16 @@
       <div class="leftpadding">
         <div class="amount">{{ duffsInDash(msg.data.amount) }} Dash</div>
         <div class="usdamount">
-          ~{{ msg.data.fiatAmount }} {{ msg.data.fiatSymbol }}
+          ~{{ msg.data.fiatAmount?.toFixed(2) }} {{ msg.data.fiatSymbol }}
         </div>
       </div>
     </div>
+    <ReplyPopover
+      v-if="!isReply"
+      :hover="hover"
+      :msg="msg"
+      :friendOwnerId="friendOwnerId"
+    ></ReplyPopover>
     <div class="alignrow">
       <div class="chat_timestamp">
         {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes(2) }}
@@ -42,23 +50,31 @@
 <script>
 import { IonIcon } from "@ionic/vue";
 import { checkmarkDoneOutline } from "ionicons/icons";
+import { ref } from "vue";
+import { useStore } from "vuex";
 import useRates from "@/composables/rates";
+import ReplyPopover from "@/components/Chat/ReplyPopover.vue";
 
 // import { reactive } from "vue";
 
 export default {
-  props: ["msg"],
+  props: ["msg", "friendOwnerId", "isReply"],
   components: {
     IonIcon,
+    ReplyPopover,
   },
   setup() {
     const { duffsInDash, duffsInFiatString, getFiatSymbol } = useRates();
+    const hover = ref(false);
+    const store = useStore();
 
     return {
       checkmarkDoneOutline,
       duffsInDash,
       duffsInFiatString,
       getFiatSymbol,
+      hover,
+      store,
     };
   },
 };
@@ -67,6 +83,7 @@ export default {
 <style scoped>
 .chatbubble_txn_small {
   display: flex;
+  /* display: inline-block; */
   flex-wrap: nowrap;
   padding-bottom: 3px;
   padding-top: 3px;
@@ -118,7 +135,7 @@ export default {
 }
 .alignrow {
   display: flex;
-  wrap: nowrap;
+  flex-wrap: nowrap;
   align-items: flex-end;
 }
 </style>

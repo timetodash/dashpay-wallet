@@ -12,8 +12,19 @@
         msg.data.request === 'accept' && msg._direction === 'RECEIVED',
       request_declined:
         getChatMsgByReplyToId(msg.id.toString())?.data.request === 'decline',
+      nofloat: isReply === true,
     }"
+    @mouseover="hover = true"
+    @mouseleave="hover = false"
   >
+    <ReplyPopover
+      v-if="!isReply"
+      class="nowrap"
+      :hover="hover"
+      :msg="msg"
+      :friendOwnerId="friendOwnerId"
+      :isReply="isReply"
+    ></ReplyPopover>
     <div
       class="title"
       :class="{
@@ -46,7 +57,7 @@
         v-if="
           getChatMsgByReplyToId(msg.id.toString())?.data.request !==
             'decline' &&
-            getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'accept'
+          getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'accept'
         "
         :class="{
           green: msg._direction === 'SENT' && !msg.data.request,
@@ -90,9 +101,9 @@
   <ion-row
     v-if="
       msg.data.request &&
-        msg._direction === 'RECEIVED' &&
-        getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'accept' &&
-        getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'decline'
+      msg._direction === 'RECEIVED' &&
+      getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'accept' &&
+      getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'decline'
     "
     class="ion-no-wrap"
   >
@@ -108,6 +119,7 @@
     @didDismiss="showViewRequestModal(false)"
   >
     <ViewRequestModal
+      v-if="!isReply"
       :friendOwnerId="friendOwnerId"
       @declineRequest="declineRequest"
       :msg="msg"
@@ -126,8 +138,10 @@ import useContacts from "@/composables/contacts";
 import useChats from "@/composables/chats";
 import useRates from "@/composables/rates";
 
+import ReplyPopover from "@/components/Chat/ReplyPopover.vue";
+
 export default {
-  props: ["msg", "friendOwnerId"],
+  props: ["msg", "friendOwnerId", "isReply"],
   components: {
     IonIcon,
     IonLabel,
@@ -135,11 +149,13 @@ export default {
     IonRow,
     IonModal,
     ViewRequestModal,
+    ReplyPopover,
   },
   setup(props: any) {
     const store = useStore();
 
     const { duffsInDash, duffsInFiatString, getFiatSymbol } = useRates();
+    const hover = ref(false);
 
     const { sendChat, getChatMsgByReplyToId } = useChats();
     const declineRequest = () => {
@@ -187,6 +203,8 @@ export default {
       duffsInDash,
       duffsInFiatString,
       getFiatSymbol,
+      hover,
+      store,
     };
   },
 };
@@ -320,5 +338,8 @@ ion-chip {
 .accept_icon {
   height: 11px;
   width: 11px;
+}
+.nofloat {
+  float: none;
 }
 </style>

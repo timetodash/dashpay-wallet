@@ -28,7 +28,7 @@
         @handleSendRequest="handleSendRequest"
       ></SendRequestDashModal>
     </ion-modal>
-    <ion-footer class="ion-no-border">
+    <ion-footer class="ion-no-padding ion-no-border">
       <chat-footer
         :receivedContactRequest="receivedContactRequest(friendOwnerId)"
         :sentContactRequest="sentContactRequest(friendOwnerId)"
@@ -257,6 +257,6 @@ ion-toolbar {
   border-style: solid 2px;
 } */
 ion-footer {
-  padding: 0px 0px 8px 16px;
+  padding: 0px 0px 8px 0px;
 }
 </style>

@@ -1,25 +1,33 @@
 <template>
   <div class="scroll_container">
+    <div v-if="chatMsgs.length === 0">
+      <ion-icon
+        class="figure"
+        :src="require('/public/assets/icons/convo.svg')"
+      ></ion-icon>
+      <div class="begin">This is the beginning of a great conversation</div>
+      <div class="write">
+        Write something nice or tap me to send a greeting.
+      </div>
+    </div>
     <div>
       <ion-grid style="padding: 0px">
         <ion-row
           v-for="msg in chatMsgs"
           :key="msg.id.toString()"
           class="row_padding"
-          @click="setReplyToId(msg)"
         >
           <ion-col>
-            <div v-if="msg.data.replyToChatId">
-              {{
-                store.getters.getChatMsgById(msg.data.replyToChatId)?.data.text
-              }}
-            </div>
-            <chat-message v-if="msg.data.text && !msg.data.amount" :msg="msg">
+            <chat-message
+              v-if="msg.data.text && !msg.data.amount"
+              :msg="msg"
+              :friendOwnerId="friendOwnerId"
+            >
             </chat-message>
             <chat-txn
               v-if="
                 (msg.data.amount && msg.data.text) ||
-                  msg.data.request === 'open'
+                msg.data.request === 'open'
               "
               :msg="msg"
               :friendOwnerId="friendOwnerId"
@@ -29,6 +37,7 @@
             <chat-small-txn
               v-if="!msg.data.request && msg.data.amount && !msg.data.text"
               :msg="msg"
+              :friendOwnerId="friendOwnerId"
             >
             </chat-small-txn>
             <request-response
@@ -36,6 +45,7 @@
                 msg.data.request === 'decline' || msg.data.request === 'accept'
               "
               :msg="msg"
+              :friendOwnerId="friendOwnerId"
             ></request-response>
           </ion-col>
         </ion-row>
@@ -46,7 +56,8 @@
 
 <script>
 import { useStore } from "vuex";
-import { IonGrid, IonRow, IonCol } from "@ionic/vue";
+import { useRouter } from "vue-router";
+import { IonGrid, IonRow, IonCol, IonIcon } from "@ionic/vue";
 import { checkmarkDoneOutline } from "ionicons/icons";
 import ChatMessage from "@/components/Chat/ChatMessage.vue";
 import ChatTxn from "@/components/Chat/ChatTxn.vue";
@@ -58,6 +69,7 @@ export default {
   components: {
     IonGrid,
     IonRow,
+    IonIcon,
     IonCol,
     ChatMessage,
     ChatTxn,
@@ -66,6 +78,7 @@ export default {
   },
   setup(props) {
     const store = useStore();
+    // const router = useRouter();
 
     const setReplyToId = (msg) => {
       store.commit("setActiveReplyToId", {
@@ -95,6 +108,7 @@ export default {
 
 <style scoped>
 .scroll_container {
+  position: relative;
   height: 100%;
   display: flex;
   overflow-y: scroll;
@@ -103,5 +117,43 @@ export default {
 .row_padding {
   padding-top: 5px;
   padding-bottom: 4px;
+}
+.figure {
+  height: 238px;
+  width: 123px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: translate(-10%, 75%);
+  opacity: 0.6;
+}
+.begin {
+  position: fixed;
+  width: 165px;
+  height: 30px;
+  left: 98px;
+  top: 273px;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 15px;
+  text-align: center;
+  color: #000000;
+}
+.write {
+  /* margin-top: -5px; */
+  position: fixed;
+  width: 175px;
+  height: 28px;
+  left: 93px;
+  top: 309px;
+  /* font-family: Inter; */
+  font-style: normal;
+  font-weight: normal;
+  font-size: 11px;
+  line-height: 14px;
+  /* or 127% */
+  text-align: center;
+  color: #818c99;
 }
 </style>

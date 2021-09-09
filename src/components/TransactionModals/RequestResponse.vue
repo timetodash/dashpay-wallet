@@ -1,5 +1,11 @@
 <template>
-  <div v-if="msg._direction === 'SENT'" class="response-text response user">
+  <div
+    v-if="msg._direction === 'SENT'"
+    class="response-text response user"
+    :class="{ nofloat: isReply === true }"
+    @mouseover="hover = true"
+    @mouseleave="hover = false"
+  >
     <div v-if="msg.data.request === 'decline'" class="flex ion-nowrap">
       You declined a request of
       {{ duffsInDash(msg.data.amount) }} Dash
@@ -15,8 +21,10 @@
         </ion-icon>
       </div>
     </div>
+
     <div v-if="msg.data.request === 'accept'" class="flex ion-nowrap">
-      {{ getUserLabel(msg.ownerId.toString()) }} accepted your request of
+      You accepted a request of
+      <!-- {{ getUserLabel(msg.ownerId.toString()) }} accepted your request of -->
       {{ duffsInDash(msg.data.amount) }} Dash
       <div class="flex ion-nowrap">
         <div class="chat_timestamp chat_timestamp_message">
@@ -30,11 +38,20 @@
         </ion-icon>
       </div>
     </div>
+    <ReplyPopover
+      v-if="!isReply"
+      class="nowrap"
+      :hover="hover"
+      :msg="msg"
+      :friendOwnerId="friendOwnerId"
+    ></ReplyPopover>
   </div>
 
   <div
     v-if="msg._direction === 'RECEIVED'"
     class="response-text response partner"
+    @mouseover="hover = true"
+    @mouseleave="hover = false"
   >
     <div v-if="msg.data.request === 'decline'" class="flex ion-nowrap">
       {{ getUserLabel(msg.ownerId.toString()) }} declined your request of
@@ -51,6 +68,7 @@
         </ion-icon>
       </div>
     </div>
+
     <div v-if="msg.data.request === 'accept'" class="flex ion-nowrap">
       {{ getUserLabel(msg.ownerId.toString()) }} accepted your request of
       {{ duffsInDash(msg.data.amount) }} Dash
@@ -66,28 +84,40 @@
         </ion-icon>
       </div>
     </div>
+    <ReplyPopover
+      v-if="!isReply"
+      class="nowrap"
+      :hover="hover"
+      :msg="msg"
+      :friendOwnerId="friendOwnerId"
+    ></ReplyPopover>
   </div>
 </template>
 
 <script>
 import { IonIcon } from "@ionic/vue";
 import { checkmarkDoneOutline } from "ionicons/icons";
+import { ref } from "vue";
 
 import useRates from "@/composables/rates";
 import useContacts from "@/composables/contacts";
+import ReplyPopover from "@/components/Chat/ReplyPopover.vue";
 
 export default {
-  props: ["msg"],
+  props: ["msg", "friendOwnerId", "isReply"],
   components: {
     IonIcon,
+    ReplyPopover,
   },
   setup() {
     const { duffsInDash } = useRates();
     const { getUserLabel } = useContacts();
+    const hover = ref(false);
     return {
       duffsInDash,
       getUserLabel,
       checkmarkDoneOutline,
+      hover,
     };
   },
 };
@@ -120,5 +150,18 @@ export default {
 }
 .chat_timestamp_message {
   margin: 5px 4px 0px 13px;
+}
+.nowrap {
+  display: flex;
+  flex-wrap: nowrap;
+  float: right;
+}
+.chevron {
+  width: 40px;
+  height: 20px;
+  color: #818c99;
+}
+.nofloat {
+  float: none;
 }
 </style>

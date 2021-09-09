@@ -747,7 +747,7 @@ const getters = {
       (chat: any) => {
         const direction =
           chat.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
-
+  
         return {
           ...chat,
           _friendOwnerId: friendOwnerId,
@@ -756,8 +756,23 @@ const getters = {
       }
     );
   },
-  getChatMsgById: (state: any) => (id: string) => {
-    return state.chats.msgsByDocumentId[id];
+  getChatMsgById: (state: any) => (id: string, friendOwnerId: string) => {
+    const chat = state.chats.msgsByDocumentId[id];
+    if(!chat) return undefined
+    console.log('chat', chat)
+    
+        const direction =
+          chat.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
+          // chat.ownerId.toString() === friendOwnerId ? "SENT" : "RECEIVED";
+          // console.log('getchatmessagebyid', id, friendOwnerId)
+          // if (chat.ownerId.toString() !== friendOwnerId)
+          // debugger
+
+        return {
+          ...chat,
+          _friendOwnerId: friendOwnerId,
+          _direction: direction,
+        };
   },
   getChatMsgByReplyToId: (state: any) => (replyToId: string) => {
     return state.chats.msgsByReplyToId[replyToId];

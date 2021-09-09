@@ -8,16 +8,109 @@
   >
   </IncomingRequests>
   <div v-if="store.getters.getActiveReplyToId(friendOwnerId)">
-    <!-- @timetodash: implement frame 262 -->
-    Responding to:
-    {{
-      store.getters.getChatMsgById(
+    <div class="replying leftborder">
+      <ion-icon
+        @click="resetReplyToId(friendOwnerId)"
+        :icon="closeOutline"
+        class="x"
+      ></ion-icon>
+      <div class="replyheader">
+        Replying to
+        {{ getUserLabel(friendOwnerId) }}
+      </div>
+
+      <chat-txn
+        v-if="
+          (store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId)
+          )?.data.amount &&
+            store.getters.getChatMsgById(
+              store.getters.getActiveReplyToId(friendOwnerId)
+            )?.data.text) ||
+          store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId)
+          )?.data.request === 'open'
+        "
+        :msg="
+          store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId)
+          )
+        "
+        :friendOwnerId="friendOwnerId"
+        :isReply="true"
+      >
+      </chat-txn>
+
+      <chat-small-txn
+        class="singleline"
+        v-if="
+          store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId)
+          )?.data.amount &&
+          !store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId)
+          )?.data.text &&
+          !store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId)
+          )?.data.request
+        "
+        :msg="
+          store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId)
+          )
+        "
+        :friendOwnerId="friendOwnerId"
+        :isReply="true"
+      >
+      </chat-small-txn>
+
+      <request-response
+        class="singleline large"
+        {{
+        store.getters.getChatMsgById(
         store.getters.getActiveReplyToId(friendOwnerId)
-      )?.data?.text
-    }}
-    <span @click="resetReplyToId(friendOwnerId)">X</span>
+        )
+        }}
+        v-if="
+          store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId)
+          )?.data.request === 'decline' ||
+          store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId)
+          )?.data.request === 'accept'
+        "
+        :msg="
+          store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId)
+          )
+        "
+        :friendOwnerId="friendOwnerId"
+        :isReply="true"
+      ></request-response>
+
+      <div
+        class="replymessage"
+        v-if="
+          !store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId),
+            friendOwnerId
+          )?.data.amount &&
+          store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId),
+            friendOwnerId
+          )?.data.text
+        "
+      >
+        {{
+          store.getters.getChatMsgById(
+            store.getters.getActiveReplyToId(friendOwnerId),
+            friendOwnerId
+          )?.data?.text
+        }}
+      </div>
+    </div>
   </div>
-  <div class="flex ion-nowrap">
+  <div class="flex ion-nowrap ion-padding-start">
     <ion-input
       placeholder="Messsage... "
       v-model="chatText"
@@ -47,11 +140,20 @@
 
 <script>
 import { useStore } from "vuex";
+import { computed } from "vue";
 
 import { IonInput, IonIcon } from "@ionic/vue";
-import { happyOutline, attachOutline, send } from "ionicons/icons";
+import {
+  happyOutline,
+  attachOutline,
+  send,
+  closeOutline,
+} from "ionicons/icons";
 import { ref } from "vue";
 import IncomingRequests from "@/components/TransactionModals/IncomingRequests.vue";
+import ChatTxn from "@/components/Chat/ChatTxn.vue";
+import ChatSmallTxn from "@/components/Chat/ChatSmallTxn.vue";
+import RequestResponse from "@/components/TransactionModals/RequestResponse.vue";
 
 export default {
   props: ["receivedContactRequest", "sentContactRequest", "friendOwnerId"],
@@ -60,6 +162,9 @@ export default {
     IonInput,
     IonIcon,
     IncomingRequests,
+    ChatTxn,
+    ChatSmallTxn,
+    RequestResponse,
   },
   setup(props, context) {
     const chatText = ref("");
@@ -78,11 +183,11 @@ export default {
       sendChatWrapper();
     };
 
-    const showSendRequestDashSheet = function() {
+    const showSendRequestDashSheet = function () {
       props.receivedContactRequest &&
         context.emit("showSendRequestDashSheet", true);
     };
-    const resetReplyToId = function(friendOwnerId) {
+    const resetReplyToId = function (friendOwnerId) {
       // reset the friend's replyToId
       store.commit("setActiveReplyToId", {
         friendOwnerId: friendOwnerId,
@@ -92,6 +197,7 @@ export default {
     return {
       happyOutline,
       attachOutline,
+      closeOutline,
       send,
       sendChatWrapper,
       acceptAndSayHi,
@@ -100,6 +206,7 @@ export default {
       isSendingAccept,
       chatText,
       store,
+      getUserLabel: computed(() => store.getters.getUserLabel),
     };
   },
 };
@@ -130,5 +237,43 @@ ion-input {
   height: 36px;
   margin-left: 11px;
   padding-right: 16px;
+}
+.replying {
+  padding-top: 7px;
+  padding-right: 23px;
+  margin-bottom: 13px;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 15px;
+  color: #818c99;
+  position: relative;
+}
+.replyheader {
+  color: #818c99;
+  margin-bottom: 6px;
+}
+.replymessage {
+  color: #000000;
+}
+
+.leftborder {
+  border-left: 2px solid #6c69fc;
+  border-top: 1px solid #e6e6e6;
+  padding-left: 14px;
+  margin-left: 0px;
+}
+.x {
+  width: 25px;
+  height: 25px;
+  color: #68717b;
+  float: right;
+  position: absolute;
+  top: 40%;
+  right: 23px;
+}
+.singleline {
+  float: none;
+  margin-top: 6px;
 }
 </style>

@@ -1,27 +1,27 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-toolbar>
+      <ion-toolbar class="app-header">
         <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
+          <ion-back-button class="arrow"></ion-back-button>
         </ion-buttons>
+        <HomeHeader></HomeHeader>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content :fullscreen="true" class="ion-padding-bottom">
+      <ion-toolbar class="searchbar">
         <ion-searchbar
-          placeholder="Find your friends"
           animated
+          placeholder="Find your friends"
           debounce="500"
-          show-cancel-button="focus"
           enterkeyhint="search"
           v-model="searchText"
           @ionChange="searchContacts"
         ></ion-searchbar>
       </ion-toolbar>
-    </ion-header>
-    <ion-content :fullscreen="true" class="ion-padding">
-      <ion-list>
+      <ion-list class="ion-no-padding">
         <div v-if="searchText === ''">
-          <ion-list-header>
-            My Friends
-          </ion-list-header>
+          <ion-list-header class="ion-no-padding"> My Friends </ion-list-header>
 
           <ion-item
             v-for="contact in getMyFriends"
@@ -30,6 +30,7 @@
             @click="
               router.push(`/conversation/${contact.data.toUserId.toString()}`)
             "
+            class="ion-no-padding"
           >
             <ion-avatar slot="start">
               <img :src="getUserAvatar(contact.data.toUserId.toString())" />
@@ -46,10 +47,11 @@
           </ion-item>
         </div>
         <div v-if="searchText === ''">
-          <ion-list-header>
+          <ion-list-header class="ion-no-padding">
             Suggested Friends
           </ion-list-header>
           <ion-item
+            class="ion-no-padding"
             v-for="contact in getSuggestedFriends"
             :key="contact.id"
             button
@@ -63,9 +65,9 @@
             <ion-label>
               <h2
                 class="
-                flex
-                ion-align-items-center ion-justify-content-between ion-nowrap
-              "
+                  flex
+                  ion-align-items-center ion-justify-content-between ion-nowrap
+                "
               >
                 {{ getUserLabel(contact.data.toUserId.toString()) }}
                 <div class="flex ion-nowrap ion-align-items-center">
@@ -88,15 +90,14 @@
             </ion-label>
           </ion-item>
         </div>
-        <ion-list-header>
-          Everyone
-        </ion-list-header>
+        <ion-list-header class="ion-no-padding"> Everyone </ion-list-header>
 
         <ion-item
           v-for="contact in contacts"
           :key="contact.$id"
           button
           @click="router.push(`/conversation/${contact.$ownerId}`)"
+          class="ion-no-padding"
         >
           <ion-avatar slot="start">
             <img :src="getUserAvatar(contact.$ownerId)" />
@@ -173,6 +174,8 @@ import { useStore } from "vuex";
 import { updateAccount, createAccountId } from "@/lib/helpers/AccountStorage";
 import useContacts from "@/composables/contacts";
 
+import HomeHeader from "@/components/HomeHeader.vue";
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const SCROLL_SIZE = 25;
@@ -203,6 +206,7 @@ export default {
     IonInfiniteScrollContent,
     IonButtons,
     IonBackButton,
+    HomeHeader,
   },
   setup() {
     const client = getClient();
@@ -401,5 +405,28 @@ export default {
   align-items: center;
   font-weight: 800;
   margin-top: 2px;
+}
+ion-searchbar {
+  --background: #f3f3f3;
+  --border-radius: 8px;
+  --box-shadow: 0;
+  --icon-color: #9c9c9c;
+  --placeholder-color: #9c9c9c;
+  width: 100%;
+  /* width: 334px; width in mobile with padding */
+  height: 31px;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+ion-content {
+  --padding-top: 0px;
+  --padding-end: 16px;
+  --padding-bottom: 16px;
+  --padding-start: 16px;
+  --margin-bottom: 16px;
+}
+.arrow {
+  color: #6c69fc;
+  margin-right: -18px;
 }
 </style>

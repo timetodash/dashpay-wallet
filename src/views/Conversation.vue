@@ -175,6 +175,16 @@ export default {
       showSendRequestDashModal(true, "request");
     };
 
+    // Allow deeplinking to payment modal
+    watch(
+      () => route.query.pay,
+      () => {
+        if (route.query.pay === "true") {
+          showSendDashModal();
+        }
+      }
+    );
+
     const sendAndRequestButtons = [
       { text: "Send", handler: showSendDashModal },
       { text: "Request", handler: showRequestDashModal },

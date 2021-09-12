@@ -82,6 +82,7 @@ export default {
   },
   setup() {
     const store = useStore();
+    const router = useRouter();
 
     const {
       myDisplayName,
@@ -105,6 +106,7 @@ export default {
         displayName: formDisplayName.value,
       };
 
+      router.push("/home");
       const result = await storeDashpayProfile(profile);
       console.log("result :>> ", result);
     };

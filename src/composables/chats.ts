@@ -31,8 +31,8 @@ export default function useChats() {
 
   const getChatMsgById = computed(() => store.getters.getChatMsgById);
 
-  const getChatMsgByReplyToId = computed(
-    () => store.getters.getChatMsgByReplyToId
+  const getRequestByReplyToId = computed(
+    () => store.getters.getRequestByReplyToId
   );
 
   async function syncChatsLoop() {
@@ -149,7 +149,7 @@ export default function useChats() {
     sendChat,
     getChatMsgs,
     getChatMsgById,
-    getChatMsgByReplyToId,
+    getRequestByReplyToId,
     sentContactRequest,
     receivedContactRequest,
   };

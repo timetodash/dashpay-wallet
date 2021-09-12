@@ -6,24 +6,71 @@
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
-      Status message:
-      {{ getUserPublicMessage(friendOwnerId) }}
+      <ion-avatar><img :src="getUserAvatar(friendOwnerId)"/></ion-avatar>
+
+      <p>
+        {{ getUserLabel(friendOwnerId) }}
+      </p>
+      <p>
+        {{ getUserDisplayName(friendOwnerId) }}
+      </p>
+      <p>
+        Status message:
+        {{ getUserPublicMessage(friendOwnerId) }}
+      </p>
+      <ion-button
+        color="primary"
+        @click="
+          router.push({
+            path: `/conversation/${friendOwnerId}`,
+          })
+        "
+        shape="round"
+        >Chat</ion-button
+      >
+      <ion-button
+        color="primary"
+        shape="round"
+        @click="
+          router.push({
+            path: `/conversation/${friendOwnerId}`,
+            query: { pay: 'true' },
+          })
+        "
+        >Pay</ion-button
+      >
+      <ion-button color="primary" shape="round" @click="openQRCodeModal"
+        >QR Code</ion-button
+      >
+      <p>
+        Joined {{ new Date().getMonth() + 1 }}/
+        {{ new Date().getFullYear() }}
+      </p>
+      <p>Friends since {{ friendsDate }}</p>
+
+      <ion-toolbar class="searchbar">
+        <ion-searchbar v-model="filterInput"></ion-searchbar>
+      </ion-toolbar>
       <ion-list>
         <ion-list-header>
           {{ getUserLabel(friendOwnerId) }}'s Friends
         </ion-list-header>
         <ion-item
-          v-for="contact in store.getters.getUserFriends(friendOwnerId)"
+          v-for="contact in filteredUserFriends"
           :key="contact.id"
           button
-          @click="
-            router.push(`/conversation/${contact.data.toUserId.toString()}`)
-          "
         >
-          <ion-avatar slot="start">
+          <ion-avatar
+            slot="start"
+            @click="router.push(`/profile/${contact.data.toUserId.toString()}`)"
+          >
             <img :src="getUserAvatar(contact.data.toUserId.toString())" />
           </ion-avatar>
-          <ion-label>
+          <ion-label
+            @click="
+              router.push(`/conversation/${contact.data.toUserId.toString()}`)
+            "
+          >
             <h2
               class="
                 flex
@@ -52,9 +99,6 @@
               </div>
             </h2>
             <h3>{{ getUserDisplayName(contact.data.toUserId.toString()) }}</h3>
-            <p>
-              {{ getUserPublicMessage(contact.data.toUserId.toString()) }}
-            </p>
           </ion-label>
         </ion-item>
       </ion-list>
@@ -63,9 +107,11 @@
 </template>
 
 <script lang="ts">
-import { computed } from "vue";
+import { computed, watch, ref } from "vue";
+import { search } from "ss-search";
 
 import {
+  IonSearchbar,
   IonPage,
   IonHeader,
   IonToolbar,
@@ -75,7 +121,9 @@ import {
   IonList,
   IonListHeader,
   IonAvatar,
+  IonButton,
   IonIcon,
+  modalController,
 } from "@ionic/vue";
 
 import { getClient, getClientIdentity } from "@/lib/DashClient";
@@ -86,11 +134,16 @@ import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 import useChats from "@/composables/chats";
 import ChatHeader from "@/components/Chat/ChatHeader.vue";
+import ContactQRCodeModal from "@/components/Contact/ContactQRCodeModal.vue";
 import { people } from "ionicons/icons";
 
 // import { Client } from "dash/dist/src/SDK/Client/index";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const formatDate = (date: Date) => {
+  return `${date.getMonth() + 1} / ${date.getFullYear()}`;
+};
 
 export default {
   name: "Conversation",
@@ -101,11 +154,13 @@ export default {
     IonPage,
     ChatHeader,
     IonItem,
+    IonButton,
     IonLabel,
     IonList,
     IonListHeader,
     IonAvatar,
     IonIcon,
+    IonSearchbar,
   },
   setup() {
     // const client = getClient();
@@ -128,16 +183,84 @@ export default {
 
     const getUserAvatar = computed(() => store.getters.getUserAvatar);
 
-    const friendOwnerId = route.params.friendOwnerId as string;
+    const friendOwnerId = ref(route.params.friendOwnerId as string);
+
+    const resolveFriend = () => {
+      store.dispatch("fetchDPNSDoc", friendOwnerId.value);
+      store.dispatch("fetchDashpayProfiles", {
+        ownerIds: [friendOwnerId.value],
+      });
+      store.dispatch("fetchContactRequestsSent", friendOwnerId.value);
+    };
 
     // Resolve friend if still unknown
-    store.dispatch("fetchDPNSDoc", friendOwnerId);
-    store.dispatch("fetchDashpayProfiles", { ownerIds: [friendOwnerId] });
-    store.dispatch("fetchContactRequestsSent", friendOwnerId);
+    resolveFriend();
+
+    watch(
+      () => route.params.friendOwnerId,
+      () => {
+        if (route.params.friendOwnerId) {
+          friendOwnerId.value = route.params.friendOwnerId as string;
+          // Resolve friend if still unknown
+          resolveFriend();
+        }
+      }
+    );
 
     // onMounted(async () => {});
 
+    const openQRCodeModal = async () => {
+      const modal = await modalController.create({
+        component: ContactQRCodeModal,
+        componentProps: {
+          label: getUserLabel.value(friendOwnerId.value)?.toLowerCase(),
+        },
+      });
+      return modal.present();
+    };
+
+    const filterInput = ref("");
+
+    const filteredUserFriends = computed(() => {
+      if (filterInput.value) {
+        console.log("returning filtered list, filterInput", filterInput);
+        console.log(
+          "fields,",
+          store.getters.getUserFriends(friendOwnerId.value)
+        );
+        // return [store.state.chatList[0]];
+        return search(
+          store.getters.getUserFriends(friendOwnerId.value),
+          ["_searchLabel", "_searchDisplayName"],
+          filterInput.value
+        );
+      } else {
+        console.log("returning entire list, filterInput", filterInput);
+        console.log(
+          "fields,",
+          store.getters.getUserFriends(friendOwnerId.value)
+        );
+        return store.getters.getUserFriends(friendOwnerId.value);
+      }
+    });
+
+    const friendsDate = computed(() => {
+      // TODO consider contactInfo 'banning / hiding' of contact
+      const dateA =
+        store.state.contactRequests.sent[friendOwnerId.value]?.createdAt;
+      const dateB =
+        store.state.contactRequests.received[friendOwnerId.value]?.createdAt;
+
+      if (dateA && dateB)
+        return dateA > dateB ? formatDate(dateA) : formatDate(dateB);
+      else return "'say high to be friends today'";
+    });
+
     return {
+      friendsDate,
+      filteredUserFriends,
+      filterInput,
+      openQRCodeModal,
       friendOwnerId,
       getUserPublicMessage,
       getUserDisplayName,
@@ -152,6 +275,12 @@ export default {
 </script>
 
 <style scoped>
+.searchbar {
+  padding-left: 16px;
+  padding-right: 16px;
+  --background: white;
+}
+
 ion-header {
   padding-top: 16px;
   padding-left: 0px;
@@ -159,9 +288,6 @@ ion-header {
   border: 1px solid #e3e3e3;
 }
 
-ion-toolbar {
-  --background: primary;
-}
 /* removes the shadow below the header */
 .header-md::after {
   height: 0px;
@@ -192,5 +318,20 @@ ion-footer {
   width: 17px;
   height: 17px;
   margin: auto;
+}
+ion-searchbar {
+  --background: #f3f3f3;
+  --border-radius: 8px;
+  --box-shadow: 0;
+  --icon-color: #9c9c9c;
+  --placeholder-color: #9c9c9c;
+  width: 100%;
+  /* width: 334px; width in mobile with padding */
+  height: 31px;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+ion-toolbar {
+  --background: #f7f7f7;
 }
 </style>

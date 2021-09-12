@@ -27,15 +27,21 @@
             v-for="contact in getMyFriends"
             :key="contact.id.toString()"
             button
-            @click="
-              router.push(`/conversation/${contact.data.toUserId.toString()}`)
-            "
             class="ion-no-padding"
           >
-            <ion-avatar slot="start">
+            <ion-avatar
+              slot="start"
+              @click="
+                router.push(`/profile/${contact.data.toUserId.toString()}`)
+              "
+            >
               <img :src="getUserAvatar(contact.data.toUserId.toString())" />
             </ion-avatar>
-            <ion-label>
+            <ion-label
+              @click="
+                router.push(`/conversation/${contact.data.toUserId.toString()}`)
+              "
+            >
               <h2>{{ getUserLabel(contact.data.toUserId.toString()) }}</h2>
               <h3>
                 {{ getUserDisplayName(contact.data.toUserId.toString()) }}
@@ -55,14 +61,20 @@
             v-for="contact in getSuggestedFriends"
             :key="contact.id"
             button
-            @click="
-              router.push(`/conversation/${contact.data.toUserId.toString()}`)
-            "
           >
-            <ion-avatar slot="start">
+            <ion-avatar
+              slot="start"
+              @click="
+                router.push(`/profile/${contact.data.toUserId.toString()}`)
+              "
+            >
               <img :src="getUserAvatar(contact.data.toUserId.toString())" />
             </ion-avatar>
-            <ion-label>
+            <ion-label
+              @click="
+                router.push(`/conversation/${contact.data.toUserId.toString()}`)
+              "
+            >
               <h2
                 class="
                   flex
@@ -96,13 +108,15 @@
           v-for="contact in contacts"
           :key="contact.$id"
           button
-          @click="router.push(`/conversation/${contact.$ownerId}`)"
           class="ion-no-padding"
         >
-          <ion-avatar slot="start">
+          <ion-avatar
+            slot="start"
+            @click="router.push(`/profile/${contact.$ownerId}`)"
+          >
             <img :src="getUserAvatar(contact.$ownerId)" />
           </ion-avatar>
-          <ion-label>
+          <ion-label @click="router.push(`/conversation/${contact.$ownerId}`)">
             <h2>{{ getUserLabel(contact.$ownerId) }}</h2>
             <h3>
               {{ getUserDisplayName(contact.$ownerId) }}

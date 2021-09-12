@@ -11,7 +11,7 @@
       request_accepted_partner:
         msg.data.request === 'accept' && msg._direction === 'RECEIVED',
       request_declined:
-        getChatMsgByReplyToId(msg.id.toString())?.data.request === 'decline',
+        getRequestByReplyToId(msg.id.toString())?.data.request === 'decline',
       nofloat: isReply === true,
     }"
     @mouseover="hover = true"
@@ -34,14 +34,14 @@
     >
       <div
         v-if="
-          getChatMsgByReplyToId(msg.id.toString())?.data.request === 'decline'
+          getRequestByReplyToId(msg.id.toString())?.data.request === 'decline'
         "
       >
         Request (Declined)
       </div>
       <div
         v-if="
-          getChatMsgByReplyToId(msg.id.toString())?.data.request === 'accept'
+          getRequestByReplyToId(msg.id.toString())?.data.request === 'accept'
         "
       >
         Request
@@ -55,9 +55,9 @@
       </div>
       <div
         v-if="
-          getChatMsgByReplyToId(msg.id.toString())?.data.request !==
+          getRequestByReplyToId(msg.id.toString())?.data.request !==
             'decline' &&
-          getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'accept'
+            getRequestByReplyToId(msg.id.toString())?.data.request !== 'accept'
         "
         :class="{
           green: msg._direction === 'SENT' && !msg.data.request,
@@ -97,13 +97,13 @@
       </div>
     </div>
   </div>
-  <!-- {{ getChatMsgByReplyToId(msg.id.toString())?.data.request }} -->
+  <!-- {{ getRequestByReplyToId(msg.id.toString())?.data.request }} -->
   <ion-row
     v-if="
       msg.data.request &&
-      msg._direction === 'RECEIVED' &&
-      getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'accept' &&
-      getChatMsgByReplyToId(msg.id.toString())?.data.request !== 'decline'
+        msg._direction === 'RECEIVED' &&
+        getRequestByReplyToId(msg.id.toString())?.data.request !== 'accept' &&
+        getRequestByReplyToId(msg.id.toString())?.data.request !== 'decline'
     "
     class="ion-no-wrap"
   >
@@ -157,7 +157,7 @@ export default {
     const { duffsInDash, duffsInFiatString, getFiatSymbol } = useRates();
     const hover = ref(false);
 
-    const { sendChat, getChatMsgByReplyToId } = useChats();
+    const { sendChat, getRequestByReplyToId } = useChats();
     const declineRequest = () => {
       // TODO amount is mocked and should come from request msg
       sendChat(
@@ -199,7 +199,7 @@ export default {
       declineRequest,
       showViewRequestModal,
       isViewRequestModalOpen,
-      getChatMsgByReplyToId,
+      getRequestByReplyToId,
       duffsInDash,
       duffsInFiatString,
       getFiatSymbol,

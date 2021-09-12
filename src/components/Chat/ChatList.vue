@@ -6,12 +6,7 @@
       @click="router.push(`/legacy`)"
     >
     </ChatListItemLegacy>
-    <ChatListItem
-      v-else
-      :chatListItem="chatListItem"
-      @click="router.push(`/conversation/${chatListItem.friendOwnerId}`)"
-    >
-    </ChatListItem>
+    <ChatListItem v-else :chatListItem="chatListItem"> </ChatListItem>
   </div>
 </template>
 

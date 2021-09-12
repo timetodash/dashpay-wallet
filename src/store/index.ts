@@ -24,7 +24,7 @@ const getDefaultState = () => {
     chats: {
       msgsByOwnerId: {},
       msgsByDocumentId: {},
-      msgsByReplyToId: {},
+      RequestByReplyToId: {},
       lastTimestamp: 0,
       lastSeenTimestampByOwnerId: {},
     },
@@ -203,12 +203,16 @@ const mutations = {
         state.chats.msgsByDocumentId[documentId] || {};
       state.chats.msgsByDocumentId[documentId] = chatMsg;
 
-      // Cache documents by replyToId
-      if (chatMsg.data.replyToChatId) {
+      // Cache request accept / decline responses by replyToId
+      if (
+        chatMsg.data.replyToChatId &&
+        (chatMsg.data.request === "accept" ||
+          chatMsg.data.request === "decline")
+      ) {
         const replyToChatId = chatMsg.data.replyToChatId;
-        state.chats.msgsByReplyToId[replyToChatId] =
-          state.chats.msgsByReplyToId[replyToChatId] || {};
-        state.chats.msgsByReplyToId[replyToChatId] = chatMsg;
+        state.chats.RequestByReplyToId[replyToChatId] =
+          state.chats.RequestByReplyToId[replyToChatId] || {};
+        state.chats.RequestByReplyToId[replyToChatId] = chatMsg;
       }
 
       // Collate the chats by the friendOwnerId
@@ -631,18 +635,30 @@ const getters = {
       return { count, isMyFriend };
     };
 
-    return Object.entries(
+    const friends = Object.entries(
       state.socialGraph.sentByOwnerId[friendOwnerId]?.docs ?? {}
-    ).map((entry: any) => {
+    );
+
+    const friendsWithMeta = friends.map((entry: any) => {
       const contactRequest = entry[1];
+
+      const ownerId = contactRequest.data.toUserId.toString();
+
+      const _searchLabel =
+        (state.dpns as any)[ownerId]?.data.label ?? friendOwnerId.substr(0, 6);
+
+      const _searchDisplayName = (state.dashpayProfiles as any)[ownerId]?.data
+        .displayName;
 
       return {
         ...contactRequest,
-        _socialMetrics: getSocialMetrics(
-          contactRequest.data.toUserId.toString()
-        ),
+        _searchLabel,
+        _searchDisplayName,
+        _socialMetrics: getSocialMetrics(ownerId),
       };
     });
+
+    return friendsWithMeta;
   },
   getMyFriends: (state: any, getters: any) => {
     return Object.entries(state.contactRequests.sent)
@@ -719,19 +735,9 @@ const getters = {
       }
     );
 
-    // console.log("suggestedFriends :>> ", suggestedFriends);
-
-    // console.log(
-    //   "mutualFriends :>> ",
-    //   suggestedFriends.sort(
-    //     (a, b) => b._socialMetrics.count - a._socialMetrics.count
-    //   )
-    // );
     const alreadyFriendOwnerIds = getters.getMyFriends.map((x: any) =>
       x.data.toUserId.toString()
     );
-
-    // console.log("alreadyFriendOwnerIds :>> ", alreadyFriendOwnerIds);
 
     return suggestedFriends
       .filter((x) => {
@@ -747,7 +753,7 @@ const getters = {
       (chat: any) => {
         const direction =
           chat.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
-  
+
         return {
           ...chat,
           _friendOwnerId: friendOwnerId,
@@ -758,24 +764,24 @@ const getters = {
   },
   getChatMsgById: (state: any) => (id: string, friendOwnerId: string) => {
     const chat = state.chats.msgsByDocumentId[id];
-    if(!chat) return undefined
-    console.log('chat', chat)
-    
-        const direction =
-          chat.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
-          // chat.ownerId.toString() === friendOwnerId ? "SENT" : "RECEIVED";
-          // console.log('getchatmessagebyid', id, friendOwnerId)
-          // if (chat.ownerId.toString() !== friendOwnerId)
-          // debugger
+    if (!chat) return undefined;
+    // console.log("chat", chat);
 
-        return {
-          ...chat,
-          _friendOwnerId: friendOwnerId,
-          _direction: direction,
-        };
+    const direction =
+      chat.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
+    // chat.ownerId.toString() === friendOwnerId ? "SENT" : "RECEIVED";
+    // console.log('getchatmessagebyid', id, friendOwnerId)
+    // if (chat.ownerId.toString() !== friendOwnerId)
+    // debugger
+
+    return {
+      ...chat,
+      _friendOwnerId: friendOwnerId,
+      _direction: direction,
+    };
   },
-  getChatMsgByReplyToId: (state: any) => (replyToId: string) => {
-    return state.chats.msgsByReplyToId[replyToId];
+  getRequestByReplyToId: (state: any) => (replyToId: string) => {
+    return state.chats.RequestByReplyToId[replyToId];
   },
   getActiveReplyToId: (state: any) => (friendOwnerId: string) => {
     return state.activeReplyToIds[friendOwnerId];

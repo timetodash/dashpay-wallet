@@ -5,7 +5,8 @@
     </ion-header>
 
     <ion-content :fullscreen="true">
-      <ion-toolbar class="searchbar" v-if="!isProfileCompleted">
+      <ion-toolbar class="searchbar" v-if="profileCompleted < 10">
+        {{ profileCompleted }}
         <img
           @click="router.push('/editprofile')"
           :src="require('/public/assets/banners/complete-profile.svg')"
@@ -114,25 +115,37 @@ export default {
     startSyncContactRequests();
     startRefreshRatesLoop();
 
-    const isProfileCompleted = computed(() => {
-      return (
-        store.getters.myAvatar !== "/assets/defaults/avataaar.png" &&
-        store.getters.myDisplayName &&
-        store.getters.myPublicMessage
-      );
+    const profileCompleted = computed(() => {
+      let completed = 7;
+
+      if (store.getters.myAvatar !== "/assets/defaults/avataaar.png")
+        completed += 1;
+
+      if (store.getters.myDisplayName) completed += 1;
+
+      if (store.getters.myPublicMessage) completed += 1;
+
+      return completed;
     });
 
     const filteredChatList = computed(() => {
       if (filterInput.value) {
-        console.log("returning filtered list, filterInput", filterInput);
-        // return [store.state.chatList[0]];
+        console.log(
+          "returning filtered list, filterInput",
+          filterInput,
+          store.state.chatList
+        );
         return search(
           store.state.chatList,
           ["searchLabel", "searchDisplayName"],
           filterInput.value
         );
       } else {
-        console.log("returning entire list, filterInput", filterInput);
+        console.log(
+          "returning entire list, filterInput",
+          filterInput,
+          store.state.chatList
+        );
         return store.state.chatList;
       }
     });
@@ -154,7 +167,7 @@ export default {
       router,
       scan,
       add,
-      isProfileCompleted,
+      profileCompleted,
       filterInput,
       filteredChatList,
     };

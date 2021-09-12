@@ -1,9 +1,14 @@
 <template>
   <ion-item>
-    <ion-avatar slot="start" class="avatar">
+    <ion-avatar
+      slot="start"
+      class="avatar"
+      @click="router.push(`/profile/${chatListItem.friendOwnerId}`)"
+    >
       <img :src="store.getters.getUserAvatar(chatListItem.friendOwnerId)" />
     </ion-avatar>
     <ion-label
+      @click="router.push(`/conversation/${chatListItem.friendOwnerId}`)"
       :class="{
         messagebold: chatListItem.direction === 'RECEIVED',
       }"
@@ -83,6 +88,8 @@ import {
 
 import { unlink } from "ionicons/icons";
 
+import { useRouter } from "vue-router";
+
 import { useStore } from "vuex";
 
 import { computed } from "vue";
@@ -101,6 +108,8 @@ export default {
   props: ["chatListItem"],
   setup(props) {
     const store = useStore();
+
+    const router = useRouter();
 
     const { duffsInDash } = useRates();
 
@@ -123,6 +132,7 @@ export default {
       newMsgCount,
       hasNewTx,
       duffsInDash,
+      router,
     };
   },
 };

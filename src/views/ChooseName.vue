@@ -28,6 +28,7 @@
             placeholder="username"
             show-clear-button="never"
             @ionChange="checkIsNameAvailable"
+            @keyup.enter="pickName()"
           >
           </ion-input>
         </ion-item>

@@ -3,6 +3,8 @@ http://ionicframework.com/docs/theming/ */
 
 /** Ionic CSS Variables **/
 :root {
+  --ion-font-family: 'Inter';
+  
   /** primary **/
   --ion-color-primary: #008de4;
   --ion-color-primary-rgb: 56, 128, 255;
@@ -61,7 +63,7 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-dark-tint: #383a3e;
 
   /** medium **/
-  --ion-color-medium: #92949c;
+  --ion-color-medium: #818c99;
   --ion-color-medium-rgb: 146, 148, 156;
   --ion-color-medium-contrast: #ffffff;
   --ion-color-medium-contrast-rgb: 255, 255, 255;
@@ -75,6 +77,14 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-light-contrast-rgb: 0, 0, 0;
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: normal;
+  /* src: url('../../public/assets/fonts/static/Inter-Medium.ttf'); */
+  src: url('../../public/assets/fonts/Inter-VariableFont_slnt,wght.ttf');
 }
 
 @media (prefers-color-scheme: dark) {

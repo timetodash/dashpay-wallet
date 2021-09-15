@@ -22,6 +22,7 @@
           placeholder="Enter password"
           show-clear-button="never"
           type="password"
+          @keyup.enter="checkPassword()"
         >
         </ion-input>
       </ion-item>
@@ -136,9 +137,7 @@ export default {
       );
 
       const accountId = createAccountId(
-        getClient()
-          .wallet!.exportWallet()
-          .toString()
+        getClient().wallet!.exportWallet().toString()
       );
 
       await storeAccount({

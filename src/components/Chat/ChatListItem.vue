@@ -18,10 +18,11 @@
           unlinked: chatListItem.friendshipState === 'UNLINKED',
         }"
       >
-        {{ getUserLabel(chatListItem.friendOwnerId) }}
+        {{ truncateUserLabel(chatListItem.friendOwnerId) }}
+
         <span style="font-weight: 400">
-          {{ getUserDisplayName(chatListItem.friendOwnerId) }}</span
-        >
+          {{ truncateDisplayName(chatListItem.friendOwnerId) }}
+        </span>
 
         <div class="message-time" :class="{ primary: !!newMsgCount }">
           {{ chatListItem.lastMessage.createdAt.getHours() }}:{{
@@ -123,6 +124,41 @@ export default {
       store.getters.getHasNewTx(props.chatListItem.friendOwnerId)
     );
 
+    const truncate = function (str, n) {
+      return str.length > n ? str.substr(0, n - 1) + "..." : str;
+    };
+
+    const max = 20; // max user label + display name length
+    const maxUL = 20; // max user label length (1st bolded name)
+    const maxDN = 14; // max display name length (2nd greyed name)
+
+    // truncate the user label if it's greater that the maxUL length
+    const truncateUserLabel = function (friend) {
+      if (getUserLabel(friend).length > maxUL) {
+        return truncate(getUserLabel(friend), maxUL);
+      } else {
+        return getUserLabel(friend);
+      }
+    };
+
+    const truncateDisplayName = function (friend) {
+      // if total name length > max and the display name isn't already showing the whole name
+      if (
+        getUserLabel(friend).length + getUserDisplayName(friend).length > max &&
+        getUserDisplayName(friend).length !== maxDN
+      ) {
+        // console.log(
+        //   "name",
+        //   getUserLabel(friend),
+        //   getUserDisplayName(friend),
+        //   getUserLabel(friend).length + getUserDisplayName(friend).length
+        // );
+        return truncate(getUserDisplayName(friend), maxDN);
+      } else {
+        return getUserDisplayName(friend);
+      }
+    };
+
     return {
       getUserDisplayName,
       getUserLabel,
@@ -133,6 +169,8 @@ export default {
       hasNewTx,
       duffsInDash,
       router,
+      truncateDisplayName,
+      truncateUserLabel,
     };
   },
 };

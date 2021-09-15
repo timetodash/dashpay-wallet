@@ -1,6 +1,6 @@
 <template>
   <div class="scroll_container">
-    <div v-if="chatMsgs.length === 0">
+    <div v-if="chatMsgs.length === 0" @click="acceptAndSayHi">
       <ion-icon
         class="figure"
         :src="require('/public/assets/icons/convo.svg')"
@@ -56,7 +56,8 @@
 
 <script>
 import { useStore } from "vuex";
-import { useRouter } from "vue-router";
+
+import { ref } from "vue";
 import { IonGrid, IonRow, IonCol, IonIcon } from "@ionic/vue";
 import { checkmarkDoneOutline } from "ionicons/icons";
 import ChatMessage from "@/components/Chat/ChatMessage.vue";
@@ -76,9 +77,22 @@ export default {
     ChatSmallTxn,
     RequestResponse,
   },
-  setup(props) {
+  setup(props, context) {
     const store = useStore();
-    // const router = useRouter();
+    const chatText = ref("");
+
+    const isSendingAccept = ref(false);
+
+    const sendChatWrapper = () => {
+      context.emit("sendChatWrapper", chatText.value);
+      chatText.value = "";
+    };
+
+    const acceptAndSayHi = () => {
+      isSendingAccept.value = true;
+      chatText.value = "hi";
+      sendChatWrapper();
+    };
 
     const setReplyToId = (msg) => {
       store.commit("setActiveReplyToId", {
@@ -100,6 +114,10 @@ export default {
     return {
       checkmarkDoneOutline,
       setReplyToId,
+      sendChatWrapper,
+      acceptAndSayHi,
+      isSendingAccept,
+      chatText,
       store,
     };
   },

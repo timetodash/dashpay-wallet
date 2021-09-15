@@ -23,6 +23,8 @@
           @decryptMnemonic="decryptMnemonic"
         />
       </ion-modal>
+    </ion-content>
+    <ion-footer class="ion-no-border ion-padding-horizontal">
       <div>
         <div class="newaccount" @click="createAccount">
           <ion-icon
@@ -39,8 +41,6 @@
           Add an existing wallet
         </div>
       </div>
-    </ion-content>
-    <ion-footer class="ion-no-border ion-padding-horizontal">
       <ion-toolbar v-if="isLoggedIn">
         <div class="flex ion-nowrap ion-align-items-center" @click="logout">
           <ion-icon
@@ -208,7 +208,7 @@ export default {
       selectedAccount.value = undefined;
     };
 
-    const decryptMnemonic = async function() {
+    const decryptMnemonic = async function () {
       const mnemonic = decrypt(
         "aes",
         selectedAccount.value.encMnemonic,
@@ -275,7 +275,6 @@ export default {
 
 <style scoped>
 ion-header {
-  padding-top: 16px;
   padding-left: 0px;
   background-color: #ffffff;
   border: none;
@@ -293,8 +292,7 @@ ion-toolbar {
   color: #000000;
   display: flex;
   align-items: center;
-  margin-top: 13px;
-  margin-bottom: 30px;
+  margin-top: 20px;
 }
 .add {
   height: 25px;

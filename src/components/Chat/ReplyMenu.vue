@@ -12,16 +12,10 @@
         class="reply"
       ></ion-icon>
       <ion-label>Reply</ion-label>
-      <div v-if="msg.data.replyToChatId">
-        {{
-          store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
-            ?.data.text
-        }}
-      </div>
     </ion-item>
     <ion-item
       button
-      @click="popoverController.dismiss()"
+      @click="popoverController.dismiss() && copyToClipboard()"
       lines="none"
       class="height"
     >
@@ -41,12 +35,15 @@ import {
   IonItem,
   IonLabel,
   IonIcon,
+  // IonToast,
   popoverController,
 } from "@ionic/vue";
 // import { ellipsisVertical, eyeOutline } from "ionicons/icons";
 // import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
+// import { ref } from "vue";
+// import { convertToSearchableStrings } from "ss-search";
 
 export default {
   name: "ReplyMenu",
@@ -71,7 +68,28 @@ export default {
       });
     };
 
-    return { router, store, popoverController, setReplyToId };
+    function copyToClipboard() {
+      navigator.clipboard.writeText(props.msg.data.text).then(
+        function () {
+          store.dispatch("showToast", { text: "Copied message text" });
+          console.log(
+            "Copying to clipboard was successful! Message: ",
+            props.msg.data.text
+          );
+        },
+        function (err) {
+          console.error("Could not copy text: ", err);
+        }
+      );
+    }
+
+    return {
+      router,
+      store,
+      popoverController,
+      setReplyToId,
+      copyToClipboard,
+    };
   },
 };
 </script>

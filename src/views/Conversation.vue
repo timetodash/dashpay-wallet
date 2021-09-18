@@ -9,6 +9,7 @@
       <ChatBubbles
         :chatMsgs="getChatMsgs(friendOwnerId)"
         :friendOwnerId="friendOwnerId"
+        @send-chat-wrapper="sendChatWrapper"
       ></ChatBubbles>
     </ion-content>
     <ion-action-sheet

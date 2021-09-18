@@ -1,5 +1,9 @@
 <template>
-  <div v-if="!receivedContactRequest">
+  <div v-if="!receivedContactRequest" class="respond respondtext">
+    <ion-icon
+      :src="require('/public/assets/icons/dashd-purple.svg')"
+      class="D"
+    ></ion-icon>
     You can send Dash once your friend responds
   </div>
   <IncomingRequests
@@ -211,10 +215,38 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 ion-input {
   --background: #f3f3f5;
   border-radius: 100px;
+}
+.respond {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 15px;
+  margin: 10px 16px;
+  /* width: 328px;
+  height: 35px; */
+  background: #f2f4ff;
+  backdrop-filter: blur(30px);
+  /* Note: backdrop-filter has minimal browser support */
+
+  border-radius: 10px;
+}
+.respondtext {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 13px; /*figma: font-size: 12px; */
+  line-height: 15px;
+  text-align: center;
+  color: #6c69fc;
+}
+.D {
+  margin-right: 10px;
+  margin-top: 1px;
 }
 .emoji {
   padding: 10px 10px 10px 15px;

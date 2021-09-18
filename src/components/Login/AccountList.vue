@@ -1,6 +1,8 @@
 <template>
-  <ion-list>
-    <ion-list-header class="accounts ion-no-padding">Accounts</ion-list-header>
+  <ion-list class="ion-no-padding">
+    <ion-list-header class="accounts ion-no-padding ion-align-items-center"
+      >Accounts</ion-list-header
+    >
     <!-- <ion-modal
       :is-open="isAccountItemOpen"
       @didDismiss="showAccountItem(false)"

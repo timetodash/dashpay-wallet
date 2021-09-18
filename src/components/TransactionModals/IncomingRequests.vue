@@ -1,5 +1,5 @@
 <template>
-  <div class="flex ion-nowrap">
+  <div class="flex ion-nowrap ion-padding-horizontal">
     <ion-chip class="ignore"
       ><span class="text ignore-text"> Ignore</span></ion-chip
     >
@@ -34,6 +34,7 @@ ion-chip {
   width: 206px;
   height: 36px;
   background: #f2f4ff;
+  margin-bottom: 12px;
 }
 .accept-text {
   color: #6c69fc;
@@ -42,6 +43,7 @@ ion-chip {
   width: 110px;
   height: 36px;
   background: #fbf1f4;
+  margin-bottom: 12px;
 }
 .text {
   /* font-family: Inter; */

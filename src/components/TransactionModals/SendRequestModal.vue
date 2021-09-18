@@ -117,17 +117,28 @@
   <ion-footer class="ion-no-border ion-padding">
     <!-- TODO disable button if the balance is too low -->
     <ion-chip
+      v-if="sendRequestDirection === 'send'"
       expand="block"
       shape="round"
-      class="next"
+      class="next send_color"
+      @click="handleSendRequest"
+      :disabled="amount === 0"
+      ><span class="next-text"> {{ sendRequestDirection }}</span></ion-chip
+    >
+    <ion-chip
+      v-if="sendRequestDirection === 'request'"
+      expand="block"
+      shape="round"
+      class="next request_color"
       @click="handleSendRequest"
       :disabled="amount === 0"
       ><span class="next-text"> {{ sendRequestDirection }}</span></ion-chip
     >
     <!-- :class="{
-        send_color: sendRequestDirection === 'send',
-        request_color: sendRequestDirection === 'request',
-      }" -->
+          send_color: sendRequestDirection === 'send',
+          request_color: sendRequestDirection === 'request',
+        }" -->
+    <!-- TODO: the conditional class applied to ion-chip makes the chip disappear when the send/receive directions are swapped -> try to implement as a computed property instead -->
   </ion-footer>
 </template>
 
@@ -145,9 +156,10 @@ import {
   IonIcon,
   IonFooter,
   IonTextarea,
+  IonChip,
   modalController,
 } from "@ionic/vue";
-import { defineComponent, ref, computed, watchEffect } from "vue";
+import { defineComponent, ref, watchEffect } from "vue";
 
 import useRates from "@/composables/rates";
 
@@ -158,7 +170,7 @@ import {
 } from "ionicons/icons";
 
 export default defineComponent({
-  name: "SendReceiveDashModal",
+  name: "SendRequestModal",
   props: ["initSendRequestDirection", "friendOwnerId"],
   components: {
     IonContent,
@@ -169,17 +181,14 @@ export default defineComponent({
     MyFriend,
     DashCurrency,
     FiatCurrency,
+    IonChip,
   },
   setup(props, { emit }) {
-    const {
-      fetchRate,
-      getFiatSymbol,
-      getFiatRate,
-      duffsInDash,
-      dashInDuffs,
-    } = useRates();
+    const { fetchRate, getFiatSymbol, getFiatRate, duffsInDash, dashInDuffs } =
+      useRates();
 
     const amount = ref(0);
+
     const fiatAmount = ref(0);
     const fiatSymbol = ref(getFiatSymbol.value);
     const fiatRate = ref(getFiatRate.value(getFiatSymbol.value).price);
@@ -372,6 +381,12 @@ ion-item {
   position: relative;
   margin-top: 36px;
 }
+.request_color {
+  background: #34bba8;
+}
+.send_color {
+  background: linear-gradient(40.37deg, #6a67fb 0.15%, #8d71ff 100%);
+}
 .next {
   display: flex;
   flex-direction: row;
@@ -383,14 +398,7 @@ ion-item {
   height: 44px;
 
   border-radius: 10px;
-  background: linear-gradient(40.37deg, #6a67fb 0.15%, #8d71ff 100%);
 }
-/* .request_color {
-  background: #34bba8;
-}
-.send_color {
-  background: linear-gradient(40.37deg, #6a67fb 0.15%, #8d71ff 100%);
-} */
 .next-text {
   /* font-family: Inter; */
   font-style: normal;

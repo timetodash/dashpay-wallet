@@ -2,7 +2,11 @@ import { createStore } from "vuex";
 import { getClient } from "@/lib/DashClient";
 import { Storage } from "@capacitor/storage";
 
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// const timestamp = () => Math.floor(Date.now())
+
 const getDefaultState = () => {
   return {
     accountDPNS: null,
@@ -32,6 +36,7 @@ const getDefaultState = () => {
     fiatRate: {},
     fiatSymbol: "",
     activeReplyToIds: {}, // The msgId we reply to, one per contact
+    toast: {isOpen: false, text: '', timestamp: 0},
   };
 };
 
@@ -47,6 +52,15 @@ interface SetActiveReplyToIdMutation {
 }
 
 const mutations = {
+  setToastOptions(state: any, options: ToastOptions) {
+    state.toast.text = options.text
+    state.toast.color = options.color
+    // state.toast.show = true
+    state.toast.timestamp = Date.now()
+  },
+  setToastOpenState(state: any, isOpen: boolean) {
+    state.toast.isOpen = isOpen
+  },
   setActiveReplyToId(state: any, payload: SetActiveReplyToIdMutation) {
     state.activeReplyToIds[payload.friendOwnerId] = payload.replyToId;
   },
@@ -242,8 +256,12 @@ const mutations = {
     });
   },
 };
+interface ToastOptions { text: string; color: string | undefined }
 
 const actions = {
+  showToast(context: any,  options: ToastOptions ) {
+    context.commit("setToastOptions", options)
+  },
   async loadLastSeenChatTimestamps(context: any) {
     console.log("loadLastSeenChatTimestamps");
     const readResult = await Storage.get({
@@ -792,6 +810,9 @@ const getters = {
   getFiatSymbol: (state: any) => {
     return state.fiatSymbol || "USD";
   },
+  getToastOpenState: (state: any) => {
+    return state.toast.isOpen
+  }
 };
 
 export default createStore({

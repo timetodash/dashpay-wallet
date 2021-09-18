@@ -1,21 +1,22 @@
 <template>
   <div class="flex ion-nowrap wrapper">
     <ion-input
+      ref="focus"
       class="enter-dash"
       v-on:input="$emit('update:fiatAmount', $event.target.value)"
       type="number"
       min="0"
       :value="fiatAmount"
-      autofocus
+      placeholder="0.00"
     ></ion-input>
-    <div class="dash-label" style="width: 160px">
+    <ion-label class="dash-label" style="width: 160px">
       {{ fiatSymbol }}
       <ion-icon
         :icon="chevronDownOutline"
         class="chevron"
         @click="showChooseCurrencyModal(true)"
       ></ion-icon>
-    </div>
+    </ion-label>
   </div>
   <div class="flex ion-justify-content-center convert">
     {{ amount?.toFixed(6) }} Dash
@@ -31,8 +32,9 @@
 <script lang="ts">
 import ChooseCurrencyModal from "@/components/Settings/ChooseCurrencyModal.vue";
 import useRates from "@/composables/rates";
-import { IonInput, IonIcon, IonModal } from "@ionic/vue";
+import { IonInput, IonIcon, IonModal, IonLabel } from "@ionic/vue";
 import { chevronDownOutline } from "ionicons/icons";
+import { onMounted } from "vue";
 
 import { defineComponent, ref } from "vue";
 // import { defineComponent, ref } from "vue";
@@ -44,11 +46,18 @@ export default defineComponent({
     IonInput,
     IonIcon,
     IonModal,
+    IonLabel,
     ChooseCurrencyModal,
   },
   setup(props: any, context: any) {
     const { fetchRate, getFiatRate } = useRates();
     const { duffsInDash } = useRates();
+
+    const focus = ref(null);
+
+    onMounted(() => {
+      (focus.value as any).$el.setFocus();
+    });
 
     const isChooseCurrencyModalOpen = ref(false);
 
@@ -74,6 +83,7 @@ export default defineComponent({
       chooseCurrency,
       showChooseCurrencyModal,
       duffsInDash,
+      focus,
     };
   },
 });

@@ -21,6 +21,29 @@
       </ion-toolbar>
       <ion-list class="ion-no-padding">
         <div v-if="searchText === ''">
+          <ion-list-header class="ion-no-padding">Note to Self</ion-list-header>
+
+          <ion-item button class="ion-no-padding">
+            <ion-avatar
+              slot="start"
+              @click="router.push(`/profile/${store.getters.myOwnerId}`)"
+            >
+              <img :src="getUserAvatar(store.getters.myOwnerId)" />
+            </ion-avatar>
+            <ion-label
+              @click="router.push(`/conversation/${store.getters.myOwnerId}`)"
+            >
+              <h2>{{ getUserLabel(store.getters.myOwnerId) }}</h2>
+              <h3>
+                {{ getUserDisplayName(store.getters.myOwnerId) }}
+              </h3>
+              <p>
+                Write a note to myself
+              </p>
+            </ion-label>
+          </ion-item>
+        </div>
+        <div v-if="searchText === ''">
           <ion-list-header class="ion-no-padding"> My Friends </ion-list-header>
 
           <ion-item
@@ -286,6 +309,8 @@ export default {
         queryOpts
       );
 
+      if (result.length > 0) scrollPage.value++; // We found new results so increase the page index for the next query
+
       result.forEach((dpnsDoc: any) => {
         store.commit("setDPNS", dpnsDoc);
       });
@@ -307,8 +332,6 @@ export default {
 
       event?.target?.complete();
 
-      scrollPage.value++;
-
       console.log("contacts.value :>> ", contacts.value);
 
       console.log(
@@ -322,7 +345,6 @@ export default {
       ).forEach((profile: any) => {
         if (profile) profiles[profile.ownerId.toString()] = profile.toJSON();
       });
-      // TODO use getter for dashpayprofile information
     };
 
     const searchContacts = async (event: any) => {
@@ -390,6 +412,7 @@ export default {
     });
 
     return {
+      store,
       searchText,
       errorMessage,
       searchContacts,

@@ -7,15 +7,15 @@
     :message="store.state.toast.text"
     :duration="1500"
     @didDismiss="closeToast"
-    color="medium"
     :icon="copy"
+    :color="toastColor"
   >
     <ion-icon slot="start" :icon="copy"> </ion-icon>
   </ion-toast>
 </template>
 
 <script lang="ts">
-import { watch } from "vue";
+import { watch, computed } from "vue";
 import { useStore } from "vuex";
 import { IonToast, IonIcon } from "@ionic/vue";
 import { defineComponent } from "vue";
@@ -29,6 +29,8 @@ export default defineComponent({
   setup() {
     const store = useStore();
 
+    const toastColor = computed(() => store.state.toast.color || "medium");
+
     watch(
       () => store.state.toast.timestamp,
       () => {
@@ -37,15 +39,16 @@ export default defineComponent({
       }
     );
 
-    const closeToast = function () {
+    const closeToast = function() {
       store.commit("setToastOpenState", false);
       console.log("copy toast state closed", store.state.toast.isOpen);
     };
 
     return {
-      store,
-      closeToast,
       copy,
+      store,
+      toastColor,
+      closeToast,
     };
   },
 });

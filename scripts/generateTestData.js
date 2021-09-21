@@ -2,6 +2,7 @@
 const fs = require('fs')
 const Dash = require('dash')
 const axios = require('axios')
+const { createContactRequest } = require("../src/lib/crypto/dashpay-crypto");
 
 //
 // Config
@@ -84,6 +85,10 @@ const users = [
 const chatMessages = [
     {from: "Alice", to: "Charlie", text: "How are you"},
     {from: "Charlie", to: "Alice", text: "I am great!"}
+]
+
+const contactRequests = [
+    {from: "Dave", to: "Alice"}
 ]
 
 const userState = {}
@@ -208,6 +213,39 @@ const generateChatMessage = async (chatMessage) => {
     console.log('result :>> ', result);
 }
     
+const generateContactRequest = async (contactRequest) => {
+  console.log("Sending contactRequest", contactRequest);
+  // const platform = userState[chatMessage.from].client.platform;
+  console.log('userState :>> ', userState);
+  const client = userState[contactRequest.from].client
+  const identity = userState[contactRequest.from].identity
+  const toUserId = userState[contactRequest.to].identity.getId().toString()
+debugger
+  const document = await createContactRequest(
+    client,
+    identity,
+    toUserId
+  );
+  
+  const documentBatch = {
+    create: [document], // Document(s) to create
+    replace: [], // Document(s) to update
+    delete: [], // Document(s) to delete
+  };
+
+  // Sign and submit the document(s)
+    const result = await client.platform.documents.broadcast(
+      documentBatch,
+      identity
+    );
+
+    console.log('result :>> ', result);
+
+}
+
+
+
+
     
 
 
@@ -287,6 +325,13 @@ async function generateChatMessages() {
     }
 }
 
+async function generateContactRequests() {
+    for (let idx = 0; idx < contactRequests.length; idx++) {
+        const contactRequest = contactRequests[idx];
+        await generateContactRequest(contactRequest)
+    }
+}
+
 async function fundWallets() {
     for (let idx = 0; idx < users.length; idx++) {
       const user = users[idx];
@@ -323,6 +368,7 @@ async function main() {
     await generateUsers()
     await generateChatMessages()
     await generateDashpayProfiles()
+    await generateContactRequests()
 }
 
 main()

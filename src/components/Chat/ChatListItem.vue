@@ -25,23 +25,21 @@
         </span>
 
         <div class="message-time" :class="{ primary: !!newMsgCount }">
-          {{ chatListItem.lastMessage.createdAt.getHours() }}:{{
-            chatListItem.lastMessage.createdAt.getMinutes()
-          }}
+          {{ chatListItemItem }}
         </div>
       </h1>
       <p>
-        {{ chatListItem.lastMessage.data.text }}
+        {{ chatListItem.lastMessage?.data.text }}
         <!-- {{ chatListItem.lastMessage.data.request }} -->
         <ion-chip
-          v-if="chatListItem.lastMessage.data.amount"
+          v-if="chatListItem.lastMessage?.data.amount"
           :class="{
             received: chatListItem.direction === 'RECEIVED',
             sent: chatListItem.direction === 'SENT',
             requested: chatListItem.lastMessage.data.request === 'open',
           }"
-          >{{ duffsInDash(chatListItem.lastMessage.data.amount) }} Dash
-          <div v-if="!chatListItem.lastMessage.data.request">
+          >{{ duffsInDash(chatListItem.lastMessage?.data.amount) }} Dash
+          <div v-if="!chatListItem.lastMessage?.data.request">
             <ion-icon
               class="sent-receive-icon"
               v-if="chatListItem.direction === 'RECEIVED'"
@@ -56,12 +54,12 @@
         </ion-chip>
         <ion-badge v-if="newMsgCount > 0">{{ newMsgCount }}</ion-badge>
         <ion-icon
-          v-if="hasNewTx && !chatListItem.lastMessage.data.request"
+          v-if="hasNewTx && !chatListItem.lastMessage?.data.request"
           class="dash-viewed"
           :src="require('/public/assets/icons/D.svg')"
         />
         <ion-icon
-          v-if="hasNewTx && chatListItem.lastMessage.data.request === 'open'"
+          v-if="hasNewTx && chatListItem.lastMessage?.data.request === 'open'"
           class="dash-viewed"
           :src="require('/public/assets/icons/requested.svg')"
         />
@@ -124,7 +122,18 @@ export default {
       store.getters.getHasNewTx(props.chatListItem.friendOwnerId)
     );
 
-    const truncate = function (str, n) {
+    const chatListItemTime = computed(() => {
+      // TODO use time of contactRequest
+      if (!props.chatListItem.lastMessage) return "TODO time";
+      else
+        return (
+          props.chatListItem.lastMessage.createdAt.getHours() +
+          " : " +
+          props.chatListItem.lastMessage.createdAt.getMinutes()
+        );
+    });
+
+    const truncate = function(str, n) {
       return str.length > n ? str.substr(0, n - 1) + "..." : str;
     };
 
@@ -133,7 +142,7 @@ export default {
     const maxDN = 14; // max display name length (2nd greyed name)
 
     // truncate the user label if it's greater that the maxUL length
-    const truncateUserLabel = function (friend) {
+    const truncateUserLabel = function(friend) {
       if (getUserLabel(friend).length > maxUL) {
         return truncate(getUserLabel(friend), maxUL);
       } else {
@@ -141,7 +150,7 @@ export default {
       }
     };
 
-    const truncateDisplayName = function (friend) {
+    const truncateDisplayName = function(friend) {
       // if total name length > max and the display name isn't already showing the whole name
       if (
         getUserLabel(friend).length + getUserDisplayName(friend).length > max &&
@@ -171,6 +180,7 @@ export default {
       router,
       truncateDisplayName,
       truncateUserLabel,
+      chatListItemTime,
     };
   },
 };

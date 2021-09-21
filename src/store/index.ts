@@ -2,7 +2,6 @@ import { createStore } from "vuex";
 import { getClient } from "@/lib/DashClient";
 import { Storage } from "@capacitor/storage";
 
-
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // const timestamp = () => Math.floor(Date.now())
@@ -36,7 +35,7 @@ const getDefaultState = () => {
     fiatRate: {},
     fiatSymbol: "",
     activeReplyToIds: {}, // The msgId we reply to, one per contact
-    toast: {isOpen: false, text: '', timestamp: 0},
+    toast: { isOpen: false, text: "", timestamp: 0 },
   };
 };
 
@@ -53,13 +52,13 @@ interface SetActiveReplyToIdMutation {
 
 const mutations = {
   setToastOptions(state: any, options: ToastOptions) {
-    state.toast.text = options.text
-    state.toast.color = options.color
+    state.toast.text = options.text;
+    state.toast.color = options.color;
     // state.toast.show = true
-    state.toast.timestamp = Date.now()
+    state.toast.timestamp = Date.now();
   },
   setToastOpenState(state: any, isOpen: boolean) {
-    state.toast.isOpen = isOpen
+    state.toast.isOpen = isOpen;
   },
   setActiveReplyToId(state: any, payload: SetActiveReplyToIdMutation) {
     state.activeReplyToIds[payload.friendOwnerId] = payload.replyToId;
@@ -101,20 +100,24 @@ const mutations = {
     state.chats.lastSeenTimestampByOwnerId[friendOwnerId] = lastTimestamp;
   },
   sortChatList(state: any) {
-    // console.log("sortChatList start");
     const chatList: any = [];
-    Object.entries(state.chats.msgsByOwnerId).forEach((entry) => {
-      const friendOwnerId = entry[0];
-      // console.log("friendOwnerId :>> ", friendOwnerId);
 
-      const chatMsgs = entry[1] as [];
+    interface ChatListItem {
+      direction: string;
+      contactRequestReceived: any;
+      contactRequestSent: any;
+      friendshipState: string;
+      searchLabel: string;
+      searchDisplayName: string;
+    }
 
-      const lastMessage: any = chatMsgs[chatMsgs.length - 1];
-      // console.log("entry[1] :>> ", entry[1]);
-      // console.log("lastMessage :>> ", lastMessage);
-
-      const direction =
-        lastMessage.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
+    interface ChatListItemsOptions {
+      friendOwnerId: string;
+      type: string;
+      lastMessage: any | undefined;
+    }
+    const createChatListItem = (opts: ChatListItemsOptions) => {
+      const { friendOwnerId, type, lastMessage } = opts;
 
       const contactRequestReceived =
         state.contactRequests.received[friendOwnerId];
@@ -131,8 +134,24 @@ const mutations = {
       const searchDisplayName = (state.dashpayProfiles as any)[friendOwnerId]
         ?.data.displayName;
 
-      const chatListItem = {
-        id: lastMessage.id.toString(),
+      let direction, sortDate;
+
+      if (lastMessage) {
+        direction =
+          lastMessage.ownerId.toString() === friendOwnerId
+            ? "RECEIVED"
+            : "SENT";
+        sortDate = lastMessage.createdAt;
+      } else {
+        sortDate =
+          contactRequestSent?.createdAt > contactRequestReceived?.createdAt
+            ? contactRequestSent.createdAt
+            : contactRequestReceived.createdAt;
+      }
+
+      return {
+        id: type + lastMessage.id.toString(),
+        type,
         friendOwnerId,
         lastMessage,
         direction,
@@ -141,9 +160,22 @@ const mutations = {
         contactRequestSent,
         searchLabel,
         searchDisplayName,
+        sortDate,
       };
+    };
 
-      // console.log("chatListItem :>> ", chatListItem);
+    Object.entries(state.chats.msgsByOwnerId).forEach((entry) => {
+      const friendOwnerId = entry[0];
+
+      const chatMsgs = entry[1] as [];
+
+      const lastMessage: any = chatMsgs[chatMsgs.length - 1];
+
+      const chatListItem = createChatListItem({
+        type: "message",
+        lastMessage,
+        friendOwnerId,
+      });
 
       // Only add items with existing contactRequests
       if (
@@ -154,13 +186,37 @@ const mutations = {
       }
     });
 
-    const chatListSorted = chatList.sort(
-      (a: any, b: any) => b.lastMessage.createdAt - a.lastMessage.createdAt
+    // Handle legacy contact Requests that don't have a chat msg
+    const alreadyShownContactIds = chatList.map((chatListItem: any) =>
+      chatListItem.type === "message"
+        ? chatListItem.contactRequestReceived?.ownerId.toString()
+        : undefined
     );
 
-    // console.log("sortChatList chatListSorted :>> ", chatListSorted);
-    // debugger;
+    const allReceivedContactIds = Object.keys(state.contactRequests.received);
 
+    const remainingContactIds = allReceivedContactIds.filter(
+      (friendOwnerId: string) => !alreadyShownContactIds.includes(friendOwnerId)
+    );
+
+    remainingContactIds.forEach((friendOwnerId: string) => {
+      const chatListItem = createChatListItem({
+        type: "message",
+        friendOwnerId,
+        lastMessage: undefined,
+      });
+
+      chatList.push(chatListItem);
+    });
+
+    // Sort the mixed msg and contact items
+    // TODO sort contact items by payment dates
+    const chatListSorted = chatList.sort(
+      (a: any, b: any) => b.sortDate - a.sortDate
+    );
+
+    // Add an item for legacy payments
+    // TODO sort legacy payment item by most recent payment date
     chatListSorted.push({ id: "legacy" });
 
     state.chatList = chatListSorted;
@@ -256,11 +312,25 @@ const mutations = {
     });
   },
 };
-interface ToastOptions { text: string; color: string | undefined }
+enum ToastColors {
+  "primary",
+  "secondary",
+  "tertiary",
+  "success",
+  "warning",
+  "danger",
+  "light",
+  "medium",
+  "dark",
+}
+interface ToastOptions {
+  text: string;
+  color: ToastColors | undefined;
+}
 
 const actions = {
-  showToast(context: any,  options: ToastOptions ) {
-    context.commit("setToastOptions", options)
+  showToast(context: any, options: ToastOptions) {
+    context.commit("setToastOptions", options);
   },
   async loadLastSeenChatTimestamps(context: any) {
     console.log("loadLastSeenChatTimestamps");
@@ -295,7 +365,7 @@ const actions = {
 
     const msg = await client?.platform?.documents.get("dashpayWallet.chat", {
       where: [
-        ["toOwnerId", "==", ownerId], // TODO support replying to my own msgs
+        ["toOwnerId", "==", ownerId],
         ["$id", "==", msgId],
       ],
     });
@@ -362,6 +432,7 @@ const actions = {
       "dashpayWallet.chat",
       {
         where: [
+          // ["$ownerId", "!=", myOwnerId], // This query is not yet supported by platform
           ["toOwnerId", "==", myOwnerId],
           ["$createdAt", ">", lastTimestamp],
         ],
@@ -374,11 +445,12 @@ const actions = {
       promiseReceived,
     ]);
 
-    // console.log("resultSent :>> ", resultSent);
+    // Filter out duplicate "note to self" messages where (ownerId === toOwnerId)
+    const resultReceivedFiltered = resultReceived.filter(
+      (chat: any) => chat.ownerId.toString() !== myOwnerId
+    );
 
-    // console.log("resultReceived :>> ", resultReceived);
-
-    const results = [...resultSent, ...resultReceived].sort(
+    const results = [...resultSent, ...resultReceivedFiltered].sort(
       (a, b) => a.createdAt - b.createdAt
     );
 
@@ -603,25 +675,31 @@ const getters = {
       state.chats.lastSeenTimestampByOwnerId[friendOwnerId] || 0
     );
 
-    return state.chats.msgsByOwnerId[friendOwnerId].filter(
-      (chat: any) =>
-        chat.createdAt > lastTimestamp &&
-        chat.ownerId.toString() === friendOwnerId
-    ).length;
+    // If there are no msgs synced, e.g. a legacy contactRequest
+    if (!state.chats.msgsByOwnerId[friendOwnerId]) return 0;
+    else
+      return state.chats.msgsByOwnerId[friendOwnerId].filter(
+        (chat: any) =>
+          chat.createdAt > lastTimestamp &&
+          chat.ownerId.toString() === friendOwnerId
+      ).length;
   },
   getHasNewTx: (state: any) => (friendOwnerId: string) => {
     const lastTimestamp = new Date(
       state.chats.lastSeenTimestampByOwnerId[friendOwnerId] || 0
     );
 
-    return (
-      state.chats.msgsByOwnerId[friendOwnerId].filter(
-        (chat: any) =>
-          chat.createdAt > lastTimestamp &&
-          chat.ownerId.toString() === friendOwnerId &&
-          chat.data.amount
-      ).length > 0
-    );
+    // If there are no msgs synced, e.g. a legacy contactRequest
+    if (!state.chats.msgsByOwnerId[friendOwnerId]) return false;
+    else
+      return (
+        state.chats.msgsByOwnerId[friendOwnerId].filter(
+          (chat: any) =>
+            chat.createdAt > lastTimestamp &&
+            chat.ownerId.toString() === friendOwnerId &&
+            chat.data.amount
+        ).length > 0
+      );
   },
   getUserFriends: (state: any) => (friendOwnerId: string) => {
     const getSocialMetrics = (findOwnerId: string) => {
@@ -770,7 +848,7 @@ const getters = {
     return ((state.chats as any).msgsByOwnerId[friendOwnerId] ?? []).map(
       (chat: any) => {
         const direction =
-          chat.ownerId.toString() === friendOwnerId ? "RECEIVED" : "SENT";
+          chat.data.toOwnerId === friendOwnerId ? "SENT" : "RECEIVED";
 
         return {
           ...chat,
@@ -811,8 +889,8 @@ const getters = {
     return state.fiatSymbol || "USD";
   },
   getToastOpenState: (state: any) => {
-    return state.toast.isOpen
-  }
+    return state.toast.isOpen;
+  },
 };
 
 export default createStore({

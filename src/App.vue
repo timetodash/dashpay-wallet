@@ -7,8 +7,10 @@
 
 <script lang="ts">
 import { IonApp, IonRouterOutlet } from "@ionic/vue";
-import { defineComponent } from "vue";
+import { defineComponent, onErrorCaptured } from "vue";
 import Toast from "@/components/Chat/Toast.vue";
+
+import { useStore } from "vuex";
 
 export default defineComponent({
   name: "App",
@@ -16,6 +18,27 @@ export default defineComponent({
     IonApp,
     IonRouterOutlet,
     Toast,
+  },
+  setup() {
+    // const client = getClient();
+
+    // const clientIdentity = getClientIdentity();
+
+    // const router = useRouter();
+
+    const store = useStore();
+
+    onErrorCaptured((error: any) => {
+      console.error(error);
+      store.dispatch("showToast", { text: error, color: "danger" });
+      return false;
+    });
+
+    window.onerror = function(msg, src, linenum, colnum, error) {
+      console.error(error);
+      store.dispatch("showToast", { text: `${msg} ${error}`, color: "danger" });
+      return false;
+    };
   },
 });
 </script>

@@ -22,6 +22,7 @@
       <ion-list>
         <ion-item class="ion-margin-top" lines="none">
           <ion-input
+            ref="focusInput"
             debounce="500"
             v-model="formName"
             enterkeyhint="next"
@@ -179,6 +180,8 @@ export default {
 
     const mostRecentCheckTimestamp = ref(0);
 
+    const focusInput = ref(null);
+
     const pickName = () => {
       router.push("/choosepassword");
     };
@@ -327,6 +330,10 @@ export default {
       hasClient.value = true;
 
       console.log("hasClient.value :>> ", hasClient.value);
+
+      setTimeout(async () => {
+        (focusInput.value as any).$el.setFocus();
+      }, 500);
     });
 
     return {
@@ -345,6 +352,7 @@ export default {
       nameIsCorrectLengthText,
       arrowBack,
       router,
+      focusInput,
     };
   },
 };

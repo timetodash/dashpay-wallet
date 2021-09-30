@@ -75,6 +75,5 @@ export default {
 .menu {
   border-radius: 10px;
   height: 90px;
-  border-radius: 10px;
 }
 </style>

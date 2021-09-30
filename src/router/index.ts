@@ -80,6 +80,30 @@ const routes: Array<RouteRecordRaw> = [
     component: ContactProfile,
     name: "ContactProfile",
     props: true,
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/friends.vue'),
+        props: true
+      },
+      {
+        path: 'friends',
+        component: () => import('@/views/friends.vue'),
+        props: true 
+      },
+      {
+        path: 'sharedFriends',
+        component: () => import('@/views/sharedFriends.vue'),
+        props: true
+      }
+    ]
+  },
+  {
+    path: "/profile/:friendOwnerId/friends",
+    component: ContactProfile,
+    props: {
+     filteredUserFriends: "filteredUserFriends",
+    }
   },
   {
     path: "/conversation/:friendOwnerId",

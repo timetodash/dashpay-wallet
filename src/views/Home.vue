@@ -11,7 +11,7 @@
           @click="router.push('/editprofile')"
           :src="require('/public/assets/banners/complete-profile.svg')"
           alt=""
-          style="width: 400px; height: 68px; margin-top: 10px;"
+          style="width: 400px; height: 68px; margin-top: 10px"
         />
       </ion-toolbar>
 

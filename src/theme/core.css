@@ -155,8 +155,41 @@ ion-toolbar {
   font-size: 16px;
   line-height: 19px;
   color: #000000;
-  padding-left: 15px;
+  /* padding-left: 15px; */
 }
+
+.userinfo {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 19px;
+  color: #000000;
+  display: flex;
+  justify-content: center;
+  margin: 15px 0px 0px;
+}
+.userdisplayname {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 15px;
+  color: #68717B;
+  display: flex;
+  justify-content: center;
+  margin: 4px 0px 0px;
+}
+.statusmessage {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 17px;
+  text-align: center;
+  color: #68717B;
+  display: flex;
+  justify-content: center;
+  margin: 18px
+}
+
 .mediumdescription {
   font-style: normal;
   font-weight: normal;
@@ -178,3 +211,29 @@ ion-toolbar {
   color: #6c69fc;
 }
 
+.nextbutton {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  /* padding: 13px 148px; */
+
+  width: 328px;
+  height: 44px;
+  margin: 16px auto ;
+  padding: 16px;
+
+  border-radius: 10px;
+  background: linear-gradient(40.37deg, #6A67FB 0.15%, #8D71FF 100%);
+border-radius: 10px;
+}
+.button-text {
+  /* font-family: Inter; */
+  font-style: normal;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 18px;
+  text-transform: capitalize;
+
+  color: #ffffff;
+}

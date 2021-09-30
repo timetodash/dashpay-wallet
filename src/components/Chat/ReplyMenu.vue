@@ -35,21 +35,14 @@ import {
   IonItem,
   IonLabel,
   IonIcon,
-  // IonToast,
   popoverController,
 } from "@ionic/vue";
-// import { ellipsisVertical, eyeOutline } from "ionicons/icons";
-// import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
-// import { ref } from "vue";
-// import { convertToSearchableStrings } from "ss-search";
 
 export default {
   name: "ReplyMenu",
   props: ["msg", "friendOwnerId"],
-  // props: [walletBalance: { type: string, default: "" }],
-  //   props: ["event"],
   components: {
     IonList,
     IonItem,
@@ -71,7 +64,11 @@ export default {
     function copyToClipboard() {
       navigator.clipboard.writeText(props.msg.data.text).then(
         function () {
-          store.dispatch("showToast", { text: "Copied message text" });
+          store.dispatch("showToast", {
+            text: "Copied message text",
+            type: "copiedtoast",
+            icon: "copyIcon",
+          });
           console.log(
             "Copying to clipboard was successful! Message: ",
             props.msg.data.text

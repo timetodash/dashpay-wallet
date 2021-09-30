@@ -145,6 +145,7 @@
 <script lang="ts">
 import useContacts from "@/composables/contacts";
 import useWallet from "@/composables/wallet";
+import { useStore } from "vuex";
 
 import MySelf from "@/components/TransactionModals/MySelf.vue";
 import MyFriend from "@/components/TransactionModals/MyFriend.vue";
@@ -184,6 +185,7 @@ export default defineComponent({
     IonChip,
   },
   setup(props, { emit }) {
+    const store = useStore();
     const { fetchRate, getFiatSymbol, getFiatRate, duffsInDash, dashInDuffs } =
       useRates();
 
@@ -246,6 +248,12 @@ export default defineComponent({
         sendRequestDirection: sendRequestDirection.value,
       });
       modalController.dismiss();
+
+      store.dispatch("showToast", {
+        text: "Your transaction has been successfully sent",
+        type: "transactiontoast",
+        icon: "transactionIcon",
+      });
     };
 
     const cancel = () => {

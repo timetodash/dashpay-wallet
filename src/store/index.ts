@@ -35,7 +35,7 @@ const getDefaultState = () => {
     fiatRate: {},
     fiatSymbol: "",
     activeReplyToIds: {}, // The msgId we reply to, one per contact
-    toast: { isOpen: false, text: "", timestamp: 0 },
+    toast: {isOpen: false, text: '', type: '', icon: '', timestamp: 0},
   };
 };
 
@@ -52,8 +52,10 @@ interface SetActiveReplyToIdMutation {
 
 const mutations = {
   setToastOptions(state: any, options: ToastOptions) {
-    state.toast.text = options.text;
-    state.toast.color = options.color;
+    state.toast.text = options.text
+    state.toast.color = options.color
+    state.toast.type = options.type
+    state.toast.icon = options.icon
     // state.toast.show = true
     state.toast.timestamp = Date.now();
   },
@@ -323,10 +325,7 @@ enum ToastColors {
   "medium",
   "dark",
 }
-interface ToastOptions {
-  text: string;
-  color: ToastColors | undefined;
-}
+interface ToastOptions { text: string; color: ToastColors | undefined; type: string | undefined; icon: string | undefined }
 
 const actions = {
   showToast(context: any, options: ToastOptions) {

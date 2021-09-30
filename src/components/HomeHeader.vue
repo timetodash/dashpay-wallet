@@ -14,14 +14,17 @@
       :event="mainMenuEvent"
       @didDismiss="showMainMenu(false)"
     >
-      <MainMenu></MainMenu>
+      <MainMenu class="menu"></MainMenu>
     </ion-popover>
   </ion-buttons>
   <div class="userName">
     {{ myLabel }}
-    <ion-icon :icon="eyeOutline" style="margin-bottom: -2px"></ion-icon>
-    <div class="dashBalance">
-      {{ myDashBalance }} Dash
+    <ion-icon
+      @click="isBlurred === true ? blur(false) : blur(true)"
+      :icon="eyeOutline"
+    ></ion-icon>
+    <div :class="{ blur: isBlurred === true }" class="dashBalance">
+      33{{ myDashBalance }} Dash
       <span class="usdBalance">({{ myFiatBalance }} {{ getFiatSymbol }}) </span>
     </div>
   </div>
@@ -72,11 +75,18 @@ export default {
 
     const mainMenuEvent = ref();
 
+    const isBlurred = ref(false);
+
+    const blur = (state: boolean) => {
+      console.log("blur", isBlurred.value);
+      isBlurred.value = state;
+    };
+
     const showMainMenu = (state: boolean, event?: Event) => {
       mainMenuEvent.value = event;
       isMainMenuOpen.value = state;
       console.log("isMainMenuOpen.value :>> ", isMainMenuOpen.value);
-      console.log(mainMenuEvent);
+      console.log("isMainevent", mainMenuEvent);
     };
 
     return {
@@ -92,6 +102,8 @@ export default {
       myFiatBalance,
       getFiatSymbol,
       router,
+      isBlurred,
+      blur,
     };
   },
 };
@@ -120,6 +132,10 @@ export default {
   font-size: 13px;
   color: #000000;
 }
+.blur {
+  filter: blur(4.5px);
+  margin-bottom: -2px;
+}
 .usdBalance {
   font-weight: 100;
   font-size: 13px;
@@ -127,5 +143,9 @@ export default {
 }
 .ellipsisColor {
   color: rgba(0, 0, 0, 0.61);
+}
+.menu {
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.08), 0px 4px 8px rgba(0, 0, 0, 0.16);
+  border-radius: 10px;
 }
 </style>

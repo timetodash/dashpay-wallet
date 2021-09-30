@@ -226,7 +226,7 @@ ion-input {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 10px 15px;
+  padding: 10px 10px;
   margin: 10px 16px;
   /* width: 328px;
   height: 35px; */

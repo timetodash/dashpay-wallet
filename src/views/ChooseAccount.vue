@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
@@ -118,8 +118,6 @@ export default {
     const password = ref("");
 
     const accounts = ref([]);
-
-    // onMounted(async () => {});
 
     const selectedAccount = ref();
 

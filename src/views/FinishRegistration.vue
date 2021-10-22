@@ -27,8 +27,11 @@
     </ion-content>
     <ion-footer class="ion-no-border">
       <ion-toolbar>
-        <ion-button expand="block" color="tertiary" @click="registerName()"
-          >Register Name</ion-button
+        <ion-chip
+          expand="block"
+          class="nextbutton next-color ion-padding-horizontal"
+          @click="registerName()"
+          ><span class="next-text">Register Name</span></ion-chip
         >
       </ion-toolbar>
     </ion-footer>
@@ -45,7 +48,7 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonButton,
+  IonChip,
   IonLabel,
   IonInput,
   IonItem,
@@ -74,7 +77,7 @@ export default {
     IonContent,
     IonPage,
     IonFooter,
-    IonButton,
+    IonChip,
     IonLabel,
     IonInput,
     IonItem,
@@ -103,9 +106,9 @@ export default {
 
         registrationMessage.value = "Many Duffs make a Dash";
 
-        const [
-          identityId,
-        ] = await (client.account as any).identities.getIdentityIds();
+        const [identityId] = await (
+          client.account as any
+        ).identities.getIdentityIds();
 
         console.log("existing identityId :>> ", identityId);
 

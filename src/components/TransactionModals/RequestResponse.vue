@@ -2,6 +2,7 @@
   <div
     v-if="msg._direction === 'SENT'"
     class="response-text response user"
+    style="position: relative"
     :class="{ nofloat: isReply === true }"
     @mouseover="hover = true"
     @mouseleave="hover = false"
@@ -50,6 +51,8 @@
   <div
     v-if="msg._direction === 'RECEIVED'"
     class="response-text response partner"
+    :class="{ nofloat: isReply === true }"
+    style="position: relative"
     @mouseover="hover = true"
     @mouseleave="hover = false"
   >
@@ -143,13 +146,15 @@ export default {
 }
 .partner {
   margin-right: 22px;
+  width: 300px;
 }
 .read {
   font-size: 16px;
-  margin-top: 2px;
+  /* margin-top: 2px; */
+  margin: 8px 0px -9px;
 }
 .chat_timestamp_message {
-  margin: 5px 4px 0px 13px;
+  margin: 10px 4px -10px 8px;
 }
 .nowrap {
   display: flex;
@@ -163,5 +168,6 @@ export default {
 }
 .nofloat {
   float: none;
+  max-width: 260px;
 }
 </style>

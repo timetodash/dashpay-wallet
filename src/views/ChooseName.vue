@@ -77,15 +77,16 @@
     </ion-content>
     <ion-footer class="ion-no-border">
       <ion-toolbar>
-        <ion-button
-          class="ion-padding-horizontal capitalize"
+        <ion-chip
+          class="ion-padding-horizontal nextbutton next-color"
           :disabled="
             !(hasClient && nameConstraints.isAvailable && !isCheckingName)
           "
           expand="block"
-          color="tertiary"
           @click="pickName()"
-          >Next</ion-button
+          ><div class="next-text" style="display: inline-block">
+            Next
+          </div></ion-chip
         >
       </ion-toolbar>
     </ion-footer>
@@ -108,7 +109,7 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonButton,
+  IonChip,
   IonButtons,
   IonLabel,
   IonInput,
@@ -154,7 +155,7 @@ export default {
     IonContent,
     IonPage,
     IonFooter,
-    IonButton,
+    IonChip,
     IonButtons,
     IonItem,
     IonLabel,

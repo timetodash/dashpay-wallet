@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <chat-header :friendOwnerId="friendOwnerId"></chat-header>
+        <ChatHeader :friendOwnerId="friendOwnerId"></ChatHeader>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding-start ion-padding-end">
@@ -22,6 +22,7 @@
     <ion-modal
       :is-open="isSendRequestDashModalOpen"
       @didDismiss="showSendRequestDashModal(false)"
+      css-class="adjust"
     >
       <SendRequestDashModal
         :initSendRequestDirection="sendRequestDirection"
@@ -29,7 +30,7 @@
         @handleSendRequest="handleSendRequest"
       ></SendRequestDashModal>
     </ion-modal>
-    <ion-footer class="ion-no-padding ion-no-border">
+    <ion-footer class="ion-no-padding ion-no-border" style="margin-top: 10px">
       <chat-footer
         :receivedContactRequest="receivedContactRequest(friendOwnerId)"
         :sentContactRequest="sentContactRequest(friendOwnerId)"
@@ -42,7 +43,7 @@
 </template>
 
 <script lang="ts">
-import { onMounted, ref, watchEffect, watch, computed } from "vue";
+import { ref, watchEffect, watch, computed } from "vue";
 
 import {
   IonPage,
@@ -54,7 +55,7 @@ import {
   IonModal,
 } from "@ionic/vue";
 
-import { getClient, getClientIdentity } from "@/lib/DashClient";
+// import { getClient, getClientIdentity } from "@/lib/DashClient";
 
 // import {} from "ionicons/icons";
 
@@ -68,7 +69,7 @@ import SendRequestDashModal from "@/components/TransactionModals/SendRequestModa
 
 // import { Client } from "dash/dist/src/SDK/Client/index";
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default {
   name: "Conversation",
@@ -251,23 +252,20 @@ export default {
 };
 </script>
 
-<style scoped>
-/* ion-header {
-  padding-top: 16px;
-  padding-left: 0px;
-  background-color: #f7f7f7;
-  border: 1px solid #e3e3e3;
+<style>
+ion-modal .modal-wrapper {
+  position: fixed;
+  top: 8%;
+  --height: 92%;
+  --border-radius: 10px 10px 0px 0px;
+  /* --box-shadow: 0px -0.5px 2px 1px rgba(0, 0, 0, 0.1); */
 }
+</style>
 
-ion-toolbar {
-  --background: primary;
-} */
-/* removes the shadow below the header */
-/* .header-md::after {
-  height: 0px;
-  border-style: solid 2px;
-} */
+<style scoped>
 ion-footer {
   padding: 0px 0px 8px 0px;
 }
 </style>
+
+

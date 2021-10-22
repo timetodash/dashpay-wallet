@@ -1,6 +1,10 @@
 <template>
   <ion-buttons slot="start"
-    ><ion-back-button default-href="/home" :icon="arrowBack"></ion-back-button
+    ><ion-back-button
+      default-href="/home"
+      :icon="arrowBack"
+      color="tertiary"
+    ></ion-back-button
   ></ion-buttons>
   <ion-avatar
     slot="start"
@@ -11,7 +15,7 @@
   <div class="username">{{ getUserLabel(friendOwnerId) }}</div>
   <ion-buttons slot="end">
     <ion-button @click="showChatMenu(true, $event)"
-      ><ion-icon :icon="ellipsisVertical" class="ellipsis_color"></ion-icon
+      ><ion-icon :icon="ellipsisVertical" class="ellipsis"></ion-icon
     ></ion-button>
   </ion-buttons>
   <ion-popover
@@ -106,9 +110,6 @@ ion-back-button {
   line-height: 19px;
   color: #000000;
   margin-left: -21px;
-}
-.ellipsis_color {
-  color: rgba(0, 0, 0, 0.61);
 }
 .menu {
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.08), 0px 4px 8px rgba(0, 0, 0, 0.16);

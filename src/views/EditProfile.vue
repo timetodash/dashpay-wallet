@@ -45,9 +45,9 @@
         <ion-chip
           expand="block"
           shape="round"
-          class="nextbutton"
+          class="nextbutton next-color"
           @click="saveProfile"
-          ><span class="button-text"> Save</span></ion-chip
+          ><span class="next-text"> Save</span></ion-chip
         >
       </ion-toolbar>
     </ion-footer>

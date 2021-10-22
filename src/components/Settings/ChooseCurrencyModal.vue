@@ -3,17 +3,16 @@
     <ion-toolbar>
       <ion-buttons slot="start"
         ><ion-button @click="modalController.dismiss()"
-          ><ion-icon :icon="arrowBack"></ion-icon></ion-button
+          ><ion-icon :icon="closeOutline" class="close"></ion-icon></ion-button
       ></ion-buttons>
-      <ion-title
-        ><span style=" color:#6A67FB; font-weight:bold">Currency</span>
-      </ion-title>
+      <ion-title class="headername centerheader">Currency </ion-title>
     </ion-toolbar>
   </ion-header>
   <ion-content class="ion-padding">
-    <ion-toolbar class="searchbar">
+    <ion-toolbar style="margin-top: -16px">
       <ion-searchbar v-model="searchString"></ion-searchbar>
     </ion-toolbar>
+    <!-- <ion-list class="noindent"> -->
     <ion-list>
       <ion-item
         lines="none"
@@ -21,16 +20,24 @@
         :key="pair.pair"
         button
         @click="choose(pair.fiatSymbol)"
-        ><ion-label>{{ pair.fiatSymbol }}</ion-label></ion-item
       >
+        <div
+          :class="`currency-flag currency-flag-${pair.fiatSymbol.toLowerCase()}`"
+        ></div>
+        <ion-label class="ion-padding-start">
+          {{ pair.fiatSymbol }}
+          <ion-icon
+            v-if="pair.fiatSymbol === getFiatSymbol"
+            :src="require('/public/assets/icons/account.svg')"
+            class="active"
+          ></ion-icon>
+        </ion-label>
+      </ion-item>
     </ion-list>
   </ion-content>
 </template>
 
 <script lang="ts">
-import useContacts from "@/composables/contacts";
-import useWallet from "@/composables/wallet";
-
 import {
   IonContent,
   IonHeader,
@@ -47,11 +54,14 @@ import {
 } from "@ionic/vue";
 import { defineComponent, ref, onMounted, computed } from "vue";
 import useRates from "@/composables/rates";
-import { arrowBack } from "ionicons/icons";
+import { closeOutline } from "ionicons/icons";
+import { useStore } from "vuex";
+import { Storage } from "@capacitor/storage";
 
 export default defineComponent({
   name: "ViewRequestModal",
   emits: ["chooseCurrency"],
+  props: ["symbol"],
   components: {
     IonItem,
     IonButtons,
@@ -66,16 +76,23 @@ export default defineComponent({
     IonSearchbar,
   },
   setup(props, { emit }) {
-    const { fetchPairs, fetchRate } = useRates();
+    const { refreshRate, fetchPairs, getFiatSymbol } = useRates();
 
+    const { commit, getters } = useStore();
     const pairs = ref([]);
 
     const choose = async (fiatSymbol: string) => {
-      console.log("choose fiatSymbol :>> ", fiatSymbol);
       // const rate = await fetchRate(fiatSymbol);
       // console.log("rate :>> ", rate);
       emit("chooseCurrency", fiatSymbol);
+      commit("setFiatSymbol", fiatSymbol);
+      const writeResult = await Storage.set({
+        key: `fiatSymbol_${getters.myLabel}`,
+        value: getFiatSymbol.value,
+      });
+      console.log("writeResult fiatSymbol :>> ", writeResult);
       modalController.dismiss();
+      refreshRate();
     };
 
     const searchString = ref("");
@@ -91,16 +108,47 @@ export default defineComponent({
     onMounted(async () => {
       pairs.value = await fetchPairs();
       console.log("pairs :>> ", pairs);
+      console.log("fiat", props.symbol);
     });
 
     return {
       modalController,
-      arrowBack,
+      closeOutline,
       pairs,
       choose,
       searchString,
       filteredPairs,
+      getFiatSymbol,
     };
   },
 });
 </script>
+
+<style scoped>
+ion-searchbar {
+  --background: #f3f3f3;
+  --border-radius: 8px;
+  --box-shadow: 0;
+  --icon-color: #9c9c9c;
+  --placeholder-color: #9c9c9c;
+  width: 100%;
+  /* width: 334px; width in mobile with padding */
+  height: 31px;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.active {
+  float: right;
+  display: flex;
+  height: 23px;
+  width: 23px;
+  position: absolute;
+  top: 50%;
+  right: 0px;
+  transform: translate(0%, -50%);
+}
+.noindent {
+  margin-left: -14px;
+}
+</style>

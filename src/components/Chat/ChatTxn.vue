@@ -1,6 +1,7 @@
 <template>
   <div
     class="chatbubble chatbubble_txn_big"
+    style="position: relative"
     :class="{
       user: msg._direction === 'SENT',
       user_txn: msg._direction === 'SENT' && !msg.data.request,
@@ -57,7 +58,7 @@
         v-if="
           getRequestByReplyToId(msg.id.toString())?.data.request !==
             'decline' &&
-            getRequestByReplyToId(msg.id.toString())?.data.request !== 'accept'
+          getRequestByReplyToId(msg.id.toString())?.data.request !== 'accept'
         "
         :class="{
           green: msg._direction === 'SENT' && !msg.data.request,
@@ -101,9 +102,9 @@
   <ion-row
     v-if="
       msg.data.request &&
-        msg._direction === 'RECEIVED' &&
-        getRequestByReplyToId(msg.id.toString())?.data.request !== 'accept' &&
-        getRequestByReplyToId(msg.id.toString())?.data.request !== 'decline'
+      msg._direction === 'RECEIVED' &&
+      getRequestByReplyToId(msg.id.toString())?.data.request !== 'accept' &&
+      getRequestByReplyToId(msg.id.toString())?.data.request !== 'decline'
     "
     class="ion-no-wrap"
   >
@@ -294,8 +295,8 @@ export default {
 .dash_icon {
   width: 27px;
   height: 27px;
-  margin-bottom: -6px;
-  margin-left: -10px;
+  margin-bottom: -5px;
+  margin-left: -7px;
 }
 
 ion-chip {

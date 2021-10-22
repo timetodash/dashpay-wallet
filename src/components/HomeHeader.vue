@@ -7,7 +7,7 @@
   /></ion-avatar>
   <ion-buttons slot="end">
     <ion-button @click="showMainMenu(true, $event)"
-      ><ion-icon :icon="ellipsisVertical" class="ellipsisColor"></ion-icon
+      ><ion-icon :icon="ellipsisVertical" class="ellipsis"></ion-icon
     ></ion-button>
     <ion-popover
       :is-open="isMainMenuOpen"
@@ -24,7 +24,7 @@
       :icon="eyeOutline"
     ></ion-icon>
     <div :class="{ blur: isBlurred === true }" class="dashBalance">
-      33{{ myDashBalance }} Dash
+      {{ myDashBalance }} Dash
       <span class="usdBalance">({{ myFiatBalance }} {{ getFiatSymbol }}) </span>
     </div>
   </div>
@@ -140,9 +140,6 @@ export default {
   font-weight: 100;
   font-size: 13px;
   color: gray;
-}
-.ellipsisColor {
-  color: rgba(0, 0, 0, 0.61);
 }
 .menu {
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.08), 0px 4px 8px rgba(0, 0, 0, 0.16);

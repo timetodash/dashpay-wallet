@@ -1,5 +1,6 @@
 <template>
   <div
+    style="position: relative"
     class="chatbubble flex"
     :class="{
       user: msg._direction === 'SENT',
@@ -8,11 +9,19 @@
     @mouseover="hover = true"
     @mouseleave="hover = false"
   >
+    <!-- {{ store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId) }} -->
     <div v-if="msg.data.replyToChatId">
       <!-- {{ store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId) }} -->
       <div class="reply">
-        <div class="replied">You replied to</div>
-        <!-- <div class="verticalline"> -->
+        <div class="replied">
+          You replied to
+          <ReplyPopover
+            class="nowrap"
+            :hover="hover"
+            :msg="msg"
+            :friendOwnerId="friendOwnerId"
+          ></ReplyPopover>
+        </div>
         <chat-txn
           v-if="
             (store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
@@ -54,13 +63,11 @@
           class="singleline"
           {{
           store.getters.getChatMsgById(msg.data.replyToChatId,
-          friendOwnerId)
+          friendOwnerId)?.data.text
           }}
           v-if="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
-              ?.data.request === 'decline' ||
-            store.getters.getChatMsgById(msg.data.replryToChatId, friendOwnerId)
-              ?.data.request === 'accept'
+              ?.data.request === ('accept' || 'decline')
           "
           :msg="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
@@ -83,10 +90,9 @@
               ?.data.text
           }}
         </div>
-        <!-- </div> -->
       </div>
     </div>
-    <div>
+    <div class="messagetext">
       {{ msg.data.text }}
       <ReplyPopover
         class="nowrap"
@@ -96,9 +102,13 @@
       ></ReplyPopover>
       <div class="nowrap">
         <div class="chat_timestamp chat_timestamp_message">
-          {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes() }}
+          {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes(2) }}
         </div>
-        <ion-icon v-if="msg._direction === 'SENT'" :icon="checkmarkDoneOutline">
+        <ion-icon
+          v-if="msg._direction === 'SENT'"
+          class="chat_checkmark"
+          :icon="checkmarkDoneOutline"
+        >
         </ion-icon>
       </div>
     </div>
@@ -153,18 +163,16 @@ export default {
 </script>
 
 <style scoped>
+.messagetext {
+  font-size: 14px;
+}
 .chat_timestamp_message {
-  margin: 5px 4px 0px 13px;
+  margin: 10px 4px -10px 8px;
 }
 .nowrap {
   display: flex;
   flex-wrap: nowrap;
   float: right;
-}
-.chevron {
-  width: 40px;
-  height: 20px;
-  color: #818c99;
 }
 ion-icon {
   color: rgba(0, 0, 0, 0.4);
@@ -194,7 +202,6 @@ ion-popover .menu {
   height: 90px;
 }
 .reply {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: normal;
   font-size: 10px;
@@ -213,9 +220,5 @@ ion-popover .menu {
 }
 .singleline {
   float: none;
-}
-.verticalline {
-  border-left: 2px solid #6c69fc;
-  padding-left: 8px;
 }
 </style>

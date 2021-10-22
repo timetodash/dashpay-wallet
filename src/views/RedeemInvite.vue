@@ -39,12 +39,11 @@
     </ion-content>
     <ion-footer class="ion-no-border">
       <ion-toolbar>
-        <ion-button
+        <ion-chip
           expand="block"
-          color="tertiary"
-          class="create ion-padding-horizontal"
+          class="nextbutton next-color ion-padding-horizontal"
           @click="() => router.push('/finishregistration')"
-          >Create Account</ion-button
+          ><span class="next-text">Create Account</span></ion-chip
         >
       </ion-toolbar>
     </ion-footer>
@@ -69,7 +68,7 @@ import {
   IonBackButton,
   IonTitle,
   IonContent,
-  IonButton,
+  IonChip,
   IonGrid,
   IonCol,
   IonRow,
@@ -90,7 +89,7 @@ export default {
     IonButtons,
     IonContent,
     IonPage,
-    IonButton,
+    IonChip,
     IonGrid,
     IonCol,
     IonRow,

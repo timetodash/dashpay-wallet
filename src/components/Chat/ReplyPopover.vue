@@ -35,7 +35,7 @@ export default {
     ReplyMenu,
     IonPopover,
   },
-  setup(props: any) {
+  setup() {
     // const hover = ref(false);
 
     const isReplyMenuOpen = ref(false);
@@ -66,11 +66,13 @@ export default {
   float: right;
 }
 .chevron {
-  /* position: fixed; */
-  /* right: 0px; */
+  position: absolute;
+  right: 0px;
+  top: 4px;
   width: 40px;
   height: 20px;
   color: #818c99;
+  backdrop-filter: blur(20px);
 }
 .menu {
   border-radius: 10px;

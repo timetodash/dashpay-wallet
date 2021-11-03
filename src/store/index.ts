@@ -134,15 +134,17 @@ const mutations = {
       const searchDisplayName = (state.dashpayProfiles as any)[friendOwnerId]
         ?.data.displayName;
 
-      let direction, sortDate;
+      let direction, sortDate, id;
 
       if (lastMessage) {
+        id = type + "_" + lastMessage.id.toString();
         direction =
           lastMessage.ownerId.toString() === friendOwnerId
             ? "RECEIVED"
             : "SENT";
         sortDate = lastMessage.createdAt;
       } else {
+        id = type + "_" + friendOwnerId;
         sortDate =
           contactRequestSent?.createdAt > contactRequestReceived?.createdAt
             ? contactRequestSent.createdAt
@@ -150,7 +152,7 @@ const mutations = {
       }
 
       return {
-        id: type + lastMessage.id.toString(),
+        id,
         type,
         friendOwnerId,
         lastMessage,
@@ -265,7 +267,7 @@ const mutations = {
     // console.log("timestamp :>> ", timestamp);
     state.contactRequests.lastTimestampSent = timestamp;
   },
-  setChatMsgs(state: any, chatMsgs: any) {
+  setChatMsgs(state: any, chatMsgs: any[]) {
     // Cache documents by $id
     chatMsgs.forEach((chatMsg: any) => {
       const documentId = chatMsg.id.toString();
@@ -297,6 +299,23 @@ const mutations = {
       state.chats.msgsByOwnerId[friendOwnerId] = (
         state.chats.msgsByOwnerId[friendOwnerId] || []
       ).concat(chatMsg);
+
+      // Deduplicate msgs that were committed directly to state after ST by id
+      state.chats.msgsByOwnerId[friendOwnerId] = [
+        ...new Map(
+          state.chats.msgsByOwnerId[friendOwnerId].map((msg: any) => [
+            msg.id.toString(),
+            msg,
+          ])
+        ).values(),
+      ];
+
+      // state.chats.msgsByOwnerId[friendOwnerId] = state.chats.msgsByOwnerId[
+      //   friendOwnerId
+      // ].filter(
+      //   (msg: any, index: number, self: any) =>
+      //     index === self.findIndex((t: any) => t.id === msg.id)
+      // );
     });
 
     // console.log("state.chats.msgsByOwnerId :>> ", state.chats.msgsByOwnerId);
@@ -467,6 +486,7 @@ const actions = {
   },
   // async syncSocialGraph(context: any) {},
   async fetchContactRequestsSent(context: any, ownerId: any) {
+    // Used to parse the social graph
     const client = getClient();
 
     const sentByOwnerId = state.socialGraph.sentByOwnerId as any;
@@ -508,7 +528,7 @@ const actions = {
 
     context.dispatch("fetchDashpayProfiles", {
       ownerIds: resultSentFriendOwnerIds,
-    }); // use identifier and 'in' operator
+    }); // TODO use identifier and 'in' operator
 
     if (resultSent.length > 0) {
       await sleep(100);
@@ -574,7 +594,7 @@ const actions = {
 
     context.dispatch("fetchDashpayProfiles", {
       ownerIds: resultSentFriendOwnerIds,
-    }); // use identifier and 'in' operator
+    }); // TODO use identifier and 'in' operator
 
     resultReceived.forEach((contactRequest: any) => {
       context.commit("setContactRequestReceived", contactRequest);

@@ -63,13 +63,13 @@ export default function useChats() {
     chatText: string,
     friendOwnerId: string,
     amount = 0,
-    request = "",
+    request = "", // TODO type as enum
     replyToChatId = ""
   ) => {
     console.log("sendChat", { chatText, friendOwnerId, amount, request });
 
     const client = getClient();
-    console.log("logged in with mnemonic :>> ", client?.wallet?.exportWallet());
+    // console.log("logged in with mnemonic :>> ", client?.wallet?.exportWallet());
 
     const duffs = dashInDuffs.value(amount);
 
@@ -94,11 +94,15 @@ export default function useChats() {
 
     console.log("sendChat document :>> ", document);
 
-    const documentBatch = {
+    store.commit("setChatMsgs", [{ ...document, _state: "sending" }]);
+
+    const documentBatchMsgOnly = {
       create: [document],
       replace: [],
       delete: [],
     };
+
+    let documentBatchToSend;
 
     // Attach contact request if we haven't sent one before
     if (!store.getters.getSentContactRequest(friendOwnerId)) {
@@ -108,39 +112,75 @@ export default function useChats() {
         friendOwnerId
       );
 
-      documentBatch.create.push(contactRequest);
-    }
+      documentBatchToSend = {
+        create: [document, contactRequest],
+        replace: [],
+        delete: [],
+      };
+    } else documentBatchToSend = documentBatchMsgOnly;
 
     console.log("sendChat broadcasting", {
-      documentBatch,
+      documentBatchToSend,
       clientIdenity: getClientIdentity(),
     });
 
-    // TODO handle duplicate error if contactRequest exists and resend the chatMsg only
-    const result = await client.platform?.documents.broadcast(
-      documentBatch,
-      getClientIdentity()
-    );
+    // Broadcast document with potentially attached contactRequest
+    // Catch duplicate contactRequest error and only broadcast chatMsg
+    let result;
+    try {
+      result = await client.platform?.documents.broadcast(
+        documentBatchToSend,
+        getClientIdentity()
+      );
 
-    console.log("sendChat result :>> ", result);
+      console.log("sendChat documentBatchToSend result :>> ", result);
 
-    // On successful ST immediately set the contactRequest in state
-    // TODO commit contact request to state for faster UX
-    // if (result.transitions[1])
-    //   existingContactRequest.value = {
-    //     ...result.transitions[1],
-    //     friendOwnerId: result.ownerId,
-    //   };
+      // On successful ST immediately set the contactRequest in state to speed up UX
+      if (result.transitions[1]?.type === "contactRequest") {
+        const newContactRequestSent = {
+          ...result.transitions[1],
+          ownerId: result.ownerId,
+        };
+        console.log("newContactRequestSent :>> ", newContactRequestSent);
+        store.commit("setContactRequestSent", newContactRequestSent);
+      }
 
-    // TODO add sent transition to store.state and deduplicate on next sync
+      // Commit broadcast msg State Transistion directly to state to speed up UX
+      const chatSent = result.transitions[0];
 
-    // console.dir(result.transitions[0].toJSON(), { depth: 100 });
+      chatSent.ownerId = result.ownerId;
 
-    // const chatSent = result.transitions[0];
+      chatSent._state = "sent";
 
-    // chatSent.ownerId = result.ownerId;
+      store.commit("setChatMsgs", [chatSent]);
+    } catch (e) {
+      // Catch duplicate contactRequest error and only broadcast chatMsg
+      if (e.data.errors[0].name === "DuplicateDocumentError") {
+        try {
+          result = await client.platform?.documents.broadcast(
+            documentBatchMsgOnly,
+            getClientIdentity()
+          );
+          // Commit broadcast msg State Transistion directly to state to speed up UX
+          const chatSent = result.transitions[0];
 
-    // chatMsgsSent.value.push(chatSent);
+          chatSent.ownerId = result.ownerId;
+
+          chatSent._state = "sent";
+
+          store.commit("setChatMsgs", [chatSent]);
+
+          console.log("sendChat documentBatchMsgOnly result :>> ", result);
+        } catch (e) {
+          store.commit("setChatMsgs", [{ ...document, _state: "error" }]);
+          throw e;
+        }
+      } else {
+        throw e;
+      }
+    }
+
+    // debugger;
   };
 
   return {

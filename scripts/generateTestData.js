@@ -124,8 +124,13 @@ const getOrCreateIdentity = async (client) => {
   console.log('Checking for an identity..')
     
   const identityId = client.account.identities.getIdentityIds()[0]
+  
+  console.log('identityId :>> ', identityId);
+  
       
   const identity = identityId ? await client.platform.identities.get(identityId) : await client.platform.identities.register()
+  
+  console.log('identity :>> ', identity);
     
   console.log('identityID :>> ', identity.getId().toString())
     
@@ -337,6 +342,7 @@ async function fundWallets() {
       const user = users[idx];
       const address = userState[user.label].client.account.getUnusedAddress().address
       await fundWallet(address)
+      await sleep(1000)
     }
 }
 async function generateDashpayProfiles() {

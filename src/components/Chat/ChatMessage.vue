@@ -30,8 +30,10 @@
                 msg.data.replyToChatId,
                 friendOwnerId
               )?.data.text) ||
-            store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
-              ?.data.request === 'open'
+              store.getters.getChatMsgById(
+                msg.data.replyToChatId,
+                friendOwnerId
+              )?.data.request === 'open'
           "
           :msg="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
@@ -46,10 +48,14 @@
           v-if="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
               ?.data.amount &&
-            !store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
-              ?.data.text &&
-            !store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
-              ?.data.request
+              !store.getters.getChatMsgById(
+                msg.data.replyToChatId,
+                friendOwnerId
+              )?.data.text &&
+              !store.getters.getChatMsgById(
+                msg.data.replyToChatId,
+                friendOwnerId
+              )?.data.request
           "
           :msg="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
@@ -67,7 +73,11 @@
           }}
           v-if="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
-              ?.data.request === ('accept' || 'decline')
+              ?.data.request === 'decline' ||
+              store.getters.getChatMsgById(
+                msg.data.replryToChatId,
+                friendOwnerId
+              )?.data.request === 'accept'
           "
           :msg="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
@@ -81,8 +91,10 @@
           v-if="
             !store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
               ?.data.amount &&
-            store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
-              ?.data.text
+              store.getters.getChatMsgById(
+                msg.data.replyToChatId,
+                friendOwnerId
+              )?.data.text
           "
         >
           {{
@@ -222,3 +234,4 @@ ion-popover .menu {
   float: none;
 }
 </style>
+

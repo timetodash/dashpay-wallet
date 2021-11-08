@@ -114,13 +114,13 @@
       v-model="message"
     ></ion-textarea>
   </ion-content>
-  <ion-footer class="ion-no-border ion-padding">
+  <ion-footer class="ion-no-border">
     <!-- TODO disable button if the balance is too low -->
     <ion-chip
       v-if="sendRequestDirection === 'send'"
       expand="block"
       shape="round"
-      class="next send_color"
+      class="nextbutton send_color"
       @click="handleSendRequest"
       :disabled="amount === 0"
       ><span class="next-text"> {{ sendRequestDirection }}</span></ion-chip
@@ -129,7 +129,7 @@
       v-if="sendRequestDirection === 'request'"
       expand="block"
       shape="round"
-      class="next request_color"
+      class="nextbutton request_color"
       @click="handleSendRequest"
       :disabled="amount === 0"
       ><span class="next-text"> {{ sendRequestDirection }}</span></ion-chip
@@ -145,6 +145,7 @@
 <script lang="ts">
 import useContacts from "@/composables/contacts";
 import useWallet from "@/composables/wallet";
+import { useStore } from "vuex";
 
 import MySelf from "@/components/TransactionModals/MySelf.vue";
 import MyFriend from "@/components/TransactionModals/MyFriend.vue";
@@ -184,6 +185,7 @@ export default defineComponent({
     IonChip,
   },
   setup(props, { emit }) {
+    const store = useStore();
     const { fetchRate, getFiatSymbol, getFiatRate, duffsInDash, dashInDuffs } =
       useRates();
 
@@ -246,6 +248,12 @@ export default defineComponent({
         sendRequestDirection: sendRequestDirection.value,
       });
       modalController.dismiss();
+
+      store.dispatch("showToast", {
+        text: "Your transaction has been successfully sent",
+        type: "transactiontoast",
+        icon: "transactionIcon",
+      });
     };
 
     const cancel = () => {
@@ -281,13 +289,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.close {
-  width: 25px;
-  height: 25px;
-  color: #6c69fc;
-}
 .title {
-  /* font-family: Inter; */
   position: fixed;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -354,8 +356,6 @@ ion-item {
 }
 .message-text {
   margin: 13px 0px 8px 0px;
-
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: normal;
   font-size: 14px;
@@ -392,22 +392,12 @@ ion-item {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 13px 148px;
+  /* padding: 13px 148px; */
 
   width: 328px;
   height: 44px;
 
   border-radius: 10px;
-}
-.next-text {
-  /* font-family: Inter; */
-  font-style: normal;
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 18px;
-  text-transform: capitalize;
-
-  color: #ffffff;
 }
 .line {
   position: absolute;

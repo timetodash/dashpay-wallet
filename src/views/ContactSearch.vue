@@ -9,7 +9,7 @@
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true" class="ion-padding-bottom">
-      <ion-toolbar class="searchbar">
+      <ion-toolbar>
         <ion-searchbar
           animated
           placeholder="Find your friends"
@@ -37,9 +37,7 @@
               <h3>
                 {{ getUserDisplayName(store.getters.myOwnerId) }}
               </h3>
-              <p>
-                Write a note to myself
-              </p>
+              <p>Write a note to myself</p>
             </ion-label>
           </ion-item>
         </div>

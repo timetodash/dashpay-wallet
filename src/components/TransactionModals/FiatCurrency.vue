@@ -25,7 +25,10 @@
     :is-open="isChooseCurrencyModalOpen"
     @didDismiss="showChooseCurrencyModal(false)"
   >
-    <ChooseCurrencyModal @chooseCurrency="chooseCurrency"></ChooseCurrencyModal>
+    <ChooseCurrencyModal
+      @chooseCurrency="chooseCurrency"
+      :symbol="fiatSymbol"
+    ></ChooseCurrencyModal>
   </ion-modal>
 </template>
 

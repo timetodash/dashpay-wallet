@@ -1,107 +1,112 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <chat-header :friendOwnerId="friendOwnerId"></chat-header>
-      </ion-toolbar>
-    </ion-header>
     <ion-content class="ion-padding">
-      <ion-avatar><img :src="getUserAvatar(friendOwnerId)"/></ion-avatar>
+      <ion-toolbar>
+        <ion-buttons
+          ><ion-back-button
+            class="back"
+            default-href="/home"
+            :icon="arrowBack"
+          ></ion-back-button
+        ></ion-buttons>
+        <ion-avatar class="profileavatar"
+          ><img :src="getUserAvatar(friendOwnerId)"
+        /></ion-avatar>
+      </ion-toolbar>
 
-      <p>
+      <p class="userinfo">
         {{ getUserLabel(friendOwnerId) }}
       </p>
-      <p>
+      <p class="userdisplayname">
         {{ getUserDisplayName(friendOwnerId) }}
       </p>
-      <p>
-        Status message:
+      <p class="statusmessage">
         {{ getUserPublicMessage(friendOwnerId) }}
       </p>
-      <ion-button
-        color="primary"
-        @click="
-          router.push({
-            path: `/conversation/${friendOwnerId}`,
-          })
-        "
-        shape="round"
-        >Chat</ion-button
-      >
-      <ion-button
-        color="primary"
-        shape="round"
-        @click="
-          router.push({
-            path: `/conversation/${friendOwnerId}`,
-            query: { pay: 'true' },
-          })
-        "
-        >Pay</ion-button
-      >
-      <ion-button color="primary" shape="round" @click="openQRCodeModal"
-        >QR Code</ion-button
-      >
-      <p>
-        Joined {{ new Date().getMonth() + 1 }}/
-        {{ new Date().getFullYear() }}
-      </p>
-      <p>Friends since {{ friendsDate }}</p>
+
+      <div class="icons">
+        <ion-icon
+          class="pay"
+          :src="require('/public/assets/icons/chat.svg')"
+          @click="
+            router.push({
+              path: `/conversation/${friendOwnerId}`,
+            })
+          "
+        ></ion-icon>
+        <ion-icon
+          class="pay"
+          :src="require('/public/assets/icons/sendHeader.svg')"
+          @click="
+            router.push({
+              path: `/conversation/${friendOwnerId}`,
+              query: { pay: 'true' },
+            })
+          "
+        ></ion-icon>
+        <ion-icon
+          class="pay"
+          :src="require('/public/assets/icons/QR.svg')"
+          @click="openQRCodeModal"
+        ></ion-icon>
+      </div>
+
+      <div class="lowericons">
+        <p class="userdisplayname">
+          <ion-icon
+            class="joined"
+            :src="require('/public/assets/icons/dashp.svg')"
+          ></ion-icon>
+          Joined {{ formatDate(new Date()) }}
+          <!-- {{ new Date().getMonth() + 1 }}
+          {{ new Date().getFullYear() }} -->
+        </p>
+        <p class="userdisplayname">
+          <ion-icon class="joined" :icon="people"></ion-icon>
+          Friends since {{ friendsDate }}
+        </p>
+      </div>
 
       <ion-toolbar class="searchbar">
-        <ion-searchbar v-model="filterInput"></ion-searchbar>
+        <ion-searchbar
+          v-model="filterInput"
+          placeholder="Search for users"
+        ></ion-searchbar>
       </ion-toolbar>
-      <ion-list>
-        <ion-list-header>
-          {{ getUserLabel(friendOwnerId) }}'s Friends
-        </ion-list-header>
-        <ion-item
-          v-for="contact in filteredUserFriends"
-          :key="contact.id"
-          button
-        >
-          <ion-avatar
-            slot="start"
-            @click="router.push(`/profile/${contact.data.toUserId.toString()}`)"
+
+      <ion-toolbar>
+        <ion-buttons class="tabfeatures ion-text-capitalize">
+          <ion-button
+            fill="clear"
+            class="tabfeatures ion-text-capitalize"
+            :class="{ selected: tabSelected === 'friends' }"
+            @click="tabState('friends')"
           >
-            <img :src="getUserAvatar(contact.data.toUserId.toString())" />
-          </ion-avatar>
-          <ion-label
-            @click="
-              router.push(`/conversation/${contact.data.toUserId.toString()}`)
-            "
+            <ion-label>Friends </ion-label>
+          </ion-button>
+
+          <ion-button
+            fill="clear"
+            class="tabfeatures ion-text-capitalize"
+            :class="{ selected: tabSelected === 'sharedFriends' }"
+            @click="tabState('sharedFriends')"
           >
-            <h2
-              class="
-                flex
-                ion-align-items-center ion-justify-content-between ion-nowrap
-              "
-            >
-              {{ getUserLabel(contact.data.toUserId.toString()) }}
-              <div class="flex ion-nowrap ion-align-items-center">
-                <span class="social-count">
-                  {{ contact._socialMetrics.count }}
-                  <ion-icon
-                    :icon="people"
-                    color="tertiary"
-                    class="social-icon"
-                  ></ion-icon>
-                </span>
-                <ion-icon
-                  :src="
-                    contact._socialMetrics.isMyFriend
-                      ? require('/public/assets/icons/dashd-purple.svg')
-                      : require('/public/assets/icons/dashd-grey.svg')
-                  "
-                  color="tertiary"
-                  class="dash-icon"
-                ></ion-icon>
-              </div>
-            </h2>
-            <h3>{{ getUserDisplayName(contact.data.toUserId.toString()) }}</h3>
-          </ion-label>
-        </ion-item>
-      </ion-list>
+            <ion-label>Shared Friends </ion-label>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+
+      <friends
+        v-if="tabSelected === 'friends'"
+        :filteredUserFriends="filteredUserFriends"
+        style="margin-top: 430px; z-index: 1"
+      ></friends>
+
+      <sharedFriends
+        v-if="tabSelected === 'sharedFriends'"
+        :filteredUserFriends="filteredUserFriends"
+        style="margin-top: 430px; z-index: 1"
+      ></sharedFriends>
     </ion-content>
   </ion-page>
 </template>
@@ -109,19 +114,21 @@
 <script lang="ts">
 import { computed, watch, ref } from "vue";
 import { search } from "ss-search";
+import { arrowBack } from "ionicons/icons";
+
+import friends from "@/views/friends.vue";
+import sharedFriends from "@/views/sharedFriends.vue";
 
 import {
   IonSearchbar,
   IonPage,
-  IonHeader,
-  IonToolbar,
   IonContent,
-  IonItem,
   IonLabel,
-  IonList,
-  IonListHeader,
-  IonAvatar,
+  IonToolbar,
   IonButton,
+  IonAvatar,
+  IonButtons,
+  IonBackButton,
   IonIcon,
   modalController,
 } from "@ionic/vue";
@@ -133,34 +140,28 @@ import { getClient, getClientIdentity } from "@/lib/DashClient";
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 import useChats from "@/composables/chats";
-import ChatHeader from "@/components/Chat/ChatHeader.vue";
 import ContactQRCodeModal from "@/components/Contact/ContactQRCodeModal.vue";
 import { people } from "ionicons/icons";
-
+import { onMounted } from "vue";
 // import { Client } from "dash/dist/src/SDK/Client/index";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const formatDate = (date: Date) => {
-  return `${date.getMonth() + 1} / ${date.getFullYear()}`;
-};
-
 export default {
-  name: "Conversation",
+  name: "ContactProfile",
   components: {
-    IonHeader,
-    IonToolbar,
     IonContent,
     IonPage,
-    ChatHeader,
-    IonItem,
-    IonButton,
     IonLabel,
-    IonList,
-    IonListHeader,
+    IonButton,
+    IonToolbar,
     IonAvatar,
     IonIcon,
+    IonButtons,
+    IonBackButton,
     IonSearchbar,
+    friends,
+    sharedFriends,
   },
   setup() {
     // const client = getClient();
@@ -184,6 +185,16 @@ export default {
     const getUserAvatar = computed(() => store.getters.getUserAvatar);
 
     const friendOwnerId = ref(route.params.friendOwnerId as string);
+
+    const tabSelected = ref("");
+
+    onMounted(() => {
+      tabSelected.value = "friends";
+    });
+
+    const tabState = (state: string) => {
+      tabSelected.value = state;
+    };
 
     const resolveFriend = () => {
       store.dispatch("fetchDPNSDoc", friendOwnerId.value);
@@ -244,6 +255,24 @@ export default {
       }
     });
 
+    const formatDate = function (date: Date) {
+      const month = [
+        "Jan",
+        "Feb",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "Aug",
+        "Sept",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+      return `${month[date.getMonth() + 1]} ${date.getFullYear()}`;
+    };
+
     const friendsDate = computed(() => {
       // TODO consider contactInfo 'banning / hiding' of contact
       const dateA =
@@ -253,7 +282,7 @@ export default {
 
       if (dateA && dateB)
         return dateA > dateB ? formatDate(dateA) : formatDate(dateB);
-      else return "'say high to be friends today'";
+      else return "'say hi to be friends today'";
     });
 
     return {
@@ -269,29 +298,60 @@ export default {
       store,
       people,
       router,
+      arrowBack,
+      formatDate,
+      tabState,
+      tabSelected,
     };
   },
 };
 </script>
 
 <style scoped>
+.profileavatar {
+  height: 80px;
+  width: 80px;
+  margin: auto;
+}
+.back {
+  position: fixed;
+  top: 16px;
+  left: -25px;
+  width: 17px;
+  height: 15px;
+  color: #6c69fc;
+}
+
 .searchbar {
   padding-left: 16px;
   padding-right: 16px;
   --background: white;
 }
 
-ion-header {
-  padding-top: 16px;
-  padding-left: 0px;
-  background-color: #f7f7f7;
-  border: 1px solid #e3e3e3;
+.pay {
+  height: 40px;
+  width: 40px;
 }
 
-/* removes the shadow below the header */
-.header-md::after {
-  height: 0px;
-  border-style: solid 2px;
+.icons {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+}
+
+.lowericons {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin: 32px 0px;
+  position: relative;
+}
+
+.joined {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  color: #7d6cfd;
 }
 ion-footer {
   padding: 0px 0px 8px 16px;
@@ -325,13 +385,32 @@ ion-searchbar {
   --box-shadow: 0;
   --icon-color: #9c9c9c;
   --placeholder-color: #9c9c9c;
+  --padding: 0px;
   width: 100%;
   /* width: 334px; width in mobile with padding */
   height: 31px;
   padding-left: 0px;
   padding-right: 0px;
 }
-ion-toolbar {
-  --background: #f7f7f7;
+.tabheader {
+  /* margin-top: 450px; */
+  margin: auto;
+}
+ion-button {
+  width: 164px;
+  height: 35px;
+}
+.tabfeatures {
+  --color-selected: #6c69fc;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  letter-spacing: -0.003em;
+  border-radius: 1.5px;
+}
+.selected {
+  border-bottom: 3px solid #6c69fc;
+  color: #6c69fc;
 }
 </style>

@@ -146,11 +146,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.close {
-  width: 25px;
-  height: 25px;
-  color: #6c69fc;
-}
 .title {
   /* font-family: Inter; */
   position: fixed;
@@ -220,7 +215,6 @@ ion-item {
 .message-text {
   margin: 13px 0px 8px 0px;
 
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: normal;
   font-size: 14px;
@@ -267,7 +261,6 @@ ion-chip {
   background: #f2f4ff;
 }
 .next-text {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: bold;
   font-size: 14px;
@@ -283,7 +276,6 @@ ion-chip {
   left: 72px;
 }
 .show-message {
-  /* font-family: Inter; */
   width: 194px;
   font-style: normal;
   font-weight: normal;
@@ -300,7 +292,6 @@ ion-chip {
   display: flex;
   justify-content: center;
 
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: normal;
   font-size: 12px;

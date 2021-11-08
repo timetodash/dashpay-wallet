@@ -1,6 +1,7 @@
 <template>
   <div
     class="chatbubble_txn_small"
+    style="position: relative"
     :class="{
       user: msg._direction?.toUpperCase() === 'SENT',
       chat_partner_txn: msg._direction?.toUpperCase() === 'RECEIVED',
@@ -28,12 +29,6 @@
         </div>
       </div>
     </div>
-    <ReplyPopover
-      v-if="!isReply"
-      :hover="hover"
-      :msg="msg"
-      :friendOwnerId="friendOwnerId"
-    ></ReplyPopover>
     <div class="alignrow">
       <div class="chat_timestamp">
         {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes(2) }}
@@ -43,6 +38,13 @@
         :icon="checkmarkDoneOutline"
       >
       </ion-icon>
+      <ReplyPopover
+        style="margin-bottom: 25px"
+        v-if="!isReply"
+        :hover="hover"
+        :msg="msg"
+        :friendOwnerId="friendOwnerId"
+      ></ReplyPopover>
     </div>
   </div>
 </template>

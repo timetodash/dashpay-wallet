@@ -30,13 +30,12 @@
     </ion-content>
     <ion-footer class="ion-no-border">
       <ion-toolbar>
-        <ion-button
+        <ion-chip
           :disabled="!backupConfirmed"
-          class="ion-padding-horizontal capitalize"
-          color="tertiary"
+          class="ion-padding-horizontal nextbutton next-color"
           expand="block"
           @click="next"
-          >Next</ion-button
+          ><span class="next-text">Next</span></ion-chip
         >
       </ion-toolbar>
     </ion-footer>
@@ -51,7 +50,7 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonButton,
+  IonChip,
   IonButtons,
   IonBackButton,
   IonItem,
@@ -78,7 +77,7 @@ export default {
     IonContent,
     IonTextarea,
     IonPage,
-    IonButton,
+    IonChip,
     IonButtons,
     IonBackButton,
     IonItem,

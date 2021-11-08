@@ -123,22 +123,25 @@
       <ion-icon class="emoji" :icon="happyOutline"></ion-icon>
       <ion-icon class="attach" :icon="attachOutline"></ion-icon>
     </ion-input>
-    <ion-icon
-      v-if="chatText === ''"
-      class="dash_button"
-      :src="
-        receivedContactRequest
-          ? require('/public/assets/icons/userSent.svg')
-          : require('/public/assets/icons/userSent_disabled.svg')
-      "
-      @click="showSendRequestDashSheet"
-    ></ion-icon>
-    <ion-icon
-      v-else
-      class="dash_button"
-      @click="sendChatWrapper"
-      :src="require('/public/assets/icons/sending.svg')"
-    ></ion-icon>
+    <div v-if="getUserLabel(friendOwnerId) != myLabel" class="flex">
+      <ion-icon
+        v-if="chatText === ''"
+        class="dash_button"
+        :src="
+          receivedContactRequest
+            ? require('/public/assets/icons/userSent.svg')
+            : require('/public/assets/icons/userSent_disabled.svg')
+        "
+        @click="showSendRequestDashSheet"
+      ></ion-icon>
+      <ion-icon
+        v-else
+        class="dash_button"
+        @click="sendChatWrapper"
+        :src="require('/public/assets/icons/sending.svg')"
+      ></ion-icon>
+    </div>
+    <div v-else class="ion-padding-end"></div>
   </div>
 </template>
 
@@ -210,6 +213,7 @@ export default {
       isSendingAccept,
       chatText,
       store,
+      myLabel: computed(() => store.getters.myLabel),
       getUserLabel: computed(() => store.getters.getUserLabel),
     };
   },
@@ -226,7 +230,7 @@ ion-input {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 10px 15px;
+  padding: 10px 10px;
   margin: 10px 16px;
   /* width: 328px;
   height: 35px; */

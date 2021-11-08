@@ -1,30 +1,26 @@
 <template>
   <ion-toast
-    css-class="toastbox"
-    class="toastbox"
+    :css-class="store.state.toast.type"
     position="top"
+    :buttons="showButton()"
     :is-open="store.state.toast.isOpen"
     :message="store.state.toast.text"
     :duration="1500"
     @didDismiss="closeToast"
-    :icon="copy"
-    :color="toastColor"
   >
-    <ion-icon slot="start" :icon="copy"> </ion-icon>
   </ion-toast>
 </template>
 
 <script lang="ts">
 import { watch, computed } from "vue";
 import { useStore } from "vuex";
-import { IonToast, IonIcon } from "@ionic/vue";
+import { IonToast } from "@ionic/vue";
 import { defineComponent } from "vue";
-import { copy } from "ionicons/icons";
+import { copy, checkmarkCircleOutline } from "ionicons/icons";
 
 export default defineComponent({
   components: {
     IonToast,
-    IonIcon,
   },
   setup() {
     const store = useStore();
@@ -39,7 +35,27 @@ export default defineComponent({
       }
     );
 
-    const closeToast = function() {
+    const showButton = function () {
+      if (store.state.toast.icon === "copyIcon") {
+        return [
+          {
+            side: "start",
+            icon: copy,
+            // cssClass: "iconPosition",
+          },
+        ];
+      } else if (store.state.toast.icon === "transactionIcon") {
+        return [
+          {
+            side: "start",
+            icon: checkmarkCircleOutline,
+            // cssClass: "iconPosition",
+          },
+        ];
+      }
+    };
+
+    const closeToast = function () {
       store.commit("setToastOpenState", false);
       console.log("copy toast state closed", store.state.toast.isOpen);
     };
@@ -49,28 +65,52 @@ export default defineComponent({
       store,
       toastColor,
       closeToast,
+      checkmarkCircleOutline,
+      showButton,
     };
   },
 });
 </script>
 
-<style scoped>
-.toastbox {
+<style>
+/* ion-toast css-class only works if style is not scoped or if add to core.css */
+/* works if class is named ion-toast or .copiedtoast */
+.copiedtoast {
   --background: #818c99;
   --border-radius: 10px;
   --color: #ffffff;
-  --width: 170px;
+  --button-color: #ffffff;
   display: flex;
   justify-content: center;
-
-  width: 170px;
-  height: 35px;
-  background: #818c99;
-  border-radius: 10px;
+  text-align: center;
+  height: 70px;
 }
-ion-toast ion-toast-content .toast-content {
-  --background: #818c99;
+.iconPosition {
+  margin-left: 100px;
+  padding-left: 100px;
+}
+.toast-button-icon-only {
+  margin-left: 100px;
+  padding-left: 100px;
+  order: 0;
+}
+.transactiontoast {
+  --background: linear-gradient(
+    266.51deg,
+    #f3f3ff 0%,
+    #e9f0ff 100%,
+    #e9f0ff 100%
+  );
   --border-radius: 10px;
-  --color: #ffffff;
+  --color: #6c69fc;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  height: 70px;
+
+  font-style: normal;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 13px;
 }
 </style>

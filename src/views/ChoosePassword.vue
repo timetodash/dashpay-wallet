@@ -33,17 +33,16 @@
         />
       </div>
     </ion-content>
-    <ion-footer class="ion-no-border ion-padding">
+    <ion-footer class="ion-no-border">
       <!-- <ion-toolbar>
         <ion-title>{{ checkMessage }}</ion-title>
       </ion-toolbar> -->
       <ion-toolbar>
-        <ion-button
+        <ion-chip
           expand="block"
-          class="capitalize"
-          color="tertiary"
+          class="nextbutton next-color"
           @click="checkPassword()"
-          >Next</ion-button
+          ><span class="next-text">Next</span></ion-chip
         >
       </ion-toolbar>
     </ion-footer>
@@ -56,7 +55,7 @@ import {
   IonPage,
   IonToolbar,
   IonContent,
-  IonButton,
+  IonChip,
   IonAvatar,
   IonInput,
   IonItem,
@@ -87,7 +86,7 @@ export default {
     IonContent,
     IonPage,
     IonFooter,
-    IonButton,
+    IonChip,
     IonInput,
     IonItem,
     IonIcon,
@@ -201,25 +200,6 @@ ion-item.sc-ion-input-md-h:not(.item-label),
 ion-item:not(.item-label) .sc-ion-input-md-h {
   --padding-start: 12px;
   --width: 328px;
-}
-.unlock {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 19px;
-  position: fixed;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  color: #000000;
-}
-
-.close {
-  width: 25px;
-  height: 25px;
-  color: #6c69fc;
 }
 .lock {
   position: absolute;

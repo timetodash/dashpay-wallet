@@ -1,18 +1,24 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-toolbar class="app-header"><HomeHeader></HomeHeader> </ion-toolbar>
+      <ion-toolbar>
+        <HomeHeader></HomeHeader>
+      </ion-toolbar>
     </ion-header>
 
     <ion-content :fullscreen="true">
       <ion-toolbar class="searchbar" v-if="profileCompleted < 10">
-        {{ profileCompleted }}
         <img
           @click="router.push('/editprofile')"
-          :src="require('/public/assets/banners/complete-profile.svg')"
+          :src="require('/public/assets/banners/complete_profile.svg')"
           alt=""
-          style="width: 400px; height: 68px; margin-top: 10px;"
+          class="profile-banner"
         />
+        <div class="profile-completed">{{ profileCompleted * 10 }}%</div>
+        <ion-progress-bar
+          :value="profileCompleted / 10"
+          class="progress"
+        ></ion-progress-bar>
       </ion-toolbar>
 
       <ion-toolbar class="searchbar">
@@ -21,28 +27,90 @@
 
       <ChatList :chatList="filteredChatList"></ChatList>
 
-      <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-        <ion-fab-button class="compose" @click="router.push(`/contactSearch`)">
-          <ion-icon :icon="add"></ion-icon>
-        </ion-fab-button>
+      <div
+        v-if="filteredChatList.length === 1"
+        :class="{
+          box1: profileCompleted === 10,
+          box_profile1: profileCompleted < 10,
+        }"
+      >
+        <img
+          :src="require('/public/assets/icons/home_graphic1.svg')"
+          alt=""
+          class="graphic"
+        />
+      </div>
+
+      <div
+        v-if="filteredChatList.length === 2"
+        :class="{
+          box2: profileCompleted === 10,
+          box_profile2: profileCompleted < 10,
+        }"
+      >
+        <img
+          :src="require('/public/assets/icons/home_graphic1.svg')"
+          alt=""
+          class="graphic"
+        />
+      </div>
+
+      <div
+        v-if="filteredChatList.length === 3"
+        :class="{
+          box3: profileCompleted === 10,
+          box_profile3: profileCompleted < 10,
+        }"
+      >
+        <img
+          :src="require('/public/assets/icons/home_graphic2.svg')"
+          alt=""
+          class="graphic"
+        />
+      </div>
+
+      <img
+        v-if="filteredChatList.length === 4"
+        :src="require('/public/assets/icons/home_graphic3.svg')"
+        alt=""
+        class="graphic"
+        :class="{ g4: profileCompleted === 10, g4_no: profileCompleted < 10 }"
+      />
+
+      <img
+        v-if="filteredChatList.length === 5"
+        :src="require('/public/assets/icons/home_graphic4.svg')"
+        alt=""
+        class="graphic g5"
+      />
+
+      <img
+        v-if="filteredChatList.length >= 6"
+        :src="require('/public/assets/icons/home_graphic5.svg')"
+        alt=""
+        class="graphic g6"
+      />
+
+      <ion-fab horizontal="end" vertical="bottom">
+        <ion-icon
+          :src="require('/public/assets/icons/message_me.svg')"
+          @click="router.push(`/contactSearch`)"
+        ></ion-icon>
       </ion-fab>
 
-      <ion-fab
-        horizontal="end"
-        vertical="bottom"
-        slot="fixed"
-        style="margin-bottom: 74px"
-      >
-        <ion-fab-button class="capture" @click="router.push(`/senddash`)">
-          <ion-icon :icon="scan" color="tertiary"> </ion-icon>
-        </ion-fab-button>
+      <ion-fab horizontal="end" vertical="bottom" class="fab">
+        <ion-icon
+          :src="require('/public/assets/icons/scan.svg')"
+          @click="router.push(`/senddash`)"
+        >
+        </ion-icon>
       </ion-fab>
     </ion-content>
   </ion-page>
 </template>
 
 <script lang="ts">
-import { onMounted, ref, computed } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import { search } from "ss-search";
@@ -53,8 +121,8 @@ import {
   IonToolbar,
   IonContent,
   IonFab,
-  IonFabButton,
   IonSearchbar,
+  IonProgressBar,
   IonIcon,
 } from "@ionic/vue";
 import {
@@ -72,16 +140,16 @@ import useContacts from "@/composables/contacts";
 import useChats from "@/composables/chats";
 import useRates from "@/composables/rates";
 
-import {
-  initClient,
-  getClient,
-  getClientOpts,
-  getClientIdentity,
-} from "@/lib/DashClient";
-import { Client } from "dash/dist/src/SDK/Client/index";
+// import {
+//   initClient,
+//   getClient,
+//   getClientOpts,
+//   getClientIdentity,
+// } from "@/lib/DashClient";
+// import { Client } from "dash/dist/src/SDK/Client/index";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const Dashcore = require("@dashevo/dashcore-lib");
+// const Dashcore = require("@dashevo/dashcore-lib");
 
 export default {
   name: "Home",
@@ -91,8 +159,8 @@ export default {
     IonContent,
     IonPage,
     IonSearchbar,
+    IonProgressBar,
     IonFab,
-    IonFabButton,
     IonIcon,
     HomeHeader,
     ChatList,
@@ -128,6 +196,8 @@ export default {
       return completed;
     });
 
+    // const profileCompleted = 8;
+
     const filteredChatList = computed(() => {
       if (filterInput.value) {
         console.log(
@@ -149,9 +219,6 @@ export default {
         return store.state.chatList;
       }
     });
-
-    // onMounted(async () => {
-    // });
 
     store.dispatch("fetchDashpayProfiles", {
       ownerIds: [store.state.accountDPNS.$ownerId],
@@ -176,24 +243,6 @@ export default {
 </script>
 
 <style scoped>
-ion-header {
-  padding-top: 16px;
-  background: #f7f7f7;
-  border: 1px solid #e3e3e3;
-  /* --background-color: #f7f7f7; */
-}
-.app-header {
-  --background-color: #f7f7f7;
-}
-/* removes the shadow below the header */
-.header-md::after {
-  height: 0px;
-  border-style: solid 2px;
-}
-/* ion-toolbar {
-  --background: primary;
-} */
-
 .searchbar {
   padding-left: 16px;
   padding-right: 16px;
@@ -217,7 +266,81 @@ ion-searchbar {
   padding-left: 0px;
   padding-right: 0px;
 }
-ion-toolbar {
-  --background: #f7f7f7;
+.progress {
+  position: fixed;
+  top: 62px;
+  left: 25px;
+  width: 180px;
+}
+.profile-banner {
+  width: 400px;
+  height: 68px;
+  margin-top: 10px;
+}
+.profile-completed {
+  position: fixed;
+  top: 39px;
+  left: 25px;
+  z-index: 1;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 18px;
+  color: #000000;
+}
+.graphic {
+  width: 333px;
+  height: 200px;
+  margin: auto;
+}
+.box1 {
+  display: flex;
+  height: 440px;
+  position: relative;
+}
+.box_profile1 {
+  display: flex;
+  height: 358px;
+  position: relative;
+}
+.box2 {
+  display: flex;
+  height: 374px;
+  position: relative;
+}
+.box_profile2 {
+  display: flex;
+  height: 292px;
+  position: relative;
+}
+.box3 {
+  display: flex;
+  height: 308px;
+  position: relative;
+}
+.box_profile3 {
+  display: flex;
+  height: 226px;
+  position: relative;
+}
+.g4 {
+  margin-bottom: 15px;
+}
+.g4_no {
+  margin-bottom: 0px;
+}
+.g5 {
+  margin-bottom: 0px;
+}
+.g6 {
+  margin-bottom: -20px;
+}
+ion-icon {
+  width: 60px;
+  height: 60px;
+}
+.fab {
+  position: fixed;
+  bottom: 75px;
 }
 </style>

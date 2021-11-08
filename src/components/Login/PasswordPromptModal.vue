@@ -36,13 +36,12 @@
     <!-- <ion-toolbar>
       <ion-title>{{ checkMessage }}</ion-title>
     </ion-toolbar> -->
-    <ion-toolbar class="ion-padding">
-      <ion-button
+    <ion-toolbar>
+      <ion-chip
         expand="block"
-        class="capitalize"
-        color="tertiary"
+        class="nextbutton next-color"
         @click="$emit('decryptMnemonic')"
-        >Login</ion-button
+        ><span class="next-text">Login</span></ion-chip
       >
     </ion-toolbar>
   </ion-footer>
@@ -50,7 +49,7 @@
 
 <script lang="ts">
 import {
-  IonButton,
+  IonChip,
   IonItem,
   IonIcon,
   IonContent,
@@ -78,7 +77,7 @@ export default {
     IonIcon,
     IonContent,
     IonInput,
-    IonButton,
+    IonChip,
     IonFooter,
     IonToolbar,
   },
@@ -158,25 +157,7 @@ ion-item:not(.item-label) .sc-ion-input-md-h {
   --padding-start: 12px;
   --width: 328px;
 }
-.unlock {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 19px;
-  position: fixed;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  color: #000000;
-}
 
-.close {
-  width: 25px;
-  height: 25px;
-  color: #6c69fc;
-}
 .accountname {
   font-style: normal;
   font-weight: bold;

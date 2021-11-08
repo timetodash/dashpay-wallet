@@ -5,7 +5,6 @@
         <ion-buttons slot="start"
           ><ion-icon
             v-if="isLoggedIn"
-            style="color: #6c69fc"
             class="back"
             :icon="arrowBack"
             @click="router.push('/home')"
@@ -24,7 +23,7 @@
         />
       </ion-modal>
     </ion-content>
-    <ion-footer class="ion-no-border ion-padding-horizontal">
+    <ion-footer class="ion-no-border ion-padding-horizontal ion-padding-bottom">
       <div>
         <div class="newaccount" @click="createAccount">
           <ion-icon
@@ -55,7 +54,7 @@
 </template>
 
 <script lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
@@ -118,8 +117,6 @@ export default {
     const password = ref("");
 
     const accounts = ref([]);
-
-    // onMounted(async () => {});
 
     const selectedAccount = ref();
 

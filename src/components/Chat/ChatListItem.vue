@@ -24,9 +24,7 @@
           {{ truncateDisplayName(chatListItem.friendOwnerId) }}
         </span>
 
-        <div class="message-time" :class="{ primary: !!newMsgCount }">
-          {{ chatListItemItem }}
-        </div>
+        <div class="message-time" :class="{ primary: !!newMsgCount }"></div>
       </h1>
       <p>
         {{ chatListItem.lastMessage?.data.text }}
@@ -133,7 +131,7 @@ export default {
         );
     });
 
-    const truncate = function(str, n) {
+    const truncate = function (str, n) {
       return str.length > n ? str.substr(0, n - 1) + "..." : str;
     };
 
@@ -142,7 +140,7 @@ export default {
     const maxDN = 14; // max display name length (2nd greyed name)
 
     // truncate the user label if it's greater that the maxUL length
-    const truncateUserLabel = function(friend) {
+    const truncateUserLabel = function (friend) {
       if (getUserLabel(friend).length > maxUL) {
         return truncate(getUserLabel(friend), maxUL);
       } else {
@@ -150,7 +148,7 @@ export default {
       }
     };
 
-    const truncateDisplayName = function(friend) {
+    const truncateDisplayName = function (friend) {
       // if total name length > max and the display name isn't already showing the whole name
       if (
         getUserLabel(friend).length + getUserDisplayName(friend).length > max &&

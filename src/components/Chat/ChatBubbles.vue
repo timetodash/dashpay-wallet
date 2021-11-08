@@ -78,6 +78,8 @@ export default {
     RequestResponse,
   },
   setup(props, context) {
+    // const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
     const store = useStore();
     const chatText = ref("");
 
@@ -98,6 +100,7 @@ export default {
       store.commit("setActiveReplyToId", {
         friendOwnerId: props.friendOwnerId,
         replyToId: msg.id.toString(),
+        msgOwnerId: msg.ownerId.toString(),
       });
     };
 
@@ -132,10 +135,10 @@ export default {
   overflow-y: scroll;
   flex-direction: column-reverse;
 }
-.row_padding {
+/* .row_padding {
   padding-top: 5px;
   padding-bottom: 4px;
-}
+} */
 .figure {
   height: 238px;
   width: 123px;

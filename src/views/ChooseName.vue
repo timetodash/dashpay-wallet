@@ -22,6 +22,7 @@
       <ion-list>
         <ion-item class="ion-margin-top" lines="none">
           <ion-input
+            ref="focusInput"
             debounce="500"
             v-model="formName"
             enterkeyhint="next"
@@ -76,15 +77,16 @@
     </ion-content>
     <ion-footer class="ion-no-border">
       <ion-toolbar>
-        <ion-button
-          class="ion-padding-horizontal capitalize"
+        <ion-chip
+          class="ion-padding-horizontal nextbutton next-color"
           :disabled="
             !(hasClient && nameConstraints.isAvailable && !isCheckingName)
           "
           expand="block"
-          color="tertiary"
           @click="pickName()"
-          >Next</ion-button
+          ><div class="next-text" style="display: inline-block">
+            Next
+          </div></ion-chip
         >
       </ion-toolbar>
     </ion-footer>
@@ -107,7 +109,7 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonButton,
+  IonChip,
   IonButtons,
   IonLabel,
   IonInput,
@@ -153,7 +155,7 @@ export default {
     IonContent,
     IonPage,
     IonFooter,
-    IonButton,
+    IonChip,
     IonButtons,
     IonItem,
     IonLabel,
@@ -178,6 +180,8 @@ export default {
     const isCheckingName = ref(false);
 
     const mostRecentCheckTimestamp = ref(0);
+
+    const focusInput = ref(null);
 
     const pickName = () => {
       router.push("/choosepassword");
@@ -327,6 +331,10 @@ export default {
       hasClient.value = true;
 
       console.log("hasClient.value :>> ", hasClient.value);
+
+      setTimeout(async () => {
+        (focusInput.value as any).$el.setFocus();
+      }, 500);
     });
 
     return {
@@ -345,6 +353,7 @@ export default {
       nameIsCorrectLengthText,
       arrowBack,
       router,
+      focusInput,
     };
   },
 };

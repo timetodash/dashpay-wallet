@@ -289,6 +289,7 @@ ion-searchbar {
   color: #000000;
 }
 .graphic {
+  display: block;
   width: 333px;
   height: 200px;
   margin: auto;

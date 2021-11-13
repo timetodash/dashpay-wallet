@@ -132,7 +132,6 @@ ion-header {
   font-size: 14px;
   line-height: 18px;
   color: #a3a3a3;
-  /* font-family: Inter; */
   display: flex;
   align-items: flex-start;
   order: 1;
@@ -155,6 +154,18 @@ ion-header {
   color: #6c69fc;
 }
 
+.inflow {
+  background: linear-gradient(266.73deg, #f2f8fd 0%, #ebfff8 98.09%);
+}
+.outflow {
+  background: linear-gradient(
+    266.51deg,
+    #f3f3ff 0%,
+    #e9f0ff 100%,
+    #e9f0ff 100%
+  );
+}
+
 .headername {
   font-style: normal;
   font-weight: 600;
@@ -170,7 +181,6 @@ ion-header {
   /* margin-top: 14px; */
   display: flex;
   align-items: center;
-  color: #000000;
 }
 .close {
   width: 28px;
@@ -270,24 +280,35 @@ ion-header {
   color: #ffffff;
 }
 
+.timestamp_chip {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 8px;
+  margin-top: 15px;
+  margin-bottom: 15px;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  background: linear-gradient(
+    266.51deg,
+    #f3f3ff 0%,
+    #e9f0ff 100%,
+    #e9f0ff 100%
+  );
+  /* backdrop-filter: blur(10px); */ /* not currently supported in most browsers */
+  border-radius: 11px;
+}
+.timestamp_label {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 11px;
+  color: rgba(108, 105, 252); /* changed to a darker purple text */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  margin: 0px 10px;
+}
 
 .currency-flag {
   display: inline-block;
@@ -347,6 +368,13 @@ ion-searchbar {
 .currency-flag.currency-flag-bob{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/bob.png');}
 .currency-flag.currency-flag-brl{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/brl.png');}
 .currency-flag.currency-flag-bsd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/bsd.png');}
+
+.currency-flag.currency-flag-btc{background-image:url('../../public/assets/icons/currency_flags/btc.svg'); width: 35px; height: 35px; margin-left: -4px; margin-right: -1px; align-self: center; justify-self: center;}
+
+.currency-flag.currency-flag-btn{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/btn.png');}
+.currency-flag.currency-flag-bwp{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/bwp.png');}
+.currency-flag.currency-flag-byn{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/byn.png');}
+.currency-flag.currency-flag-byr{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/byn.png');} /* new belarusian rubble 2000-2016 (same symbol) */
 .currency-flag.currency-flag-btn{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/btn.png');}
 .currency-flag.currency-flag-bwp{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/bwp.png');}
 .currency-flag.currency-flag-byn{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/byn.png');}
@@ -354,6 +382,14 @@ ion-searchbar {
 .currency-flag.currency-flag-cad{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/cad.png');}
 .currency-flag.currency-flag-cdf{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/cdf.png');}
 .currency-flag.currency-flag-chf{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/chf.png');}
+.currency-flag.currency-flag-clf{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/clp.png');}
+
+.currency-flag.currency-flag-clp{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/clp.png');} /*1clf = 27593 clp; clp = chilean peso; clf = chilean unit of account */
+
+.currency-flag.currency-flag-cny{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/cny.png');}
+.currency-flag.currency-flag-cop{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/cop.png');}
+.currency-flag.currency-flag-crc{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/crc.png');}
+.currency-flag.currency-flag-cuc{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/cup.png');} /* cuba: The CUC is pegged to the US dollar at a rate of one to one, and 1 CUC is worth about 26 CUP */
 .currency-flag.currency-flag-clp{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/clp.png');}
 .currency-flag.currency-flag-cny{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/cny.png');}
 .currency-flag.currency-flag-cop{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/cop.png');}
@@ -368,11 +404,16 @@ ion-searchbar {
 .currency-flag.currency-flag-egp{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/egp.png');}
 .currency-flag.currency-flag-ern{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/ern.png');}
 .currency-flag.currency-flag-etb{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/etb.png');}
+
+.currency-flag.currency-flag-eth{background-image:url('../../public/assets/icons/currency_flags/eth.png'); background-repeat: no-repeat; margin-left: 5px;  margin-right: -5px;}
+
 .currency-flag.currency-flag-eur{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/eur.png');}
 .currency-flag.currency-flag-fjd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/fjd.png');}
 .currency-flag.currency-flag-fkp{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/fkp.png');}
 .currency-flag.currency-flag-gbp{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/gbp.png');}
 .currency-flag.currency-flag-gel{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/gel.png');}
+
+.currency-flag.currency-flag-ggp{background-image:url('../../public/assets/icons/currency_flags/GGP.svg');} /* added: flag of Guernsey */
 .currency-flag.currency-flag-ghs{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/ghs.png');}
 .currency-flag.currency-flag-gip{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/gip.png');}
 .currency-flag.currency-flag-gmd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/gmd.png');}
@@ -386,10 +427,15 @@ ion-searchbar {
 .currency-flag.currency-flag-huf{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/huf.png');}
 .currency-flag.currency-flag-idr{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/idr.png');}
 .currency-flag.currency-flag-ils{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/ils.png');}
+
+.currency-flag.currency-flag-imp{background-image:url('../../public/assets/icons/currency_flags/imp.png');} /* added: flag of Isle of Man */
+
 .currency-flag.currency-flag-inr{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/inr.png');}
 .currency-flag.currency-flag-iqd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/iqd.png');}
 .currency-flag.currency-flag-irr{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/irr.png');}
 .currency-flag.currency-flag-isk{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/isk.png');}
+.currency-flag.currency-flag-jep{background-image:url('../../public/assets/icons/currency_flags/jep.png');} /* added: flag of Jersey */
+
 .currency-flag.currency-flag-jmd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/jmd.png');}
 .currency-flag.currency-flag-jod{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/jod.png');}
 .currency-flag.currency-flag-jpy{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/jpy.png');}
@@ -406,6 +452,9 @@ ion-searchbar {
 .currency-flag.currency-flag-lbp{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/lbp.png');}
 .currency-flag.currency-flag-lkr{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/lkr.png');}
 .currency-flag.currency-flag-lrd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/lrd.png');}
+.currency-flag.currency-flag-lsl{background-image:url('../../public/assets/icons/currency_flags/lsl.jpg');} /* added: flag of Lesotho */
+
+.currency-flag.currency-flag-ltc{background-image:url('../../public/assets/icons/currency_flags/ltc.png'); background-repeat: no-repeat; margin-left: 5px;  margin-right: -5px;} /* added LTC */
 .currency-flag.currency-flag-ltl{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/ltl.png');}
 .currency-flag.currency-flag-lyd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/lyd.png');}
 .currency-flag.currency-flag-mad{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/mad.png');}
@@ -429,6 +478,7 @@ ion-searchbar {
 .currency-flag.currency-flag-npr{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/npr.png');}
 .currency-flag.currency-flag-nzd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/nzd.png');}
 .currency-flag.currency-flag-omr{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/omr.png');}
+.currency-flag.currency-flag-pab{background-image:url('../../public/assets/icons/currency_flags/pab.png');} /* added: Panama flag */
 .currency-flag.currency-flag-pen{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/pen.png');}
 .currency-flag.currency-flag-pgk{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/pgk.png');}
 .currency-flag.currency-flag-php{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/php.png');}
@@ -443,6 +493,8 @@ ion-searchbar {
 .currency-flag.currency-flag-sar{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/sar.png');}
 .currency-flag.currency-flag-sbd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/sbd.png');}
 .currency-flag.currency-flag-scr{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/scr.png');}
+
+.currency-flag.currency-flag-sdg{background-image:url('../../public/assets/icons/currency_flags/sdg.png'); background-repeat: no-repeat; align-self: center; margin-top: 5px;} /* added: Republic of Sudan flag */
 .currency-flag.currency-flag-sek{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/sek.png');}
 .currency-flag.currency-flag-sgd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/sgd.png');}
 .currency-flag.currency-flag-shp{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/shp.png');}
@@ -455,6 +507,8 @@ ion-searchbar {
 .currency-flag.currency-flag-szl{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/szl.png');}
 .currency-flag.currency-flag-thb{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/thb.png');}
 .currency-flag.currency-flag-tjs{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/tjs.png');}
+
+.currency-flag.currency-flag-tmt{background-image:url('../../public/assets/icons/currency_flags/tmt.png');} /* added: Turkmenistan flag */
 .currency-flag.currency-flag-tnd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/tnd.png');}
 .currency-flag.currency-flag-top{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/top.png');}
 .currency-flag.currency-flag-try{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/try.png');}
@@ -467,16 +521,26 @@ ion-searchbar {
 .currency-flag.currency-flag-uyu{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/uyu.png');}
 .currency-flag.currency-flag-uzs{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/uzs.png');}
 .currency-flag.currency-flag-vef{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/vef.png');}
+.currency-flag.currency-flag-ves{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/vef.png');} /* 1 ves = 100,000 vef */
 .currency-flag.currency-flag-vnd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/vnd.png');}
 .currency-flag.currency-flag-vuv{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/vuv.png');}
 .currency-flag.currency-flag-wst{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/wst.png');}
 .currency-flag.currency-flag-xaf{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/xaf.png');}
-.currency-flag.currency-flag-xag{background-image:url('../../public/assets/icons/currency_flags/xag.png');}
+.currency-flag.currency-flag-xag{background-image:url('../../public/assets/icons/currency_flags/xag.png'); background-repeat: no-repeat; justify-self: center; margin-left: 5px; margin-right: -5px;}
+.currency-flag.currency-flag-xau{background-image:url('../../public/assets/icons/currency_flags/xau.png'); background-repeat: no-repeat; justify-self: center; margin-left: 5px; margin-right: -5px;}
+/* .currency-flag.currency-flag-xag{background-image:url('/public/assets/icons/currency_flags/xag.png');} */
+.currency-flag.currency-flag-xcd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/xcd.png');}
+/* .currency-flag.currency-flag-xdr{background-image:url('../../public/assets/icons/currency_flags/xdr.png'); background-repeat: no-repeat; justify-self: center; margin-left: 5px; margin-right: -5px;} */
+
+.currency-flag.currency-flag-xdr{background-image:url('../../public/assets/icons/currency_flags/xdr.png'); width: 33px; height: 33px; margin-left: -3px; margin-right: -1px; align-self: center; justify-self: center;}
 /* .currency-flag.currency-flag-xag{background-image:url('/public/assets/icons/currency_flags/xag.png');} */
 .currency-flag.currency-flag-xcd{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/xcd.png');}
 .currency-flag.currency-flag-xof{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/xof.png');}
 .currency-flag.currency-flag-xpf{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/xpf.png');}
 .currency-flag.currency-flag-yer{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/yer.png');}
 .currency-flag.currency-flag-zar{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/zar.png');}
+.currency-flag.currency-flag-zmk{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/zmw.png');} /* "Currency ZMK doesn't have legal tender anymore, it was replaced by currency ZMW since 2013-01-01. Currency ZMK is pegged with currency ZMW since 2013-01-01, the fixed price is 1 ZMW=1000 ZMK." */
+.currency-flag.currency-flag-zmw{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/zmw.png');}
+.currency-flag.currency-flag-zwl{background-image:url('../../public/assets/icons/currency_flags/zwl.png');} /* added: Turkmenistan flag */
 .currency-flag.currency-flag-zmw{background-image:url('https://wise.com/public-resources/assets/flags/rectangle/zmw.png');}
 

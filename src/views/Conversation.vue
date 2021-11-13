@@ -12,23 +12,27 @@
         @send-chat-wrapper="sendChatWrapper"
       ></ChatBubbles>
     </ion-content>
-    <ion-action-sheet
-      :is-open="isSendRequestDashSheetOpen"
-      header="Send / Request"
-      :buttons="sendAndRequestButtons"
-      @didDismiss="showSendRequestDashSheet(false)"
+    <ion-modal
+      :is-open="isSendRequestPopupOpen"
+      @didDismiss="showSendRequestPopup(false)"
+      css-class="popup"
     >
-    </ion-action-sheet>
+      <SendRequestPopup
+        @showRequestDashModal="showSendRequestDashModal"
+        @showSendDashModal="showSendRequestDashModal"
+      >
+      </SendRequestPopup>
+    </ion-modal>
     <ion-modal
       :is-open="isSendRequestDashModalOpen"
-      @didDismiss="showSendRequestDashModal(false)"
-      css-class="adjust"
+      @didDismiss="showSendRequestDashModal({ state: false })"
+      css-class="sendrequest"
     >
-      <SendRequestDashModal
+      <SendRequestModal
         :initSendRequestDirection="sendRequestDirection"
         :friendOwnerId="friendOwnerId"
         @handleSendRequest="handleSendRequest"
-      ></SendRequestDashModal>
+      ></SendRequestModal>
     </ion-modal>
     <ion-footer class="ion-no-padding ion-no-border" style="margin-top: 10px">
       <chat-footer
@@ -36,7 +40,7 @@
         :sentContactRequest="sentContactRequest(friendOwnerId)"
         :friendOwnerId="friendOwnerId"
         @send-chat-wrapper="sendChatWrapper"
-        @showSendRequestDashSheet="showSendRequestDashSheet"
+        @showSendRequestPopup="showSendRequestPopup"
       ></chat-footer>
     </ion-footer>
   </ion-page>
@@ -50,14 +54,9 @@ import {
   IonHeader,
   IonToolbar,
   IonContent,
-  IonActionSheet,
   IonFooter,
   IonModal,
 } from "@ionic/vue";
-
-// import { getClient, getClientIdentity } from "@/lib/DashClient";
-
-// import {} from "ionicons/icons";
 
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
@@ -65,7 +64,8 @@ import useChats from "@/composables/chats";
 import ChatBubbles from "@/components/Chat/ChatBubbles.vue";
 import ChatHeader from "@/components/Chat/ChatHeader.vue";
 import ChatFooter from "@/components/Chat/ChatFooter.vue";
-import SendRequestDashModal from "@/components/TransactionModals/SendRequestModal.vue";
+import SendRequestModal from "@/components/TransactionModals/SendRequestModal.vue";
+import SendRequestPopup from "@/components/TransactionModals/SendRequestPopup.vue";
 
 // import { Client } from "dash/dist/src/SDK/Client/index";
 
@@ -81,8 +81,8 @@ export default {
     ChatBubbles,
     ChatHeader,
     ChatFooter,
-    IonActionSheet,
-    SendRequestDashModal,
+    SendRequestModal,
+    SendRequestPopup,
     IonModal,
     IonFooter,
   },
@@ -152,29 +152,22 @@ export default {
     });
 
     // Handle the Dash Button
-    const isSendRequestDashSheetOpen = ref(false);
+    const isSendRequestPopupOpen = ref(false);
 
     const isSendRequestDashModalOpen = ref(false);
 
-    const showSendRequestDashSheet = async (state: boolean) => {
-      isSendRequestDashSheetOpen.value = state;
+    const showSendRequestPopup = async (state: boolean) => {
+      isSendRequestPopupOpen.value = state;
     };
+
     const sendRequestDirection = ref("");
 
-    const showSendRequestDashModal = async (
-      state = true,
-      direction: string
-    ) => {
+    const showSendRequestDashModal = async (modal: any) => {
+      const { direction, state } = modal;
       sendRequestDirection.value = direction;
+      console.log("modal direction", sendRequestDirection.value);
       isSendRequestDashModalOpen.value = state;
-    };
-
-    const showSendDashModal = async () => {
-      showSendRequestDashModal(true, "send");
-    };
-
-    const showRequestDashModal = async () => {
-      showSendRequestDashModal(true, "request");
+      console.log("modal friend", sendRequestDirection.value);
     };
 
     // Allow deeplinking to payment modal
@@ -182,15 +175,11 @@ export default {
       () => route.query.pay,
       () => {
         if (route.query.pay === "true") {
-          showSendDashModal();
+          showSendRequestDashModal({ state: true, direction: "send" });
         }
       }
     );
 
-    const sendAndRequestButtons = [
-      { text: "Send", handler: showSendDashModal },
-      { text: "Request", handler: showRequestDashModal },
-    ];
     const sendChatWrapper = (message: string, amount: number, request: any) => {
       // TODO add types
 
@@ -227,24 +216,19 @@ export default {
       sendChatWrapper(event.message, event.amount, request); // TODO add replyToChatId for requests
     };
 
-    // onMounted(async () => {});
-
     return {
       chatText,
       sendChatWrapper,
-      showSendRequestDashSheet,
       friendOwnerId,
       getChatMsgs,
       getUserLabel,
       store,
-      sendAndRequestButtons,
-      isSendRequestDashSheetOpen,
+      isSendRequestPopupOpen,
+      showSendRequestPopup,
       isSendRequestDashModalOpen,
       showSendRequestDashModal,
       handleSendRequest,
       sendRequestDirection,
-      showRequestDashModal,
-      showSendDashModal,
       sentContactRequest,
       receivedContactRequest,
     };
@@ -253,10 +237,31 @@ export default {
 </script>
 
 <style>
-ion-modal .modal-wrapper {
+.sendrequest .modal-wrapper {
   position: fixed;
   top: 8%;
   --height: 92%;
+  --border-radius: 10px 10px 0px 0px;
+  /* --box-shadow: 0px -0.5px 2px 1px rgba(0, 0, 0, 0.1); */
+}
+.popup .modal-wrapper {
+  position: fixed;
+  top: 66%;
+  --height: 34%;
+  --border-radius: 10px 10px 0px 0px;
+  /* --box-shadow: 0px -0.5px 2px 1px rgba(0, 0, 0, 0.1); */
+}
+.viewrequestmessage .modal-wrapper {
+  position: fixed;
+  top: 16%;
+  --height: 74%;
+  --border-radius: 10px 10px 0px 0px;
+  /* --box-shadow: 0px -0.5px 2px 1px rgba(0, 0, 0, 0.1); */
+}
+.viewrequest .modal-wrapper {
+  position: fixed;
+  top: 35%;
+  --height: 65%;
   --border-radius: 10px 10px 0px 0px;
   /* --box-shadow: 0px -0.5px 2px 1px rgba(0, 0, 0, 0.1); */
 }
@@ -267,5 +272,3 @@ ion-footer {
   padding: 0px 0px 8px 0px;
 }
 </style>
-
-

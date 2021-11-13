@@ -1,6 +1,7 @@
 import { createStore } from "vuex";
 import { getClient } from "@/lib/DashClient";
 import { Storage } from "@capacitor/storage";
+import { msgDate } from "@/lib/helpers/Date";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -35,7 +36,7 @@ const getDefaultState = () => {
     fiatRate: {},
     fiatSymbol: "",
     activeReplyToIds: {}, // The msgId we reply to, one per contact
-    toast: {isOpen: false, text: '', type: '', icon: '', timestamp: 0},
+    toast: { isOpen: false, text: "", type: "", icon: "", timestamp: 0 },
   };
 };
 
@@ -48,14 +49,15 @@ interface SetLastSeenTimestampByOwnerIdMutation {
 interface SetActiveReplyToIdMutation {
   friendOwnerId: string; // TODO use id regexp
   replyToId: string | undefined;
+  msgOwnerId: string | undefined;
 }
 
 const mutations = {
   setToastOptions(state: any, options: ToastOptions) {
-    state.toast.text = options.text
-    state.toast.color = options.color
-    state.toast.type = options.type
-    state.toast.icon = options.icon
+    state.toast.text = options.text;
+    state.toast.color = options.color;
+    state.toast.type = options.type;
+    state.toast.icon = options.icon;
     // state.toast.show = true
     state.toast.timestamp = Date.now();
   },
@@ -63,7 +65,10 @@ const mutations = {
     state.toast.isOpen = isOpen;
   },
   setActiveReplyToId(state: any, payload: SetActiveReplyToIdMutation) {
-    state.activeReplyToIds[payload.friendOwnerId] = payload.replyToId;
+    state.activeReplyToIds[payload.friendOwnerId] = {
+      replyToId: payload.replyToId,
+      msgOwnerId: payload.msgOwnerId,
+    };
   },
   setIsMnemonicBackedUp(state: any, newState: boolean) {
     state.isMnemonicBackedUp = newState;
@@ -154,7 +159,7 @@ const mutations = {
       }
 
       return {
-        id,
+        id: type + lastMessage?.id.toString(),
         type,
         friendOwnerId,
         lastMessage,
@@ -344,7 +349,12 @@ enum ToastColors {
   "medium",
   "dark",
 }
-interface ToastOptions { text: string; color: ToastColors | undefined; type: string | undefined; icon: string | undefined }
+interface ToastOptions {
+  text: string;
+  color: ToastColors | undefined;
+  type: string | undefined;
+  icon: string | undefined;
+}
 
 const actions = {
   showToast(context: any, options: ToastOptions) {
@@ -864,18 +874,33 @@ const getters = {
       .sort((a, b) => b._socialMetrics.count - a._socialMetrics.count);
   },
   getChatMsgs: (state: any) => (friendOwnerId: string) => {
-    return ((state.chats as any).msgsByOwnerId[friendOwnerId] ?? []).map(
-      (chat: any) => {
-        const direction =
-          chat.data.toOwnerId === friendOwnerId ? "SENT" : "RECEIVED";
+    const chats = (state.chats as any).msgsByOwnerId[friendOwnerId] ?? [];
 
-        return {
-          ...chat,
-          _friendOwnerId: friendOwnerId,
-          _direction: direction,
-        };
+    const chatsWithMeta = [];
+
+    for (let i = 0; i < (chats ?? []).length; i++) {
+      const chat = chats[i];
+
+      const previousChat: any = chatsWithMeta[i - 1];
+
+      const direction =
+        chat.data.toOwnerId === friendOwnerId ? "SENT" : "RECEIVED";
+
+      let displayDate = msgDate(chat.createdAt);
+
+      if (previousChat && msgDate(previousChat.createdAt) === displayDate) {
+        displayDate = "";
       }
-    );
+
+      chatsWithMeta.push({
+        ...chat,
+        _friendOwnerId: friendOwnerId,
+        _direction: direction,
+        _displayDate: displayDate,
+      });
+    }
+
+    return chatsWithMeta;
   },
   getChatMsgById: (state: any) => (id: string, friendOwnerId: string) => {
     const chat = state.chats.msgsByDocumentId[id];
@@ -899,7 +924,10 @@ const getters = {
     return state.chats.RequestByReplyToId[replyToId];
   },
   getActiveReplyToId: (state: any) => (friendOwnerId: string) => {
-    return state.activeReplyToIds[friendOwnerId];
+    return state.activeReplyToIds[friendOwnerId]?.replyToId;
+  },
+  getActiveReplyToMsgOwnerId: (state: any) => (friendOwnerId: string) => {
+    return state.activeReplyToIds[friendOwnerId]?.msgOwnerId;
   },
   getFiatRate: (state: any) => (fiatSymbol: string) => {
     return state.fiatRate[fiatSymbol] || {};

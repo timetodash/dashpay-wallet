@@ -12,24 +12,28 @@
       {{ duffsInDash(msg.data.amount) }} Dash
       <div class="flex ion-nowrap">
         <div class="chat_timestamp chat_timestamp_message">
-          {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes(2) }}
+          {{ msg.createdAt.getHours() }}:{{ mins }}
         </div>
         <ion-icon
+          v-if="msg._direction === 'SENT' && msg._state != 'sending'"
           class="read"
-          v-if="msg._direction === 'SENT'"
           :icon="checkmarkDoneOutline"
         >
         </ion-icon>
+        <ion-spinner
+          v-if="msg._state === 'sending'"
+          name="lines-small"
+          color="medium"
+        ></ion-spinner>
       </div>
     </div>
 
     <div v-if="msg.data.request === 'accept'" class="flex ion-nowrap">
       You accepted a request of
-      <!-- {{ getUserLabel(msg.ownerId.toString()) }} accepted your request of -->
       {{ duffsInDash(msg.data.amount) }} Dash
       <div class="flex ion-nowrap">
         <div class="chat_timestamp chat_timestamp_message">
-          {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes(2) }}
+          {{ msg.createdAt.getHours() }}:{{ mins }}
         </div>
         <ion-icon
           class="read"
@@ -61,7 +65,7 @@
       {{ duffsInDash(msg.data.amount) }} Dash
       <div class="flex ion-nowrap">
         <div class="chat_timestamp chat_timestamp_message">
-          {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes(2) }}
+          {{ msg.createdAt.getHours() }}:{{ mins }}
         </div>
         <ion-icon
           class="read"
@@ -77,7 +81,7 @@
       {{ duffsInDash(msg.data.amount) }} Dash
       <div class="flex ion-nowrap">
         <div class="chat_timestamp chat_timestamp_message">
-          {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes(2) }}
+          {{ msg.createdAt.getHours() }}:{{ mins }}
         </div>
         <ion-icon
           class="read"
@@ -98,9 +102,10 @@
 </template>
 
 <script>
-import { IonIcon } from "@ionic/vue";
+// import { IonIcon } from "@ionic/vue";
+import { IonIcon, IonSpinner } from "@ionic/vue";
 import { checkmarkDoneOutline } from "ionicons/icons";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 import useRates from "@/composables/rates";
 import useContacts from "@/composables/contacts";
@@ -111,16 +116,23 @@ export default {
   components: {
     IonIcon,
     ReplyPopover,
+    IonSpinner,
   },
-  setup() {
+  setup(props) {
     const { duffsInDash } = useRates();
     const { getUserLabel } = useContacts();
     const hover = ref(false);
+
+    const mins = computed(() =>
+      ("0" + props.msg.createdAt.getMinutes()).slice(-2)
+    );
+
     return {
       duffsInDash,
       getUserLabel,
       checkmarkDoneOutline,
       hover,
+      mins,
     };
   },
 };
@@ -137,7 +149,6 @@ export default {
   border-radius: 10px;
 }
 .response-text {
-  /* font-family: Inter; */
   font-style: italic;
   font-weight: 500;
   font-size: 12px;

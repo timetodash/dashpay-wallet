@@ -17,7 +17,14 @@
     }"
     @mouseover="hover = true"
     @mouseleave="hover = false"
+    @click="
+      getRequestByReplyToId(msg.id.toString())?.data.request !== 'decline' ||
+      !msg.data.request
+        ? showViewRequestModal(true)
+        : ''
+    "
   >
+    <!-- @click: enable ability to view request or transaction only if it is a completed transaction or a request that has not been declined -->
     <ReplyPopover
       v-if="!isReply"
       class="nowrap"
@@ -26,10 +33,11 @@
       :friendOwnerId="friendOwnerId"
       :isReply="isReply"
     ></ReplyPopover>
+
     <div
       class="title"
       :class="{
-        transfer_title: !msg.data.request,
+        transaction_title: !msg.data.request,
         request_title: msg.data.request,
       }"
     >
@@ -38,22 +46,34 @@
           getRequestByReplyToId(msg.id.toString())?.data.request === 'decline'
         "
       >
-        Request (Declined)
+        <!-- Request (Declined) title -->
+        <div v-if="msg._direction === 'SENT'">Your Request (Declined)</div>
+        <div v-if="msg._direction === 'RECEIVED'">
+          {{ getUserLabel(friendOwnerId) + "'s Request (Declined)" }}
+        </div>
       </div>
       <div
         v-if="
           getRequestByReplyToId(msg.id.toString())?.data.request === 'accept'
         "
       >
-        Request
-        <span
-          :class="{
-            green: msg._direction === 'SENT',
-            purple: msg._direction === 'RECEIVED',
-          }"
-          >(Accepted)</span
-        >
+        <!-- Request (Accepted) title -->
+        <div>
+          <span v-if="msg._direction === 'SENT'">Your Request</span>
+          <span v-if="msg._direction === 'RECEIVED'">
+            {{ getUserLabel(friendOwnerId) + "'s Request" }}
+          </span>
+          <span
+            :class="{
+              green: msg._direction === 'SENT',
+              purple: msg._direction === 'RECEIVED',
+            }"
+          >
+            (Accepted)</span
+          >
+        </div>
       </div>
+      <!-- Request Open title -->
       <div
         v-if="
           getRequestByReplyToId(msg.id.toString())?.data.request !==
@@ -68,6 +88,7 @@
         {{ title }}
       </div>
     </div>
+
     <div class="amount">{{ duffsInDash(msg.data.amount) }} Dash</div>
     <div class="usd_amount">
       ~{{ msg.data.fiatAmount?.toFixed(2) }} {{ msg.data.fiatSymbol }}
@@ -91,14 +112,25 @@
       ></ion-icon>
       <div class="align_checkmark">
         <div class="chat_timestamp">
-          {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes() }}
+          {{ msg.createdAt.getHours() }}:{{ mins }}
         </div>
-        <ion-icon :icon="checkmarkDoneOutline" class="checkmark_color">
+        <ion-icon
+          v-if="msg._direction === 'SENT' && msg._state != 'sending'"
+          class="checkmark_color"
+          :icon="checkmarkDoneOutline"
+        >
         </ion-icon>
+        <ion-spinner
+          v-if="msg._state === 'sending'"
+          name="lines-small"
+          style="margin-bottom: -7px"
+          color="medium"
+        ></ion-spinner>
       </div>
     </div>
   </div>
-  <!-- {{ getRequestByReplyToId(msg.id.toString())?.data.request }} -->
+
+  <!-- buttons below chat bubble depending on request/transaction status -->
   <ion-row
     v-if="
       msg.data.request &&
@@ -126,10 +158,48 @@
       :msg="msg"
     ></ViewRequestModal>
   </ion-modal>
+
+  <ion-row
+    v-if="
+      msg.data.request &&
+      msg._direction === 'SENT' &&
+      getRequestByReplyToId(msg.id.toString())?.data.request !== 'accept' &&
+      getRequestByReplyToId(msg.id.toString())?.data.request !== 'decline'
+    "
+    class="ion-nowrap"
+    style="float: right"
+  >
+    <div class="flex ion-nowrap">
+      <ion-chip class="decline"
+        ><ion-label class="decline_text">Cancel</ion-label></ion-chip
+      >
+      <ion-chip class="accept" @click="showViewRequestModal(true)"
+        ><ion-label class="accept_text">View</ion-label>
+      </ion-chip>
+    </div>
+  </ion-row>
+  <ion-modal
+    :is-open="isViewRequestModalOpen"
+    @didDismiss="showViewRequestModal(false)"
+  >
+    <ViewRequestModal
+      v-if="!isReply"
+      :friendOwnerId="friendOwnerId"
+      @declineRequest="declineRequest"
+      :msg="msg"
+    ></ViewRequestModal>
+  </ion-modal>
 </template>
 
 <script lang="ts">
-import { IonLabel, IonChip, IonRow, IonIcon, IonModal } from "@ionic/vue";
+import {
+  IonLabel,
+  IonChip,
+  IonRow,
+  IonIcon,
+  IonModal,
+  IonSpinner,
+} from "@ionic/vue";
 import { checkmarkDoneOutline, closeOutline } from "ionicons/icons";
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
@@ -151,6 +221,7 @@ export default {
     IonModal,
     ViewRequestModal,
     ReplyPopover,
+    IonSpinner,
   },
   setup(props: any) {
     const store = useStore();
@@ -170,11 +241,17 @@ export default {
       );
     };
 
+    const mins = computed(() =>
+      ("0" + props.msg.createdAt.getMinutes()).slice(-2)
+    );
+
     const { getUserLabel } = useContacts();
 
     const title = computed(() => {
       if (props.msg.data.request) {
-        return "Requested";
+        return props.msg._direction === "SENT"
+          ? "You Requested"
+          : store.getters.getUserLabel(props.friendOwnerId) + " Requested";
       } else if (props.msg._direction === "SENT" && !props.msg.data.request) {
         return "You Sent";
       } else if (
@@ -204,8 +281,10 @@ export default {
       duffsInDash,
       duffsInFiatString,
       getFiatSymbol,
+      getUserLabel,
       hover,
       store,
+      mins,
     };
   },
 };
@@ -217,14 +296,13 @@ export default {
   width: 222px;
 }
 .title {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 600;
   font-size: 10px;
   line-height: 12px;
   text-align: center;
 }
-.transfer_title {
+.transaction_title {
   color: #6a67fb;
 }
 .request_title {
@@ -244,25 +322,19 @@ export default {
   box-shadow: 0px 0px 0px;
 }
 .amount {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 600;
   font-size: 14px;
-  line-height: 17px;
-  /* identical to box height */
-
+  line-height: 17px; /* identical to box height */
   display: flex;
   justify-content: center;
   letter-spacing: -0.003em;
-
   color: #000000;
   margin-top: 3px;
 }
 .usd_amount {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: normal;
-
   line-height: 12px;
   font-weight: 500;
   font-size: 9px;
@@ -270,13 +342,11 @@ export default {
   display: flex;
   justify-content: center;
   letter-spacing: -0.002em;
-
   color: rgba(0, 0, 0, 0.4);
   margin-top: 2px;
 }
 
 .text {
-  /* font-family: Inter; */
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -304,9 +374,12 @@ ion-chip {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  width: 106px;
+  width: 116px;
   height: 36px;
-  margin: 8px 12px 8px 0px;
+  /* TODO: check if need these properties for requests received: */
+  /* width: 106px; */
+  /* margin: 8px 12px 8px 0px; */
+  margin: 8px 0px 8px 0px;
   border-radius: 10px;
 }
 .decline {
@@ -329,7 +402,6 @@ ion-chip {
   /* border: f2f4ff solid 1px; */
 }
 .accept_text {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 600;
   font-size: 14px;

@@ -20,7 +20,9 @@
       ></ion-icon>
       <div class="replyheader">
         Replying to
-        {{ getUserLabel(friendOwnerId) }}
+        {{ friendOrYou }}
+
+        <!-- {{ getUserLabel(getActiveReplyToMsgOwnerId(friendOwnerId)) }} -->
       </div>
 
       <chat-txn
@@ -132,7 +134,7 @@
             ? require('/public/assets/icons/userSent.svg')
             : require('/public/assets/icons/userSent_disabled.svg')
         "
-        @click="showSendRequestDashSheet"
+        @click="showSendRequestPopup"
       ></ion-icon>
       <ion-icon
         v-else
@@ -147,7 +149,6 @@
 
 <script>
 import { useStore } from "vuex";
-import { computed } from "vue";
 
 import { IonInput, IonIcon } from "@ionic/vue";
 import {
@@ -156,7 +157,7 @@ import {
   send,
   closeOutline,
 } from "ionicons/icons";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import IncomingRequests from "@/components/TransactionModals/IncomingRequests.vue";
 import ChatTxn from "@/components/Chat/ChatTxn.vue";
 import ChatSmallTxn from "@/components/Chat/ChatSmallTxn.vue";
@@ -164,7 +165,7 @@ import RequestResponse from "@/components/TransactionModals/RequestResponse.vue"
 
 export default {
   props: ["receivedContactRequest", "sentContactRequest", "friendOwnerId"],
-  emits: ["sendChatWrapper", "showSendRequestDashSheet"],
+  emits: ["sendChatWrapper", "showSendRequestPopup"],
   components: {
     IonInput,
     IonIcon,
@@ -190,17 +191,32 @@ export default {
       sendChatWrapper();
     };
 
-    const showSendRequestDashSheet = function () {
+    const showSendRequestPopup = function () {
       props.receivedContactRequest &&
-        context.emit("showSendRequestDashSheet", true);
+        context.emit("showSendRequestPopup", true);
     };
+
     const resetReplyToId = function (friendOwnerId) {
       // reset the friend's replyToId
       store.commit("setActiveReplyToId", {
         friendOwnerId: friendOwnerId,
         replyToId: undefined,
+        msgOwnerId: undefined,
       });
     };
+
+    const friendOrYou = computed(() => {
+      if (
+        store.getters.getUserLabel(
+          store.getters.getActiveReplyToMsgOwnerId(props.friendOwnerId)
+        ) === store.getters.getUserLabel(props.friendOwnerId)
+      ) {
+        return store.getters.getUserLabel(props.friendOwnerId);
+      } else {
+        return "You";
+      }
+    });
+
     return {
       happyOutline,
       attachOutline,
@@ -208,13 +224,17 @@ export default {
       send,
       sendChatWrapper,
       acceptAndSayHi,
-      showSendRequestDashSheet,
+      showSendRequestPopup,
       resetReplyToId,
       isSendingAccept,
       chatText,
       store,
       myLabel: computed(() => store.getters.myLabel),
       getUserLabel: computed(() => store.getters.getUserLabel),
+      getActiveReplyToMsgOwnerId: computed(
+        () => store.getters.getActiveReplyToMsgOwnerId
+      ),
+      friendOrYou,
     };
   },
 };
@@ -235,9 +255,9 @@ ion-input {
   /* width: 328px;
   height: 35px; */
   background: #f2f4ff;
-  backdrop-filter: blur(30px);
-  /* Note: backdrop-filter has minimal browser support */
-
+  backdrop-filter: blur(
+    30px
+  ); /* Note: backdrop-filter has minimal browser support */
   border-radius: 10px;
 }
 .respondtext {

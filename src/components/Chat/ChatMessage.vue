@@ -1,4 +1,4 @@
-<template>
+// <template>
   <div
     style="position: relative"
     class="chatbubble flex"
@@ -9,9 +9,7 @@
     @mouseover="hover = true"
     @mouseleave="hover = false"
   >
-    <!-- {{ store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId) }} -->
     <div v-if="msg.data.replyToChatId">
-      <!-- {{ store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId) }} -->
       <div class="reply">
         <div class="replied">
           You replied to
@@ -30,10 +28,8 @@
                 msg.data.replyToChatId,
                 friendOwnerId
               )?.data.text) ||
-              store.getters.getChatMsgById(
-                msg.data.replyToChatId,
-                friendOwnerId
-              )?.data.request === 'open'
+            store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
+              ?.data.request === 'open'
           "
           :msg="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
@@ -48,14 +44,10 @@
           v-if="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
               ?.data.amount &&
-              !store.getters.getChatMsgById(
-                msg.data.replyToChatId,
-                friendOwnerId
-              )?.data.text &&
-              !store.getters.getChatMsgById(
-                msg.data.replyToChatId,
-                friendOwnerId
-              )?.data.request
+            !store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
+              ?.data.text &&
+            !store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
+              ?.data.request
           "
           :msg="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
@@ -74,10 +66,8 @@
           v-if="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
               ?.data.request === 'decline' ||
-              store.getters.getChatMsgById(
-                msg.data.replryToChatId,
-                friendOwnerId
-              )?.data.request === 'accept'
+            store.getters.getChatMsgById(msg.data.replryToChatId, friendOwnerId)
+              ?.data.request === 'accept'
           "
           :msg="
             store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
@@ -91,10 +81,8 @@
           v-if="
             !store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
               ?.data.amount &&
-              store.getters.getChatMsgById(
-                msg.data.replyToChatId,
-                friendOwnerId
-              )?.data.text
+            store.getters.getChatMsgById(msg.data.replyToChatId, friendOwnerId)
+              ?.data.text
           "
         >
           {{
@@ -114,21 +102,27 @@
       ></ReplyPopover>
       <div class="nowrap">
         <div class="chat_timestamp chat_timestamp_message">
-          {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes(2) }}
+          {{ msg.createdAt.getHours() }}:{{ mins }}
         </div>
         <ion-icon
-          v-if="msg._direction === 'SENT'"
+          v-if="msg._direction === 'SENT' && msg._state != 'sending'"
           class="chat_checkmark"
           :icon="checkmarkDoneOutline"
         >
         </ion-icon>
+        <!-- {{ msg._state }} -->
+        <ion-spinner
+          v-if="msg._state === 'sending'"
+          name="lines-small"
+          color="medium"
+        ></ion-spinner>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { IonIcon } from "@ionic/vue";
+import { IonIcon, IonSpinner } from "@ionic/vue";
 import { checkmarkDoneOutline, chevronDownOutline } from "ionicons/icons";
 
 import useRates from "@/composables/rates";
@@ -140,23 +134,28 @@ import ChatTxn from "@/components/Chat/ChatTxn.vue";
 import ChatSmallTxn from "@/components/Chat/ChatSmallTxn.vue";
 import RequestResponse from "@/components/TransactionModals/RequestResponse.vue";
 
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 export default {
   props: ["msg", "friendOwnerId"],
   components: {
     IonIcon,
+    IonSpinner,
     ReplyPopover,
     ChatTxn,
     ChatSmallTxn,
     RequestResponse,
   },
-  setup() {
+  setup(props: any) {
     const { duffsInDash } = useRates();
     const { getUserLabel } = useContacts();
     const hover = ref(false);
     const store = useStore();
     const router = useRouter();
+
+    const mins = computed(() =>
+      ("0" + props.msg.createdAt.getMinutes()).slice(-2)
+    );
 
     return {
       duffsInDash,
@@ -166,9 +165,7 @@ export default {
       hover,
       store,
       router,
-      // showReplyMenu,
-      // isReplyMenuOpen,
-      // replyMenuEvent,
+      mins,
     };
   },
 };
@@ -202,7 +199,6 @@ ion-popover .menu {
   --height: 90px;
   --box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.08), 0px 4px 8px rgba(0, 0, 0, 0.16);
 }
-/* .sc-ion-popover-md-h { */
 .popover-viewport.sc-ion-popover-md {
   width: 134px;
   height: 90px;
@@ -234,4 +230,3 @@ ion-popover .menu {
   float: none;
 }
 </style>
-

@@ -20,6 +20,7 @@
         :key="pair.pair"
         button
         @click="choose(pair.fiatSymbol)"
+        class="ion-justify-content-center"
       >
         <div
           :class="`currency-flag currency-flag-${pair.fiatSymbol.toLowerCase()}`"
@@ -82,8 +83,6 @@ export default defineComponent({
     const pairs = ref([]);
 
     const choose = async (fiatSymbol: string) => {
-      // const rate = await fetchRate(fiatSymbol);
-      // console.log("rate :>> ", rate);
       emit("chooseCurrency", fiatSymbol);
       commit("setFiatSymbol", fiatSymbol);
       const writeResult = await Storage.set({

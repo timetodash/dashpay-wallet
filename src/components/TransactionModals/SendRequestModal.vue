@@ -28,14 +28,15 @@
       class="transaction"
       @click="switchSendRequest"
       :class="{
-        req: sendRequestDirection === 'request',
-        sendit: sendRequestDirection === 'send',
+        inflow: sendRequestDirection === 'request',
+        outflow: sendRequestDirection === 'send',
       }"
     >
       <MySelf
         v-if="sendRequestDirection === 'send'"
         :amount="amount"
         :sendRequestDirection="sendRequestDirection"
+        :newDashBalance="newDashBalance"
       ></MySelf>
       <MyFriend
         v-if="sendRequestDirection === 'request'"
@@ -70,6 +71,12 @@
         :friendOwnerId="friendOwnerId"
       ></MyFriend>
     </div>
+
+    <span
+      class="funds"
+      v-if="newDashBalance < 0 && sendRequestDirection === 'send'"
+      >Not enough funds to send this transaction.</span
+    >
 
     <div class="swap-container">
       <dash-currency
@@ -109,7 +116,8 @@
     <div class="message-text">Message</div>
     <ion-textarea
       :autoGrow="true"
-      rows="1"
+      rows="2"
+      cols="50"
       class="message-input"
       v-model="message"
     ></ion-textarea>
@@ -122,7 +130,7 @@
       shape="round"
       class="nextbutton send_color"
       @click="handleSendRequest"
-      :disabled="amount === 0"
+      :disabled="newDashBalance < 0 || amount === 0"
       ><span class="next-text"> {{ sendRequestDirection }}</span></ion-chip
     >
     <ion-chip
@@ -160,7 +168,7 @@ import {
   IonChip,
   modalController,
 } from "@ionic/vue";
-import { defineComponent, ref, watchEffect } from "vue";
+import { defineComponent, ref, watchEffect, computed } from "vue";
 
 import useRates from "@/composables/rates";
 
@@ -173,6 +181,7 @@ import {
 export default defineComponent({
   name: "SendRequestModal",
   props: ["initSendRequestDirection", "friendOwnerId"],
+  emits: ["handleSendRequest"],
   components: {
     IonContent,
     IonIcon,
@@ -240,6 +249,12 @@ export default defineComponent({
       }
     });
 
+    // send transaction will always be deducted from myBalance
+    const newDashBalance = computed(() => {
+      const balance = myBalance.value - dashInDuffs.value(amount.value);
+      return duffsInDash.value(balance);
+    });
+
     const handleSendRequest = () => {
       console.log("sendDash inside modal :>> ", amount.value, message.value);
       emit("handleSendRequest", {
@@ -283,6 +298,8 @@ export default defineComponent({
       arrowDownOutline,
       closeOutline,
       fiatSymbol,
+      newDashBalance,
+      balanceDash: computed(() => duffsInDash.value(myBalance.value)),
     };
   },
 });
@@ -313,17 +330,6 @@ export default defineComponent({
 .transaction {
   border-radius: 10px;
   position: relative;
-}
-.req {
-  background: linear-gradient(266.73deg, #f2f8fd 0%, #ebfff8 98.09%);
-}
-.sendit {
-  background: linear-gradient(
-    266.51deg,
-    #f3f3ff 0%,
-    #e9f0ff 100%,
-    #e9f0ff 100%
-  );
 }
 ion-item {
   --background: none;
@@ -371,7 +377,7 @@ ion-item {
   background: #f5f5f7;
 
   border: 0.5px solid rgba(0, 0, 0, 0.12);
-  box-sizing: border-box;
+  /* box-sizing: border-box; */
   border-radius: 10px;
 }
 .input-format {
@@ -404,5 +410,20 @@ ion-item {
   width: 256px;
   border-bottom: 1px solid #e6e6e6;
   left: 72px;
+}
+
+.funds {
+  /* width: 210px; */
+  height: 15px;
+  margin: 10px auto 0px auto;
+  display: flex;
+  justify-content: center;
+
+  font-style: normal;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 15px;
+
+  color: #ff627e;
 }
 </style>

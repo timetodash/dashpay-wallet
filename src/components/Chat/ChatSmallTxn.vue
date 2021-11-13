@@ -9,6 +9,7 @@
     }"
     @mouseover="hover = true"
     @mouseleave="hover = false"
+    @click="showViewRequestModal(true)"
   >
     <div class="flex ion-nowrap">
       <ion-icon
@@ -31,9 +32,14 @@
     </div>
     <div class="alignrow">
       <div class="chat_timestamp">
-        {{ msg.createdAt.getHours() }}:{{ msg.createdAt.getMinutes(2) }}
+        {{ msg.createdAt.getHours() }}:{{ mins }}
       </div>
+      <!-- <ion-icon
+        class="align_checkmark checkmark_color"
+        :icon="checkmarkDoneOutline"
+      > -->
       <ion-icon
+        v-if="msg._direction === 'SENT' && msg._state != 'sending'"
         class="align_checkmark checkmark_color"
         :icon="checkmarkDoneOutline"
       >
@@ -45,38 +51,70 @@
         :msg="msg"
         :friendOwnerId="friendOwnerId"
       ></ReplyPopover>
+      <ion-spinner
+        v-if="msg._state === 'sending'"
+        name="lines-small"
+        color="medium"
+      ></ion-spinner>
     </div>
+
+    <ion-modal
+      :is-open="isViewRequestModalOpen"
+      @didDismiss="showViewRequestModal(false)"
+    >
+      <ViewRequestModal
+        v-if="!isReply"
+        :friendOwnerId="friendOwnerId"
+        :msg="msg"
+      ></ViewRequestModal>
+    </ion-modal>
   </div>
 </template>
 
-<script>
-import { IonIcon } from "@ionic/vue";
+<script lang="ts">
+import { IonIcon, IonModal, IonSpinner } from "@ionic/vue";
 import { checkmarkDoneOutline } from "ionicons/icons";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useStore } from "vuex";
 import useRates from "@/composables/rates";
 import ReplyPopover from "@/components/Chat/ReplyPopover.vue";
 
-// import { reactive } from "vue";
+import ViewRequestModal from "@/components/TransactionModals/ViewRequestModal.vue";
 
 export default {
   props: ["msg", "friendOwnerId", "isReply"],
   components: {
     IonIcon,
+    IonModal,
     ReplyPopover,
+    ViewRequestModal,
+    IonSpinner,
   },
-  setup() {
+  setup(props: any) {
     const { duffsInDash, duffsInFiatString, getFiatSymbol } = useRates();
     const hover = ref(false);
     const store = useStore();
 
+    const isViewRequestModalOpen = ref(false);
+
+    const showViewRequestModal = async (state: boolean) => {
+      isViewRequestModalOpen.value = state;
+    };
+
+    const mins = computed(() =>
+      ("0" + props.msg.createdAt.getMinutes()).slice(-2)
+    );
+
     return {
       checkmarkDoneOutline,
+      showViewRequestModal,
+      isViewRequestModalOpen,
       duffsInDash,
       duffsInFiatString,
       getFiatSymbol,
       hover,
       store,
+      mins,
     };
   },
 };
@@ -105,34 +143,26 @@ export default {
 }
 
 .amount {
-  /* font-family: Inter; */
   display: flex;
   justify-content: flex-start;
   align-items: center;
   font-weight: 600;
   font-style: normal;
   font-size: 12px;
-  line-height: 15px;
-  /* identical to box height */
-
+  line-height: 15px; /* identical to box height */
   letter-spacing: -0.003em;
-
   color: #000000;
 }
 
 .usdamount {
-  /* font-family: Inter; */
   display: flex;
   justify-content: flex-start;
   align-items: flex-end;
   font-style: normal;
   font-weight: 500;
   font-size: 9px;
-  line-height: 11px;
-  /* identical to box height */
-
+  line-height: 11px; /* identical to box height */
   letter-spacing: -0.004em;
-
   color: rgba(0, 0, 0, 0.4);
 }
 .alignrow {

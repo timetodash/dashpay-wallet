@@ -29,22 +29,27 @@ const getClient = function() {
 };
 
 const getClientOpts = function(mnemonic: string | null | undefined) {
-  const clientOpts = {
-    // passFakeAssetLockProofForTests: true,
-    dapiAddresses: JSON.parse(process.env.VUE_APP_DAPIADDRESSES!),
+  const clientOpts: any = {
+    network: "testnet",
     apps: {
-      dpns: { contractId: process.env.VUE_APP_DPNS_CONTRACT_ID },
       dashpayWallet: {
         contractId:
           process.env.VUE_APP_DASHPAY_WALLET_CONTRACT_ID_local ||
           process.env.VUE_APP_DASHPAY_WALLET_CONTRACT_ID_testnet ||
           process.env.VUE_APP_DASHPAY_WALLET_CONTRACT_ID_build_testnet,
       },
-      dashpay: {
-        contractId: process.env.VUE_APP_DASHPAY_CONTRACT_ID,
-      },
     },
   };
+
+  if (process.env.VUE_APP_ENV_RUN !== "testnet") {
+    clientOpts.dapiAddresses = JSON.parse(process.env.VUE_APP_DAPIADDRESSES!);
+
+    clientOpts.apps.dpns = { contractId: process.env.VUE_APP_DPNS_CONTRACT_ID };
+
+    clientOpts.apps.dashpay = {
+      contractId: process.env.VUE_APP_DASHPAY_CONTRACT_ID,
+    };
+  }
 
   if (mnemonic || mnemonic === null) {
     (clientOpts as any).wallet = {

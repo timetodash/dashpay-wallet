@@ -109,11 +109,17 @@ export default {
 
       console.log("Redeem invite to address: ", address);
 
-      const reqs = [
-        axios.get(`${process.env.VUE_APP_AUTOFAUCET}${address}`),
-        // this.$axios.get(`http://autofaucet-1.dashevo.io:5050/drip/${address}`),
-        // this.$axios.get(`http://autofaucet-2.dashevo.io:5050/drip/${address}`),
-      ];
+      const reqs = [];
+
+      if (process.env.VUE_APP_ENV_RUN === "testnet") {
+        reqs.push(
+          axios.get(`http://autofaucet-1.dashevo.io:5050/drip/${address}`)
+        );
+        // reqs.push(axios.get(`http://autofaucet-2.dashevo.io:5050/drip/${address}`))
+      } else {
+        reqs.push(axios.get(`${process.env.VUE_APP_AUTOFAUCET}${address}`));
+      }
+
       console.log(
         "`${process.env.VUE_APP_AUTOFAUCET}${address}`  :>> ",
         `${process.env.VUE_APP_AUTOFAUCET}${address}`

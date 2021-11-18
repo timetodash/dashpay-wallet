@@ -6,27 +6,31 @@ const Dash = require('dash')
 const glob = require('glob')
 
 const envRun = process.env.VUE_APP_ENV_RUN
+console.log("Running registeredContracts.js ...")
 
 // console.dir(process.env, {depth:100})
 
 let clientOpts = {
-  // network: 'testnet',
+  network: 'testnet',
   // retries: 9999,
   // passFakeAssetLockProofForTests: process.env.NUXT_LOCALNODE,
-  // unsafeOptions: {
-  // skipSynchronizationBeforeHeight: 415000, // only sync from start of 2021
-  // skipSynchronizationBeforeHeight: 510490,
-  // },
 
   wallet: {
-    // privateKey: 'currently throws a signing error'
     mnemonic: process.env.VUE_APP_MNEMONIC,
   },
 
-  dapiAddresses: process.env.VUE_APP_DAPIADDRESSES
-    ? JSON.parse(process.env.VUE_APP_DAPIADDRESSES)
-    : undefined,
 }
+
+if (envRun === "local") {
+    clientOpts.dapiAddresses = process.env.VUE_APP_DAPIADDRESSES
+    ? JSON.parse(process.env.VUE_APP_DAPIADDRESSES)
+    : undefined
+} else if (envRun === "testnet") {
+    clientOpts.unsafeOptions = {
+        skipSynchronizationBeforeHeight: 607229,
+    }
+} 
+
 
 // Remove undefined keys from object
 clientOpts = JSON.parse(JSON.stringify(clientOpts))

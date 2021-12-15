@@ -5,7 +5,7 @@
 # dashmate setup local
 
 # or
-./scripts/lib/dashmate_temporary_reset_script.sh
+ ./scripts/lib/dashmate_temporary_reset_script.sh
 
 # Remove stale contractIds
 pwd

@@ -58,6 +58,7 @@ export default {
       store.commit("setActiveReplyToId", {
         friendOwnerId: props.friendOwnerId,
         replyToId: props.msg.id.toString(),
+        msgOwnerId: props.msg.ownerId.toString(),
       });
     };
 

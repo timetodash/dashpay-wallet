@@ -25,43 +25,23 @@
 
 <script>
 import useContacts from "@/composables/contacts";
-import useWallet from "@/composables/wallet";
-import useRates from "@/composables/rates";
 
-import { defineComponent, computed } from "vue";
+import { defineComponent } from "vue";
 import { IonItem, IonAvatar, IonLabel } from "@ionic/vue";
 
 export default defineComponent({
-  props: ["amount", "sendRequestDirection"],
-  emits: ["newDashBalance"],
+  props: ["amount", "sendRequestDirection", "newDashBalance"],
   components: {
     IonItem,
     IonAvatar,
     IonLabel,
   },
-  setup(props) {
+  setup() {
     const { myLabel, myAvatar } = useContacts();
-    const { myBalance } = useWallet();
-
-    const { duffsInDash, dashInDuffs } = useRates();
-
-    const newDashBalance = computed(() => {
-      let balance;
-      if (props.sendRequestDirection === "send") {
-        balance = myBalance.value - dashInDuffs.value(props.amount);
-      }
-      if (props.sendRequestDirection === "request") {
-        balance = myBalance.value + dashInDuffs.value(props.amount);
-      }
-      return duffsInDash.value(balance);
-    });
 
     return {
       myLabel,
       myAvatar,
-      myBalance,
-      newDashBalance,
-      duffsInDash,
     };
   },
 });
@@ -70,7 +50,6 @@ export default defineComponent({
 
 <style scoped>
 .name {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 600;
   font-size: 14px;
@@ -78,7 +57,6 @@ export default defineComponent({
   color: #000000;
 }
 .new-balance {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 500;
   font-size: 12px;

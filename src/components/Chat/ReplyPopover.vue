@@ -3,7 +3,7 @@
     <ion-icon
       :icon="chevronDownOutline"
       class="chevron"
-      @click="showReplyMenu(true, $event)"
+      @click.stop="showReplyMenu(true, $event)"
     ></ion-icon>
     <ion-popover
       show-backdrop="false"
@@ -36,8 +36,6 @@ export default {
     IonPopover,
   },
   setup() {
-    // const hover = ref(false);
-
     const isReplyMenuOpen = ref(false);
     const replyMenuEvent = ref();
 
@@ -50,7 +48,6 @@ export default {
 
     return {
       chevronDownOutline,
-      //   hover,
       showReplyMenu,
       isReplyMenuOpen,
       replyMenuEvent,

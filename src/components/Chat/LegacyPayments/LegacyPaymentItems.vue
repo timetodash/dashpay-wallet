@@ -2,7 +2,9 @@
   <div class="scroll_container">
     <div>
       <div class="flex ion-justify-content-center">
-        <ion-chip><ion-label>Aug 12</ion-label></ion-chip>
+        <ion-chip class="timestamp_chip"
+          ><ion-label class="timestamp_label">Aug 12</ion-label></ion-chip
+        >
       </div>
 
       <ion-grid class="ion-no-padding">
@@ -55,28 +57,5 @@ export default {
   display: flex;
   overflow-y: scroll;
   flex-direction: column-reverse;
-}
-ion-chip {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  padding: 5px 8px;
-  margin-top: 6px;
-  margin-bottom: 0px;
-
-  width: 46px;
-  height: 17px;
-  background: #6a67fb;
-  /* backdrop-filter: blur(10px); */ /* not currently supported in most browsers */
-  border-radius: 11px;
-}
-ion-label {
-  /* font-family: Inter; */
-  font-style: normal;
-  font-weight: 500;
-  font-size: 9px;
-  line-height: 11px;
-  color: #ffffff;
 }
 </style>

@@ -4,19 +4,15 @@
   </div>
   <div class="flex ion-justify-content-center convert">
     {{ fiatAmount.toFixed(2) }} USD
-    <ion-icon :icon="chevronDownOutline" class="fiat-icon"></ion-icon>
   </div>
 </template>
 
 <script>
-import { IonIcon } from "@ionic/vue";
 import { chevronDownOutline } from "ionicons/icons";
 
 export default {
-  props: ["amount", "fiatAmount"],
-  components: {
-    IonIcon,
-  },
+  props: ["amount", "fiatAmount", "direction"],
+  components: {},
   setup() {
     return {
       chevronDownOutline,
@@ -31,7 +27,6 @@ export default {
   margin-left: 2px;
 }
 .sending {
-  /* font-family: Inter; */
   height: 37px;
   font-style: normal;
   font-size: 28px;

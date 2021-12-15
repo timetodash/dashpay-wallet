@@ -1,61 +1,149 @@
 <template>
   <ion-content class="ion-padding">
     <div class="flex ion-nowrap ion-padding-bottom">
-      <ion-icon
-        :icon="closeOutline"
-        class="close"
-        @click="router.push('/choosename')"
-      ></ion-icon>
-      <div class="title purple flex ion-nowrap">
+      <ion-icon :icon="closeOutline" class="close" @click="cancel"></ion-icon>
+      <div v-if="flows() === 'inflow'" class="title green flex ion-nowrap">
+        <ion-icon
+          class="header-icon"
+          :src="require('/public/assets/icons/requestHeader.svg')"
+        />
+        {{ title }}
+      </div>
+      <div v-else class="title purple flex ion-nowrap">
         <ion-icon
           class="header-icon"
           :src="require('/public/assets/icons/sendHeader.svg')"
         />
-        Accept request
+        {{ title }}
       </div>
     </div>
-    <div class="transaction sendit">
+    <div
+      class="transaction"
+      :class="{
+        outflow: flows() === 'outflow',
+        inflow: flows() === 'inflow',
+      }"
+    >
+      <MyFriend
+        v-if="flows() === 'inflow'"
+        :sendRequestDirection="msg._direction"
+        :friendOwnerId="friendOwnerId"
+      ></MyFriend>
       <MySelf
+        v-if="flows() === 'outflow'"
         :amount="duffsInDash(msg.data.amount)"
-        :sendRequestDirection="'send'"
+        :sendRequestDirection="msg._direction"
+        :newDashBalance="newDashBalance"
       ></MySelf>
       <div class="line" />
-      <MyFriend :friendOwnerId="friendOwnerId"></MyFriend>
+      <MySelf
+        v-if="flows() === 'inflow'"
+        :amount="duffsInDash(msg.data.amount)"
+        :sendRequestDirection="msg._direction"
+        :newDashBalance="newDashBalance"
+      ></MySelf>
+      <MyFriend
+        v-if="flows() === 'outflow'"
+        :sendRequestDirection="msg._direction"
+        :friendOwnerId="friendOwnerId"
+      ></MyFriend>
       <ion-icon
         class="arrow"
         :src="require('/public/assets/icons/arrow_down.svg')"
       ></ion-icon>
     </div>
 
-    <span class="funds" v-if="newDashBalance < 0"
+    <!-- only show if request is open && outflow (i.e. a received request) && newDashBalance < 0 -->
+    <span
+      class="funds"
+      v-if="openRequest() && flows() === 'outflow' && newDashBalance < 0"
       >Not enough funds to pay this request.</span
     >
     <div class="swap-container">
       <Accept
         :amount="duffsInDash(msg.data.amount)"
         :fiatAmount="msg.data.fiatAmount"
+        :direction="msg._direction"
       >
       </Accept>
     </div>
 
-    <ion-input
+    <div class="message-text" v-if="msg.data.text">
+      {{
+        msg._direction === "RECEIVED"
+          ? getUserLabel(friendOwnerId) + "'s Request Message:"
+          : "Your Request Message:"
+      }}
+    </div>
+    <ion-textarea
       class="show-message"
-      placeholder="Message"
       readonly
       :value="msg.data.text"
-    ></ion-input>
+    ></ion-textarea>
+    <!-- TODO hard-coded address for now | display actual dash address once L1 functionality is added -->
+    <div
+      class="centerheader"
+      v-if="
+        !msg.data.request ||
+        getRequestByReplyToId(msg.id.toString())?.data.request === 'accept' ||
+        getRequestByReplyToId(msg.id.toString())?.data.request === 'decline'
+      "
+    >
+      <ion-label class="address">Xcu5iYBH...FHrFVdYu</ion-label>
+      <ion-icon
+        :icon="copyOutline"
+        class="copyicon"
+        @click="copyToClipboard()"
+      ></ion-icon>
+    </div>
   </ion-content>
   <ion-footer class="ion-no-border ion-padding">
     <ion-toolbar>
-      <!-- TODO disable button if the balance is too low -->
-      <div class="flex ion-nowrap">
-        <ion-chip class="decline" @click="declineRequestWrapper"
-          ><span class="next-text purple"> Decline</span></ion-chip
+      <!-- show Decline/Send buttons only if request is received and open -->
+      <div v-if="msg.data.request">
+        <div
+          v-if="
+            msg._direction === 'RECEIVED' &&
+            getRequestByReplyToId(msg.id.toString())?.data.request !==
+              'accept' &&
+            getRequestByReplyToId(msg.id.toString())?.data.request !== 'decline'
+          "
+          class="flex ion-nowrap"
         >
-        <!-- :disabled="newDashBalance < 0" -->
-        <ion-chip class="send" @click="sendRequestAmount"
-          ><span class="send-text next-text"> Send</span></ion-chip
+          <ion-chip class="decline" @click="declineRequestWrapper"
+            ><span class="request-text purple"> Decline</span></ion-chip
+          >
+          <ion-chip
+            class="send"
+            @click="sendRequestAmount"
+            :disabled="newDashBalance < 0"
+            ><span class="send-text request-text"> Send</span></ion-chip
+          >
+        </div>
+        <!-- show Cancel request button only if you sent a request and it's still open -->
+        <div
+          v-if="msg._direction === 'SENT' && openRequest()"
+          class="flex ion-nowrap"
         >
+          <ion-chip class="cancelit" expand="block"
+            ><span class="cancel-text"> Cancel Request</span></ion-chip
+          >
+        </div>
+      </div>
+      <!-- Open explorer to view completed transaction if it's not a request or if the request is closed -->
+      <div
+        v-if="
+          !msg.data.request ||
+          getRequestByReplyToId(msg.id.toString())?.data.request === 'accept' ||
+          getRequestByReplyToId(msg.id.toString())?.data.request === 'decline'
+        "
+        class="flex ion-justify-content-center"
+      >
+        <a target="_blank" href="https://insight.dash.org/insight/">
+          <ion-chip class="explorer">
+            <span class="explorer-text">Open explorer</span></ion-chip
+          >
+        </a>
       </div>
     </ion-toolbar>
   </ion-footer>
@@ -65,30 +153,36 @@
 import useWallet from "@/composables/wallet";
 import useRates from "@/composables/rates";
 import useChats from "@/composables/chats";
+import useContacts from "@/composables/contacts";
 
 import MySelf from "@/components/TransactionModals/MySelf.vue";
 import MyFriend from "@/components/TransactionModals/MyFriend.vue";
 import Accept from "@/components/TransactionModals/Accept.vue";
 
+import { useRouter } from "vue-router";
+
+import { copyOutline } from "ionicons/icons";
+
 import {
   IonContent,
   IonIcon,
-  IonInput,
+  IonTextarea,
   IonChip,
   IonFooter,
   IonToolbar,
   modalController,
 } from "@ionic/vue";
-import { defineComponent, computed } from "vue";
+import { ref, defineComponent, computed } from "vue";
 
 import { arrowDownOutline, closeOutline } from "ionicons/icons";
+import { useStore } from "vuex";
 
 export default defineComponent({
   props: ["msg", "initSendRequestDirection", "friendOwnerId"],
   components: {
     IonContent,
     IonIcon,
-    IonInput,
+    IonTextarea,
     IonChip,
     IonFooter,
     IonToolbar,
@@ -98,10 +192,86 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const { myBalance } = useWallet();
-    const { duffsInDash } = useRates();
+    const { duffsInDash, dashInDuffs } = useRates();
+
+    const { getUserLabel } = useContacts();
+    const store = useStore();
+    const router = useRouter();
+
+    const { getRequestByReplyToId } = useChats();
+
+    const flow = ref("");
+    const flows = function () {
+      if (
+        (props.msg.data.request && props.msg._direction === "RECEIVED") ||
+        (!props.msg.data.request && props.msg._direction === "SENT")
+      ) {
+        return (flow.value = "outflow");
+      } else if (
+        (!props.msg.data.request && props.msg._direction === "RECEIVED") ||
+        (props.msg.data.request && props.msg._direction === "SENT")
+      ) {
+        return (flow.value = "inflow");
+      }
+    };
 
     const newDashBalance = computed(() => {
-      return myBalance.value - parseInt(props.msg.data.amount);
+      let balance;
+      if (flow.value === "outflow") {
+        balance = myBalance.value - props.msg.data.amount;
+      }
+      if (flow.value === "inflow") {
+        balance = myBalance.value + props.msg.data.amount;
+      }
+      return duffsInDash.value(balance);
+    });
+
+    const openRequest = function () {
+      if (
+        props.msg.data.request &&
+        store.getters.getRequestByReplyToId(props.msg.id.toString())?.data
+          .request !== "accept" &&
+        store.getters.getRequestByReplyToId(props.msg.id.toString())?.data
+          .request !== "decline"
+      ) {
+        return true;
+      }
+    };
+
+    // const closedRequest = function () {
+    //   if (
+    //     store.getters.getRequestByReplyToId(props.msg.id.toString())?.data
+    //       .request === "accept" ||
+    //     store.getters.getRequestByReplyToId(props.msg.id.toString())?.data
+    //       .request === "decline"
+    //   ) {
+    //     return true;
+    //   }
+    // };
+
+    const title = computed(() => {
+      // open request
+      if (openRequest())
+        return props.msg._direction === "SENT"
+          ? "Your Request"
+          : store.getters.getUserLabel(props.friendOwnerId) + "'s Request";
+      // request: received && accepted
+      else if (
+        props.msg._direction === "RECEIVED" &&
+        store.getters.getRequestByReplyToId(props.msg.id.toString())?.data
+          .request === "accept"
+      )
+        return "You Sent (Accepted Request)";
+      // request: sent && accepted
+      else if (
+        props.msg._direction === "SENT" &&
+        store.getters.getRequestByReplyToId(props.msg.id.toString())?.data
+          .request === "accept"
+      )
+        return "You Received (Accepted Request)";
+      // not a request
+      else return props.msg._direction === "SENT" ? "You sent" : "You received";
+      // disabled ability to click and view declined requests in ChatTxn.vue
     });
 
     const declineRequestWrapper = () => {
@@ -130,6 +300,25 @@ export default defineComponent({
       modalController.dismiss();
     };
 
+    function copyToClipboard() {
+      navigator.clipboard.writeText("Xcu5iYBH...FHrFVdYu").then(
+        function () {
+          store.dispatch("showToast", {
+            text: "Copied message text",
+            type: "copiedtoast",
+            icon: "copyIcon",
+          });
+          console.log(
+            "Copying to clipboard was successful! Message: ",
+            props.msg.data.text
+          );
+        },
+        function (err) {
+          console.error("Could not copy text: ", err);
+        }
+      );
+    }
+
     return {
       myBalance,
       newDashBalance,
@@ -140,28 +329,37 @@ export default defineComponent({
       arrowDownOutline,
       closeOutline,
       duffsInDash,
+      getUserLabel,
+      title,
+      copyOutline,
+      copyToClipboard,
+      router,
+      getRequestByReplyToId,
+      flows,
+      openRequest,
+      // closedRequest,
     };
   },
 });
 </script>
 
 <style scoped>
+a {
+  text-decoration: none;
+}
 .title {
-  /* font-family: Inter; */
   position: fixed;
   left: 50%;
   transform: translate(-50%, -50%);
   margin-top: 12px;
   font-style: normal;
   font-weight: 600;
-  font-size: 16px;
-  line-height: 19px;
-  text-transform: capitalize;
+  font-size: 14px;
+  line-height: 17px;
   display: flex;
   align-items: center;
 }
 .header-icon {
-  /* order: 0; */
   width: 28px;
   height: 28px;
   display: flex;
@@ -171,17 +369,6 @@ export default defineComponent({
 .transaction {
   border-radius: 10px;
   position: relative;
-}
-.req {
-  background: linear-gradient(266.73deg, #f2f8fd 0%, #ebfff8 98.09%);
-}
-.sendit {
-  background: linear-gradient(
-    266.51deg,
-    #f3f3ff 0%,
-    #e9f0ff 100%,
-    #e9f0ff 100%
-  );
 }
 ion-item {
   --background: none;
@@ -213,7 +400,7 @@ ion-item {
   transform: translate(0%, -50%);
 }
 .message-text {
-  margin: 13px 0px 8px 0px;
+  margin: 40px 0px -30px 0px;
 
   font-style: normal;
   font-weight: normal;
@@ -239,6 +426,19 @@ ion-item {
 .swap-container {
   margin-top: 36px;
 }
+.address {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 17px;
+  color: #000000;
+  margin-top: 30px;
+  margin: auto;
+}
+.copyicon {
+  color: #6c69fc;
+  margin-left: 8px;
+}
 ion-chip {
   display: flex;
   flex-direction: row;
@@ -260,7 +460,31 @@ ion-chip {
   height: 44px;
   background: #f2f4ff;
 }
-.next-text {
+.cancelit {
+  width: 328px;
+  height: 43px;
+  margin: auto;
+  background: #f2f4ff;
+  border-radius: 10px;
+}
+.cancel-text {
+  font-style: normal;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 17px;
+  text-transform: capitalize;
+  color: #6c69fc;
+}
+
+.message-text {
+  text-align: center;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 18px;
+  color: #a3a3a3;
+}
+.request-text {
   font-style: normal;
   font-weight: bold;
   font-size: 14px;
@@ -276,7 +500,7 @@ ion-chip {
   left: 72px;
 }
 .show-message {
-  width: 194px;
+  /* width: 194px; */
   font-style: normal;
   font-weight: normal;
   font-size: 15px;
@@ -286,7 +510,7 @@ ion-chip {
   margin: 34px auto 0 auto;
 }
 .funds {
-  width: 210px;
+  /* width: 210px; */
   height: 15px;
   margin: 10px auto 0px auto;
   display: flex;
@@ -298,5 +522,27 @@ ion-chip {
   line-height: 15px;
 
   color: #ff627e;
+}
+.explorer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 15px;
+
+  width: 136px;
+  height: 40px;
+
+  background: #f2f4ff;
+  border-radius: 20px;
+}
+.explorer-text {
+  /* width: 96px;
+  height: 17px; */
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 17px;
+  color: #6c69fc;
 }
 </style>

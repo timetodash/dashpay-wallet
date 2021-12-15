@@ -18,12 +18,23 @@
           class="row_padding"
         >
           <ion-col>
+            <div class="flex ion-justify-content-center">
+              <ion-chip
+                v-if="msg._displayDate"
+                class="timestamp_chip ion-text-center"
+                ><ion-label class="timestamp_label"
+                  >{{ msg._displayDate }}
+                </ion-label></ion-chip
+              >
+            </div>
+
             <chat-message
               v-if="msg.data.text && !msg.data.amount"
               :msg="msg"
               :friendOwnerId="friendOwnerId"
             >
             </chat-message>
+
             <chat-txn
               v-if="
                 (msg.data.amount && msg.data.text) ||
@@ -58,7 +69,14 @@
 import { useStore } from "vuex";
 
 import { ref } from "vue";
-import { IonGrid, IonRow, IonCol, IonIcon } from "@ionic/vue";
+import {
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonIcon,
+  IonChip,
+  IonLabel,
+} from "@ionic/vue";
 import { checkmarkDoneOutline } from "ionicons/icons";
 import ChatMessage from "@/components/Chat/ChatMessage.vue";
 import ChatTxn from "@/components/Chat/ChatTxn.vue";
@@ -76,15 +94,14 @@ export default {
     ChatTxn,
     ChatSmallTxn,
     RequestResponse,
+    IonChip,
+    IonLabel,
   },
   setup(props, context) {
-    // const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
     const store = useStore();
     const chatText = ref("");
 
     const isSendingAccept = ref(false);
-
     const sendChatWrapper = () => {
       context.emit("sendChatWrapper", chatText.value);
       chatText.value = "";
@@ -168,7 +185,6 @@ export default {
   height: 28px;
   left: 93px;
   top: 309px;
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: normal;
   font-size: 11px;

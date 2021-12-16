@@ -201,7 +201,6 @@ import {
   getClientIdentity,
 } from "@/lib/DashClient";
 import { Client } from "dash/dist/src/SDK/Client/index";
-import { resolveContacts } from "@/lib/helpers/Contacts";
 
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
@@ -221,18 +220,10 @@ export default {
     IonHeader,
     IonIcon,
     IonToolbar,
-    // IonGrid,
-    // IonRow,
-    // IonCol,
-    // IonTitle,
     IonContent,
     IonPage,
-    // IonFooter,
-    // IonButton,
     IonLabel,
-    // IonInput,
     IonItem,
-    // IonLoading,
     IonSearchbar,
     IonAvatar,
     IonList,
@@ -245,12 +236,6 @@ export default {
   },
   setup() {
     const client = getClient();
-    const clientIdentity = getClientIdentity();
-    // let client: Client;
-    // const clientOpts = getClientOpts(
-    //   "blanket color tiny word cabbage stem ahead logic veteran either reflect affair" // local
-    // "foster venue gather admit fruit mix float guilt broken wash earth order" // testnet
-    // );
 
     const router = useRouter();
 
@@ -263,8 +248,6 @@ export default {
     const contacts = ref<any>([]);
 
     const mostRecentData = ref(0);
-
-    const profiles = reactive<any>({});
 
     const scrollPage = ref(0);
 
@@ -313,12 +296,8 @@ export default {
         store.commit("setDPNS", dpnsDoc);
       });
 
-      console.log("store.state.dpns :>> ", store.state.dpns);
-
       // Newer data was loaded, so don't display stale results
       if (thisData != mostRecentData.value) return;
-
-      console.log("filteredFriendIds :>> ", filteredFriendIds);
 
       const resultJson = result
         .map((x: any) => x.toJSON())
@@ -330,18 +309,8 @@ export default {
 
       event?.target?.complete();
 
-      console.log("contacts.value :>> ", contacts.value);
-
-      console.log(
-        "          contacts.value.map((x: any) => x.$ownerId) :>> ",
-        contacts.value.map((x: any) => x.$ownerId)
-      );
-      (
-        await store.dispatch("fetchDashpayProfiles", {
-          ownerIds: contacts.value.map((x: any) => x.$ownerId),
-        })
-      ).forEach((profile: any) => {
-        if (profile) profiles[profile.ownerId.toString()] = profile.toJSON();
+      await store.dispatch("fetchDashpayProfiles", {
+        ownerIds: contacts.value.map((x: any) => x.$ownerId),
       });
     };
 
@@ -368,41 +337,30 @@ export default {
 
       console.log("disableInfiniteScroll :>> ", disableInfiniteScroll);
 
-      const searchResults = (
-        await client!.platform!.names.search(searchVal, "dash")
-      ).map((x: any) => x.toJSON());
+      const searchResults = await client!.platform!.names.search(
+        searchVal,
+        "dash"
+      );
+
+      console.log("searchResult :>> ", searchResults);
+
+      searchResults.forEach((dpnsDoc: any) => {
+        console.log("setDPNS from search: dpnsDoc", dpnsDoc);
+        store.commit("setDPNS", dpnsDoc);
+      });
 
       // A newer search was started, so don't display stale results
       if (thisData != mostRecentData.value) return;
 
-      contacts.value = searchResults;
-
-      console.log("searchResult :>> ", searchResults);
+      contacts.value = searchResults.map((x: any) => x.toJSON());
 
       console.log("contacts.value :>> ", contacts.value);
 
-      (await resolveContacts(client, contacts.value)).forEach(
-        (profile: any) => {
-          if (profile) profiles[profile.$ownerId] = profile;
-        }
-      );
-
-      console.log("profile :>> ", profiles);
+      await store.dispatch("fetchDashpayProfiles", {
+        ownerIds: contacts.value.map((x: any) => x.$ownerId),
+      });
     };
 
-    const avatarUrl = (contact: any) => {
-      return (
-        profiles[contact.$ownerId]?.avatarUrl || "/assets/defaults/avataaar.png"
-      );
-    };
-
-    const displayName = (contact: any) => {
-      return profiles[contact.$ownerId]?.displayName;
-    };
-
-    const publicMessage = (contact: any) => {
-      return profiles[contact.$ownerId]?.publicMessage;
-    };
     onMounted(async () => {
       // client = await initClient(clientOpts);
       await sleep(150); // Don't block the viewport
@@ -415,10 +373,6 @@ export default {
       errorMessage,
       searchContacts,
       contacts,
-      profiles,
-      avatarUrl,
-      displayName,
-      publicMessage,
       loadScrollData,
       disableInfiniteScroll,
       router,

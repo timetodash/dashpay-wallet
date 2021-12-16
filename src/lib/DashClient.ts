@@ -1,6 +1,7 @@
 import Dash from "dash";
 import { Client } from "dash/dist/src/SDK/Client/index";
 import { strict as assert } from "assert";
+import localforage from "localforage";
 
 let client: Client | undefined;
 let identityId: string | undefined; // TODO replace string with Identifier
@@ -54,6 +55,7 @@ const getClientOpts = function(mnemonic: string | null | undefined) {
   if (mnemonic || mnemonic === null) {
     (clientOpts as any).wallet = {
       mnemonic,
+      adapter: localforage,
       // unsafeOptions: {
       //   skipSynchronizationBeforeHeight: 506776,
       // },
@@ -93,18 +95,32 @@ const initClient = async function(clientOpts: any) {
   client = new Dash.Client(clientOpts);
 
   console.log("client :>> ", client);
-
   Object.entries((client.getApps() as any).apps).forEach(([name, entry]) =>
     console.log(name, (entry as any).contractId.toString())
   );
 
   if (client.wallet) {
+    console.log("client, init wallet");
+    const startWalletInit = Date.now();
     client.account = await client.getWalletAccount();
+    const startFetchIdentity = Date.now();
+    console.log(
+      "client, finished wallet init in:",
+      Math.floor((startFetchIdentity - startWalletInit) / 1000),
+      "s"
+    );
+
+    console.log("client, fetch identity");
 
     await fetchClientIdentity();
 
-    console.log("client.account :>> ", client.account);
+    console.log(
+      "client, finished fetch identity in:",
+      Math.floor((Date.now() - startFetchIdentity) / 1000),
+      "s"
+    );
   }
+  console.log("returning client");
 
   return getClient();
 };

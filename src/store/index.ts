@@ -423,8 +423,6 @@ const actions = {
       })
     );
 
-    // console.log("profilePromises :>> ", profilePromises);
-
     const results = (await Promise.all(profilePromises))
       .map((x: any) => x[0])
       .filter((x) => !!x);

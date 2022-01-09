@@ -42,9 +42,10 @@ export default function useWallet() {
 
     console.log("transactions :>> ", transactions);
 
-    myTransactionHistory.value = transactions.map((tx: any) =>
-      resolveTransaction(getClient(), tx)
-    );
+    myTransactionHistory.value = transactions.map((tx: any) => {
+      console.log("tx", tx);
+      // resolveTransaction(getClient(), tx);
+    });
     console.log("transactionHistory.value :>> ", myTransactionHistory.value);
   }
 
@@ -82,11 +83,10 @@ export default function useWallet() {
   }
 
   function startRefreshWalletDataLoop() {
-    assert(!isRefreshLoopActive, "Error: Wallet refresh loop already running!");
+    // assert(!isRefreshLoopActive, "Error: Wallet refresh loop already running!");
+    if (isRefreshLoopActive) return;
 
     console.log("startRefreshWalletDataLoop");
-    // if (!client) client = getClient(); // TODO deprecated remove
-    // console.log("got a client", isRefreshLoopActive);
     isRefreshLoopActive = true;
 
     refreshWalletDataLoop();

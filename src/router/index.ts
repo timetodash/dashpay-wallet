@@ -28,6 +28,10 @@ const routes: Array<RouteRecordRaw> = [
     redirect: "/welcome",
   },
   {
+    path: "/:catchAll(.*)",
+    redirect: "/welcome",
+  },
+  {
     path: "/welcome",
     component: Welcome,
   },
@@ -82,28 +86,28 @@ const routes: Array<RouteRecordRaw> = [
     props: true,
     children: [
       {
-        path: '',
-        component: () => import('@/views/friends.vue'),
-        props: true
+        path: "",
+        component: () => import("@/views/friends.vue"),
+        props: true,
       },
       {
-        path: 'friends',
-        component: () => import('@/views/friends.vue'),
-        props: true 
+        path: "friends",
+        component: () => import("@/views/friends.vue"),
+        props: true,
       },
       {
-        path: 'sharedFriends',
-        component: () => import('@/views/sharedFriends.vue'),
-        props: true
-      }
-    ]
+        path: "sharedFriends",
+        component: () => import("@/views/sharedFriends.vue"),
+        props: true,
+      },
+    ],
   },
   {
     path: "/profile/:friendOwnerId/friends",
     component: ContactProfile,
     props: {
-     filteredUserFriends: "filteredUserFriends",
-    }
+      filteredUserFriends: "filteredUserFriends",
+    },
   },
   {
     path: "/conversation/:friendOwnerId",

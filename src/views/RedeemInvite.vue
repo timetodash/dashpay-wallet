@@ -21,7 +21,7 @@
               {{ myDashBalance }} Dash
             </h1>
             <h1
-              v-if="!isRedeemed"
+              v-if="myDashBalance < SIGNUP_FEE"
               text-uppercase
               no-padding
               no-margin
@@ -42,6 +42,7 @@
         <ion-chip
           expand="block"
           class="nextbutton next-color ion-padding-horizontal"
+          :disabled="myDashBalance < SIGNUP_FEE"
           @click="() => router.push('/finishregistration')"
           ><span class="next-text">Create Account</span></ion-chip
         >
@@ -77,7 +78,7 @@ import {
 
 import { getClient } from "@/lib/DashClient";
 
-import { Client } from "dash/dist/src/SDK/Client/index";
+// import { Client } from "dash/dist/src/SDK/Client/index";
 
 export default {
   name: "RedeemInvite",
@@ -96,7 +97,10 @@ export default {
     IonFooter,
   },
   setup() {
-    const { myDashBalance } = useWallet();
+    const SIGNUP_FEE = 0.01;
+
+    const { myDashBalance, startRefreshWalletDataLoop } = useWallet();
+    startRefreshWalletDataLoop();
 
     const client = getClient();
 
@@ -137,7 +141,14 @@ export default {
       isRedeemed.value = true;
     });
 
-    return { myDashBalance, redeemInvite, router, isRedeemed, arrowBack };
+    return {
+      myDashBalance,
+      redeemInvite,
+      router,
+      isRedeemed,
+      arrowBack,
+      SIGNUP_FEE,
+    };
   },
 };
 </script>

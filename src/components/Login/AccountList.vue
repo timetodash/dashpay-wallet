@@ -20,6 +20,8 @@
 <script lang="ts">
 import { onMounted, onActivated, onRenderTriggered, ref } from "vue";
 
+import { useRouter } from "vue-router";
+
 import { IonList, IonListHeader } from "@ionic/vue";
 
 import { getAccounts } from "@/lib/helpers/AccountStorage";
@@ -37,6 +39,7 @@ export default {
     // IonModal,
   },
   setup() {
+    const router = useRouter();
     const isAccountItemOpen = ref(false);
 
     const showAccountItem = async (state = true) => {
@@ -49,6 +52,11 @@ export default {
 
     const refreshAccountList = async () => {
       accounts.value = await getAccounts();
+
+      if (accounts.value === null) {
+        router.replace("/welcome");
+        return;
+      }
 
       const ownerIds = Object.entries(accounts.value)
         .filter((x: any) => (x[1] as any).accountDPNS?.$ownerId)

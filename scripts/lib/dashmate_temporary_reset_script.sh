@@ -28,6 +28,7 @@ CONFIG_NAME="local"
 
 MASTERNODES_COUNT=3
 
+######################
 echo "Removing all docker containers and volumes..."
 docker rm -f -v $(docker ps -a -q) || true
 
@@ -35,6 +36,12 @@ docker system prune -f --volumes
 
 echo "Remove dashmate configuration..."
 rm -rf ~/.dashmate/
+
+#####################
+
+# echo "Reset Dashmate"
+# dashmate group:reset --verbose --group=local --hard --force
+####################
 
 if [ $BUILD_DRIVE == true ]
 then
@@ -53,14 +60,14 @@ dashmate setup ${CONFIG_NAME} --verbose --debug-logs --miner-interval="${MINING_
 echo "Sending 1000 tDash to the ${FAUCET_ADDRESS} for tests"
 dashmate wallet:mint 1000 --config=${CONFIG_NAME}_seed --address=${FAUCET_ADDRESS} --verbose
 
-if [ $BUILD_DAPI_AFTER_SETUP == true ]
-then
-  echo "Setting dapi build directory after the setup"
-  for (( NODE_INDEX=1; NODE_INDEX<=MASTERNODES_COUNT; NODE_INDEX++ ))
-  do
-    dashmate config:set --config=${CONFIG_NAME}_${NODE_INDEX} platform.dapi.api.docker.build.path $DAPI_REPO_PATH
-  done
-fi
+# if [ $BUILD_DAPI_AFTER_SETUP == true ]
+# then
+#   echo "Setting dapi build directory after the setup"
+#   for (( NODE_INDEX=1; NODE_INDEX<=MASTERNODES_COUNT; NODE_INDEX++ ))
+#   do
+#     dashmate config:set --config=${CONFIG_NAME}_${NODE_INDEX} platform.dapi.api.docker.build.path $DAPI_REPO_PATH
+#   done
+# fi
 
 # dashmate group:start --wait-for-readiness --verbose
 

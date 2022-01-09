@@ -16,7 +16,7 @@
     "generate:testnet": "./scripts/generateTestDataTestnet.sh",
     "register:local": "./scripts/registerContractsLocal.sh",
     "register:testnet": "./scripts/registerContractsTestnet.sh",
-    "build-testnet": "./scripts/runBuildTestnet.sh",
+    "build:testnet": "./scripts/runBuildTestnet.sh",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e",

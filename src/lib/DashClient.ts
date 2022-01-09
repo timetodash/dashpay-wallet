@@ -56,8 +56,9 @@ const getClientOpts = function(mnemonic: string | null | undefined) {
     (clientOpts as any).wallet = {
       mnemonic,
       adapter: localforage,
+      offlineMode: true,
       // unsafeOptions: {
-      //   skipSynchronizationBeforeHeight: 506776,
+      //   skipSynchronizationBeforeHeight: 639373,
       // },
     };
   }
@@ -74,9 +75,11 @@ const fetchClientIdentity = async function() {
   console.log("identity :>> ", identity);
   if (identity) return identity;
 
-  identityId = (client?.account as any).identities.getIdentityIds()[0];
+  // identityId = (client?.account as any).identities.getIdentityIds()[0];
 
-  console.log("identityId :>> ", identityId);
+  identityId = "Bxq3AxmzSaBPvr4kTc2W8ewDg8AZuNoVRYvTBssYpEP4"; // TODO TEMP this is a workaround for slow testnet
+
+  console.log("fetchClientIdentity identityId :>> ", identityId);
 
   if (identityId) identity = await client?.platform?.identities.get(identityId);
   console.log("identity :>> ", identity);

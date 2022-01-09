@@ -1,111 +1,113 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const path = require('path')
-const crypto = require('crypto')
-const fs = require('fs')
-const Dash = require('dash')
-const glob = require('glob')
+const path = require("path");
+const crypto = require("crypto");
+const fs = require("fs");
+const Dash = require("dash");
+const glob = require("glob");
 
-const envRun = process.env.VUE_APP_ENV_RUN
-console.log("Running registeredContracts.js ...")
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const envRun = process.env.VUE_APP_ENV_RUN;
+console.log("Running registeredContracts.js ...");
 
 // console.dir(process.env, {depth:100})
 
 let clientOpts = {
-  network: 'testnet',
+  network: "testnet",
   // retries: 9999,
   // passFakeAssetLockProofForTests: process.env.NUXT_LOCALNODE,
 
   wallet: {
     mnemonic: process.env.VUE_APP_MNEMONIC,
   },
-
-}
+};
 
 if (envRun === "local") {
-    clientOpts.dapiAddresses = process.env.VUE_APP_DAPIADDRESSES
+  clientOpts.dapiAddresses = process.env.VUE_APP_DAPIADDRESSES
     ? JSON.parse(process.env.VUE_APP_DAPIADDRESSES)
-    : undefined
+    : undefined;
 } else if (envRun === "testnet") {
-    clientOpts.unsafeOptions = {
-        skipSynchronizationBeforeHeight: 607229,
-    }
-} 
-
+  clientOpts.unsafeOptions = {
+    skipSynchronizationBeforeHeight: 607229,
+  };
+}
 
 // Remove undefined keys from object
-clientOpts = JSON.parse(JSON.stringify(clientOpts))
+clientOpts = JSON.parse(JSON.stringify(clientOpts));
 
-console.log('clientOpts :>> ', clientOpts)
+console.log("clientOpts :>> ", clientOpts);
 
-let client, platform, identityId, identity
+let client, platform, identityId, identity;
 
-let registeredContracts = {}
+let registeredContracts = {};
 
 try {
-  registeredContracts = require(`../env/registeredContracts_${envRun}.json`)
+  registeredContracts = require(`../env/registeredContracts_${envRun}.json`);
 } catch (e) {
   console.log(
     `\n./env/registeredContracts_${envRun}.json not found, will create file ..\n`
-  )
+  );
 }
 
 const initWalletAndIdentity = async () => {
-  if (!client) client = new Dash.Client(clientOpts)
+  if (!client) client = new Dash.Client(clientOpts);
 
-  if (!platform) platform = client.platform
+  if (!platform) platform = client.platform;
 
   if (!client.account) {
-    const startWalletSync = Date.now()
+    const startWalletSync = Date.now();
 
-    console.log('.. initializing wallet')
+    console.log(".. initializing wallet");
 
-    client.account = await client.getWalletAccount()
+    client.account = await client.getWalletAccount();
 
-    const walletTime = Math.floor((Date.now() - startWalletSync) / 1000)
+    const walletTime = Math.floor((Date.now() - startWalletSync) / 1000);
 
-    console.log(`.. finished wallet sync in ${walletTime}s`)
+    console.log(`.. finished wallet sync in ${walletTime}s`);
 
     console.log(
-      '\nReceiving address for wallet:\n',
+      "\nReceiving address for wallet:\n",
       client.account.getUnusedAddress().address,
-      '\n'
-    )
+      "\n"
+    );
   }
+
+  await sleep(10000);
 
   if (!identityId)
     identityId =
       client.account.identities.getIdentityIds()[0] ||
-      (await platform.identities.register()).id.toString()
+      (await platform.identities.register()).id.toString();
 
-  if (!identity) identity = await platform.identities.get(identityId)
-}
+  if (!identity) identity = await platform.identities.get(identityId);
+};
 
 const registerContract = async (contractDocuments) => {
-  const contract = await platform.contracts.create(contractDocuments, identity)
+  const contract = await platform.contracts.create(contractDocuments, identity);
 
-  return platform.contracts.broadcast(contract, identity)
-}
+  return platform.contracts.broadcast(contract, identity);
+};
 
-;(async () => {
+(async () => {
   try {
-    const contractUrls = glob.sync('./schema/*CONTRACT.json')
+    const contractUrls = glob.sync("./schema/*CONTRACT.json");
 
     const contractUrlswithHash = contractUrls.map((x) => [
       x,
       crypto
-        .createHash('sha256')
+        .createHash("sha256")
         .update(JSON.stringify(require(`../${x}`)))
-        .digest('hex'),
-    ])
+        .digest("hex"),
+    ]);
 
     // Check if there is a new contract, otherwise skip slow wallet initialization
     for (let idx = 0; idx < contractUrlswithHash.length; idx++) {
-      const hash = contractUrlswithHash[idx][1]
+      const hash = contractUrlswithHash[idx][1];
 
       if (!(hash in registeredContracts)) {
-        console.log('Found new contracts to register ..')
-        await initWalletAndIdentity()
-        break
+        console.log("Found new contracts to register ..");
+        await initWalletAndIdentity();
+        break;
       }
     }
 
@@ -113,88 +115,88 @@ const registerContract = async (contractDocuments) => {
     const newRegisteredContractIdsPromises = contractUrlswithHash.map(
       ([url, hash]) => {
         if (hash in registeredContracts) {
-          return registeredContracts[hash].id
+          return registeredContracts[hash].id;
         } else {
-          return registerContract(require(`../${url}`))
+          return registerContract(require(`../${url}`));
         }
       }
-    )
+    );
 
     const newRegisteredContractIdsResults = await Promise.all(
       newRegisteredContractIdsPromises
-    )
+    );
 
     const newRegisteredContractIds = newRegisteredContractIdsResults.map(
       (id, idx) => {
-        if (typeof id === 'string') {
-          return id
+        if (typeof id === "string") {
+          return id;
         } else {
-          const newId = id.dataContract.id.toString()
+          const newId = id.dataContract.id.toString();
 
           const contractName = path.basename(
             contractUrlswithHash[idx][0],
-            '.json'
-          )
+            ".json"
+          );
 
           console.log(
-            'Registered new contract: ',
+            "Registered new contract: ",
             `${contractName}_${envRun}`,
             newId
-          )
+          );
 
-          if (contractName === 'JEMBE_CONTRACT') {
+          if (contractName === "JEMBE_CONTRACT") {
             try {
               fs.appendFileSync(
                 `/home/${process.env.USER}/.evoenv`,
                 `\nexport VUE_APP_${contractName}_ID_${envRun}=${newId}\n`
-              )
+              );
 
               console.log(
-                '-> Appended',
+                "-> Appended",
                 `${contractName}_${envRun}`,
-                'to ~/.evoenv'
-              )
+                "to ~/.evoenv"
+              );
             } catch (e) {
-              console.log(e)
+              console.log(e);
               console.log(
                 `Add the ${contractName} to your environment variables manually to share it with other dApps..`
-              )
+              );
             }
           }
 
-          return newId
+          return newId;
         }
       }
-    )
+    );
 
-    const newRegisteredContracts = {}
+    const newRegisteredContracts = {};
     newRegisteredContractIds.forEach((id, idx) => {
-      const [url, hash] = contractUrlswithHash[idx]
-      newRegisteredContracts[hash] = { url, id }
-    })
+      const [url, hash] = contractUrlswithHash[idx];
+      newRegisteredContracts[hash] = { url, id };
+    });
 
     fs.writeFileSync(
       `./env/registeredContracts_${envRun}.json`,
       JSON.stringify(newRegisteredContracts)
-    )
+    );
 
-    console.log(`\nContractIds for '${envRun}':\n`)
-    let envVarString = ''
+    console.log(`\nContractIds for '${envRun}':\n`);
+    let envVarString = "";
     Object.keys(newRegisteredContracts).forEach((hash) => {
-      const { url, id } = newRegisteredContracts[hash]
+      const { url, id } = newRegisteredContracts[hash];
       envVarString += `export VUE_APP_${path.basename(
         url,
-        '.json'
-      )}_ID_${envRun}=${id}\n`
+        ".json"
+      )}_ID_${envRun}=${id}\n`;
       console.log(
-        `export VUE_APP_${path.basename(url, '.json')}_ID_${envRun}=${id}`
-      )
-    })
+        `export VUE_APP_${path.basename(url, ".json")}_ID_${envRun}=${id}`
+      );
+    });
 
-    fs.writeFileSync(`./env/datacontracts_${envRun}.env`, envVarString)
+    fs.writeFileSync(`./env/datacontracts_${envRun}.env`, envVarString);
   } catch (e) {
-    console.dir(e)
+    console.dir(e);
   } finally {
-    if (client) client.disconnect()
+    if (client) client.disconnect();
   }
-})()
+})();

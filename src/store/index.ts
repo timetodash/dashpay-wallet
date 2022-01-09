@@ -655,13 +655,13 @@ const getters = {
   },
   myDisplayName: (state: any) => {
     return (
-      (state.dashpayProfiles as any)[state.accountDPNS.$ownerId]?.data
+      (state.dashpayProfiles as any)[state.accountDPNS?.$ownerId]?.data
         .displayName ?? ""
     );
   },
   myPublicMessage: (state: any) => {
     return (
-      (state.dashpayProfiles as any)[state.accountDPNS.$ownerId.toString()]
+      (state.dashpayProfiles as any)[state.accountDPNS?.$ownerId.toString()]
         ?.data.publicMessage ?? ""
     );
   },

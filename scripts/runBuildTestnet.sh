@@ -2,6 +2,7 @@
 source ~/.evoenv
 
 # export VUE_APP_DAPIADDRESSES='["34.220.41.134", "18.236.216.191", "54.191.227.118"]'
+unset VUE_APP_DAPIADDRESSES
 unset VUE_APP_DPNS_CONTRACT_ID
 
 export VUE_APP_ENV_RUN="build_testnet"

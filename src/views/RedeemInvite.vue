@@ -115,7 +115,9 @@ export default {
 
       const reqs = [];
 
-      if (process.env.VUE_APP_ENV_RUN === "testnet") {
+      const envRun = process.env.VUE_APP_ENV_RUN || "";
+
+      if (["testnet", "build_testnet"].includes(envRun)) {
         reqs.push(
           axios.get(`http://autofaucet-1.dashevo.io:5050/drip/${address}`)
         );

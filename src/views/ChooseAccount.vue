@@ -172,9 +172,9 @@ export default {
       console.log("logging in from localStorage");
       console.log("selectedAccount.value :>> ", selectedAccount.value);
 
-      // const [identityId] = await account.identities.getIdentityIds();
+      const [identityId] = await account.identities.getIdentityIds();
 
-      const identityId = selectedAccount.value.accountDPNS.$ownerId; // TODO TEMP this is a work around for slow testnet
+      // const identityId = selectedAccount.value.accountDPNS.$ownerId; // TODO TEMP this is a work around for slow testnet
 
       console.log("identityId :>> ", identityId);
 

@@ -7,8 +7,6 @@ let client: Client | undefined;
 let identityId: string | undefined; // TODO replace string with Identifier
 let identity: any | undefined; // TODO replace any with Identity
 
-console.log("client import executed, this should only show once");
-
 const disconnectClient = async function() {
   assert(client, "Error: Client is not initialized!");
 
@@ -42,7 +40,9 @@ const getClientOpts = function(mnemonic: string | null | undefined) {
     },
   };
 
-  if (process.env.VUE_APP_ENV_RUN !== "testnet") {
+  const envRun = process.env.VUE_APP_ENV_RUN || "";
+
+  if (!["testnet", "build_testnet"].includes(envRun)) {
     clientOpts.dapiAddresses = JSON.parse(process.env.VUE_APP_DAPIADDRESSES!);
 
     clientOpts.apps.dpns = { contractId: process.env.VUE_APP_DPNS_CONTRACT_ID };
@@ -56,7 +56,7 @@ const getClientOpts = function(mnemonic: string | null | undefined) {
     (clientOpts as any).wallet = {
       mnemonic,
       adapter: localforage,
-      offlineMode: true,
+      // offlineMode: true,
       // unsafeOptions: {
       //   skipSynchronizationBeforeHeight: 639373,
       // },
@@ -75,9 +75,9 @@ const fetchClientIdentity = async function() {
   console.log("identity :>> ", identity);
   if (identity) return identity;
 
-  // identityId = (client?.account as any).identities.getIdentityIds()[0];
+  identityId = (client?.account as any).identities.getIdentityIds()[0];
 
-  identityId = "Bxq3AxmzSaBPvr4kTc2W8ewDg8AZuNoVRYvTBssYpEP4"; // TODO TEMP this is a workaround for slow testnet
+  // identityId = "Bxq3AxmzSaBPvr4kTc2W8ewDg8AZuNoVRYvTBssYpEP4"; // TODO TEMP this is a workaround for slow testnet
 
   console.log("fetchClientIdentity identityId :>> ", identityId);
 

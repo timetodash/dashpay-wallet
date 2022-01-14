@@ -19,13 +19,23 @@ import ChatLegacyPayment from "@/components/Chat/LegacyPayments/ChatLegacyPaymen
 import Settings from "@/views/Settings.vue";
 import ChooseAccount from "@/views/ChooseAccount.vue";
 import EditProfile from "@/views/EditProfile.vue";
+import Startpage from "@/views/Startpage.vue";
+import Device from "@/views/Device.vue";
 
 import Autologin from "@/views/Autologin.vue"; // TODO deploy: remove, this is for dev only
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    redirect: "/welcome",
+    redirect: "/device",
+  },
+  // {
+  //   path: "/:catchAll(.*)",
+  //   redirect: "/welcome",
+  // },
+  {
+    path: "/device",
+    component: Device,
   },
   {
     path: "/:catchAll(.*)",
@@ -34,6 +44,10 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/welcome",
     component: Welcome,
+  },
+  {
+    path: "/startpage",
+    component: Startpage,
   },
   {
     path: "/createwallet",

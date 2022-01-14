@@ -91,8 +91,6 @@ export default {
 
     // const clientIdentity = getClientIdentity();
 
-    // const router = useRouter();
-
     const route = useRoute();
 
     const store = useStore();
@@ -202,6 +200,7 @@ export default {
         replyToId: undefined,
       });
     };
+
     const handleSendRequest = (event: any) => {
       console.log("event :>> ", event);
       const request = event.sendRequestDirection === "request" ? "open" : "";
@@ -259,6 +258,13 @@ export default {
   /* --box-shadow: 0px -0.5px 2px 1px rgba(0, 0, 0, 0.1); */
 }
 .viewrequest .modal-wrapper {
+  position: fixed;
+  top: 35%;
+  --height: 65%;
+  --border-radius: 10px 10px 0px 0px;
+  /* --box-shadow: 0px -0.5px 2px 1px rgba(0, 0, 0, 0.1); */
+}
+.qrcode .modal-wrapper {
   position: fixed;
   top: 35%;
   --height: 65%;

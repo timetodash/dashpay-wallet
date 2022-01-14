@@ -15,16 +15,18 @@
       </ion-avatar>
 
       <ion-item class="ion-margin-top password" lines="none">
-        <ion-input
-          debounce="500"
-          v-model="formPassword"
-          enterkeyhint="next"
-          placeholder="Enter password"
-          show-clear-button="never"
-          type="password"
-          @keyup.enter="checkPassword()"
-        >
-        </ion-input>
+        <form>
+          <ion-input
+            debounce="500"
+            v-model="formPassword"
+            enterkeyhint="next"
+            placeholder="Enter password"
+            show-clear-button="never"
+            type="password"
+            @keyup.enter="checkPassword()"
+          >
+          </ion-input>
+        </form>
       </ion-item>
       <div>
         <ion-icon
@@ -105,6 +107,8 @@ export default {
 
     const { getUserLabel, getUserAvatar } = store.getters;
 
+    const showLoader = ref(false);
+
     // onMounted(async () => {});
 
     const cancel = () => {
@@ -112,6 +116,7 @@ export default {
     };
 
     const checkPassword = async () => {
+      showLoader.value = true;
       console.log("store.state.wishName :>> ", store.state.wishName);
       console.log("formPassword.value :>> ", formPassword.value);
 
@@ -165,6 +170,7 @@ export default {
         else {
           router.push("/backupmnemonic");
         }
+        showLoader.value = false;
       }, 1200);
     };
 
@@ -177,6 +183,7 @@ export default {
       closeOutline,
       cancel,
       router,
+      showLoader,
     };
   },
 };

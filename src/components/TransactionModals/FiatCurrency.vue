@@ -4,8 +4,9 @@
       ref="focus"
       class="enter-dash"
       v-on:input="$emit('update:fiatAmount', $event.target.value)"
-      type="number"
+      type="text"
       min="0"
+      maxlength="2"
       :value="fiatAmount"
       placeholder="0.00"
     ></ion-input>

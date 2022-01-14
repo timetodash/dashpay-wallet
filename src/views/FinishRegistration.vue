@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Finish Registration</ion-title>
+        <ion-title class="headername">Finish Registration</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content

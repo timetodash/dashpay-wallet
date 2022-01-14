@@ -123,7 +123,6 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      // if (await getAccounts()) window.parent.router.replace("/chooseaccount");
       if (await getAccounts()) router.replace("/chooseaccount");
     });
 

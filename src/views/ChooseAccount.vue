@@ -50,6 +50,8 @@
         </div>
       </ion-toolbar>
     </ion-footer>
+    <ion-loading :is-open="showLoader" :message="'Initializing Wallet'">
+    </ion-loading>
   </ion-page>
 </template>
 
@@ -73,6 +75,7 @@ import {
   IonButtons,
   IonFooter,
   IonModal,
+  IonLoading,
 } from "@ionic/vue";
 
 import {
@@ -104,6 +107,7 @@ export default {
     // IonButton,
     IonFooter,
     IonModal,
+    IonLoading,
   },
   setup() {
     const router = useRouter();
@@ -119,6 +123,8 @@ export default {
     const accounts = ref([]);
 
     const selectedAccount = ref();
+
+    const showLoader = ref(false);
 
     const showAccountModal = (state: boolean) => (isAccountOpen.value = state);
 
@@ -210,7 +216,8 @@ export default {
       selectedAccount.value = undefined;
     };
 
-    const decryptMnemonic = async function() {
+    const decryptMnemonic = async function () {
+      showLoader.value = true;
       const mnemonic = decrypt(
         "aes",
         selectedAccount.value.encMnemonic,
@@ -220,6 +227,7 @@ export default {
       console.log("mnemonic :>> ", mnemonic);
       await recoverWallet(mnemonic);
       showAccountModal(false);
+      showLoader.value = false;
     };
 
     const createAccount = async () => {
@@ -270,6 +278,7 @@ export default {
       addAccount,
       isAccountOpen,
       showAccountModal,
+      showLoader,
     };
   },
 };

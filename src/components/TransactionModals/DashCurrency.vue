@@ -5,8 +5,9 @@
       class="enter-dash"
       v-on:input="$emit('update:amount', $event.target.value)"
       :value="amount"
-      type="number"
+      type="text"
       min="0"
+      maxlength="6"
       placeholder="0"
     ></ion-input>
     <ion-label class="dash-label"> Dash</ion-label>

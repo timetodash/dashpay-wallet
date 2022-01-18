@@ -16,7 +16,6 @@ const msgDate = function(timestamp: number) {
   ];
   const fullDate =
     months[date.getMonth()] + " " + date.getDate() + ", " + date.getFullYear();
-  console.log(fullDate);
 
   return fullDate;
 };

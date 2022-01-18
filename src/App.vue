@@ -34,7 +34,7 @@ export default defineComponent({
       return false;
     });
 
-    window.onerror = function(msg, src, linenum, colnum, error) {
+    window.onerror = function (msg, src, linenum, colnum, error) {
       console.error(error);
       store.dispatch("showToast", { text: `${msg} ${error}`, color: "danger" });
       return false;

@@ -27,14 +27,20 @@
           <ion-label position="floating" class="label">Avatar URL</ion-label>
           <ion-input v-model="formAvatarUrl" debounce="500"> </ion-input>
         </ion-item>
-        <ion-item lines="none"
-          ><ion-label position="floating" class="label">Display Name</ion-label
-          ><ion-input v-model="formDisplayName"></ion-input></ion-item
-        ><ion-item lines="none"
-          ><ion-label position="floating" class="label"
+        <ion-item lines="none">
+          <!-- <ion-label position="floating" class="label">Display Name</ion-label> -->
+          <ion-input
+            v-model="formDisplayName"
+            placeholder="Display Name"
+            class="placeholder"
+          ></ion-input></ion-item
+        ><ion-item lines="none">
+          <!-- <ion-label position="floating" class="label"
             >Status Message</ion-label
-          ><ion-textarea
+          > -->
+          <ion-textarea
             v-model="formPublicMessage"
+            placeholder="Status Message"
             auto-grow
             rows="1"
           ></ion-textarea></ion-item
@@ -147,6 +153,8 @@ export default {
 }
 .label {
   color: #818c99;
+  font-size: 16px;
+  margin-left: 3px;
 }
 ion-input {
   --background: #f5f5f7;

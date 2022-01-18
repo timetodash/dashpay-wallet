@@ -105,6 +105,14 @@
         >
         </ion-icon>
       </ion-fab>
+
+      <!-- <ion-modal
+        :is-open="isSendDashOpen"
+        @didDismiss="showSendDash({ state: false })"
+        css-class="sendrequest"
+      >
+        <SendDash></SendDash>
+      </ion-modal> -->
     </ion-content>
   </ion-page>
 </template>
@@ -139,6 +147,7 @@ import useWallet from "@/composables/wallet";
 import useContacts from "@/composables/contacts";
 import useChats from "@/composables/chats";
 import useRates from "@/composables/rates";
+// import SendDash from "@/views/SendDash.vue";
 
 // import {
 //   initClient,
@@ -164,12 +173,25 @@ export default {
     IonIcon,
     HomeHeader,
     ChatList,
+    // SendDash,
   },
   setup() {
     const router = useRouter();
     // router.push("/settings");
 
     const store = useStore();
+
+    // const isSendDashOpen = ref(false);
+
+    // const sendDirection = ref("");
+    // const showSendDash = async (modal: any) => {
+    //   const { direction, state } = modal;
+    //   sendDirection.value = direction;
+    //   sendDirection.value = "send";
+    //   console.log("modal direction", sendDirection.value);
+    //   isSendDashOpen.value = state;
+    //   console.log("modal friend", sendDirection.value);
+    // };
 
     const filterInput = ref("");
 
@@ -237,6 +259,8 @@ export default {
       profileCompleted,
       filterInput,
       filteredChatList,
+      // showSendDash,
+      // isSendDashOpen,
     };
   },
 };

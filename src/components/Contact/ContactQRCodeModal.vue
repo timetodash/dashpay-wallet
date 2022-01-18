@@ -1,7 +1,11 @@
 <template>
   <ion-header>
     <ion-toolbar>
-      <ion-title>{{ label }}</ion-title>
+      <div class="flex ion-nowrap ion-padding-bottom">
+        <ion-icon :icon="closeOutline" class="close" @click="cancel"></ion-icon>
+        <div class="unlock">{{ label }}</div>
+      </div>
+      <!-- <ion-title>{{ label }}</ion-title> -->
     </ion-toolbar>
   </ion-header>
   <ion-content class="ion-padding">
@@ -16,7 +20,7 @@
 import {
   IonContent,
   IonHeader,
-  IonTitle,
+  // IonTitle,
   IonToolbar,
   modalController,
   IonButton,
@@ -41,7 +45,7 @@ export default defineComponent({
     QrcodeVue,
     IonContent,
     IonHeader,
-    IonTitle,
+    // IonTitle,
     IonToolbar,
     IonButton,
   },

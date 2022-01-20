@@ -1,49 +1,52 @@
 <template>
   <!-- Received transaction -->
   <div
-    v-if="transaction.transferDirection === 'received'"
+    v-if="transaction.type === 'received'"
     class="flex ion-no-wrap received_txn"
   >
     You received
+    <div class="dash">
+      {{ receivedDash(transaction) }}
+    </div>
+    on
     <div class="address">
-      {{ truncatedAddress(transaction.remoteAddress) }}
+      {{ truncatedAddress(transaction.to[0].address) }}
     </div>
   </div>
 
   <!-- Sent transaction -->
   <div
-    v-if="
-      transaction.transferDirection === 'sent' &&
-      transaction.remoteAddress != 'false'
-    "
+    v-if="transaction.type === 'sent' && transaction.to[0].address != 'false'"
     class="sent_txn flex ion-justify-content-end"
   >
     You sent
+    <div class="dash">
+      {{ sentDash(transaction) }}
+    </div>
+    to
     <div class="address">
-      {{ truncatedAddress(transaction.remoteAddress) }}
+      {{ truncatedAddress(transaction.to[0].address) }}
     </div>
   </div>
 
   <!-- Received and sent transaction chat bubbles -->
-  <chat-small-txn
+  <!-- <chat-small-txn
     v-if="
-      transaction.transferDirection === 'received' ||
-      (transaction.transferDirection === 'sent' &&
-        transaction.remoteAddress != 'false')
+      transaction.type === 'received' ||
+        (transaction.type === 'sent' && transaction.to[0].address != 'false')
     "
-    :direction="transaction.transferDirection"
-    :amount="duffsToDash(transaction.transferSatoshis)"
+    :direction="transaction.type"
+    :amount="duffsToDash(transaction.to[0].satoshis)"
     :hours="new Date().getHours()"
     :minutes="new Date().getMinutes(2)"
-  ></chat-small-txn>
+  ></chat-small-txn> -->
 
   <!-- Internal transfer or Topup  -->
   <div class="flex ion-justify-content-center">
     <div
       v-if="
-        transaction.transferDirection === 'moved' ||
-        (transaction.transferDirection === 'sent' &&
-          transaction.remoteAddress === 'false')
+        transaction.type === 'address_transfer' ||
+          (transaction.type === 'sent' && transaction.to[0].address === 'false')
       "
       class="internal"
     >
@@ -51,27 +54,27 @@
       <div
         class="flex ion-no-wrap"
         :class="{
-          internal_text: transaction.transferDirection === 'moved',
+          internal_text: transaction.type === 'address_transfer',
           topup_text:
-            transaction.transferDirection === 'sent' &&
-            transaction.remoteAddress === 'false',
+            transaction.type === 'sent' &&
+            transaction.to[0].address === 'false',
         }"
       >
-        <div v-if="transaction.transferDirection === 'moved'">
-          Internal Transfer of
+        <div v-if="transaction.type === 'address_transfer'">
+          Internal Transfer of {{ sentDash(transaction) }}
         </div>
 
         <!-- Identity TopUp -->
         <div
           v-if="
-            transaction.transferDirection === 'sent' &&
-            transaction.remoteAddress === 'false'
+            transaction.type === 'sent' && transaction.to[0].address === 'false'
           "
         >
-          Identity TopUp of
+          Identity TopUp of {{ sentDash(transaction) }}
         </div>
         <span class="space_between">
-          {{ internalTransferText(transaction.internal) }}
+          <!-- TODO -->
+          <!-- {{ internalTransferText(transaction.internal) }} -->
         </span>
         {{ new Date().getHours() }}:{{ new Date().getMinutes() }}
       </div>
@@ -84,17 +87,18 @@
 const Dashcore = require("@dashevo/dashcore-lib");
 const Unit = Dashcore.Unit;
 
-import ChatSmallTxn from "@/components/Chat/ChatSmallTxn.vue";
+// import ChatSmallTxn from "@/components/Chat/ChatSmallTxn.vue";
 import useWallet from "@/composables/wallet";
 
 export default {
   name: "ChatLegacyPayment",
   components: {
-    ChatSmallTxn,
+    // ChatSmallTxn,
   },
   props: ["transaction"],
   setup() {
-    const truncatedAddress = function (address) {
+    const truncatedAddress = function(address) {
+      console.log("address :>> ", address);
       return (
         address.substring(0, 6) +
         "..." +
@@ -102,15 +106,23 @@ export default {
       );
     };
 
-    const duffsToDash = function (duffs) {
+    const duffsToDash = function(duffs) {
       return Unit.fromSatoshis(duffs).toBTC();
     };
 
-    const internalTransferText = function (amount) {
+    const sentDash = function(transaction) {
+      return Unit.fromSatoshis(transaction.to[0].satoshis).toBTC();
+    };
+
+    const receivedDash = function(transaction) {
+      return Unit.fromSatoshis(transaction.to[0].satoshis).toBTC();
+    };
+
+    const internalTransferText = function(amount) {
       return (
         duffsToDash(amount) +
         "Dash (" +
-        (duffsToDash(amount) * 175).toFixed(2) +
+        (duffsToDash(amount) * 175).toFixed(2) + // TODO USD rate
         ") USD"
       );
     };
@@ -119,6 +131,8 @@ export default {
       truncatedAddress,
       internalTransferText,
       duffsToDash,
+      sentDash,
+      receivedDash,
     };
   },
 };
@@ -187,5 +201,9 @@ export default {
 .space_between {
   margin-left: 13px;
   margin-right: 13px;
+}
+.dash {
+  font-weight: 700;
+  color: #66bda8;
 }
 </style>

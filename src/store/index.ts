@@ -893,7 +893,7 @@ const getters = {
       chatsWithMeta.push({
         ...chat,
         _friendOwnerId: friendOwnerId,
-        _direction: direction,
+        _direction: direction || "",
         _displayDate: displayDate,
       });
     }

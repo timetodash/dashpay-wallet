@@ -24,8 +24,10 @@
 <script lang="ts">
 import { defineComponent } from "@vue/runtime-core";
 import { useRouter } from "vue-router";
+import { IonIcon, IonLabel, IonButton, IonButtons } from "@ionic/vue";
 
 export default defineComponent({
+  components: { IonIcon, IonLabel, IonButton, IonButtons },
   setup() {
     const router = useRouter();
     return {

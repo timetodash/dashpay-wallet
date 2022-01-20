@@ -5,7 +5,7 @@
         <ion-icon
           :icon="closeOutline"
           class="close"
-          @click="router.push(`/home`)"
+          @click="router.push(`/legacy`)"
         ></ion-icon>
         <!-- <ion-icon :icon="closeOutline" class="close" @click="cancel"></ion-icon> -->
         <div class="title purple flex ion-nowrap">
@@ -167,7 +167,7 @@ export default defineComponent({
 
     const setOpen = (state: boolean) => (isOpenRef.value = state);
 
-    const sendDash = async function () {
+    const sendDash = async function() {
       const satoshis = Unit.fromBTC(amount.value).toSatoshis();
 
       const transaction = account.createTransaction({

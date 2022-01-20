@@ -35,43 +35,46 @@ export default function useWallet() {
     console.log("balance.value :>> ", myBalance.value);
   }
 
-  function refreshTransactionHistory() {
-    const transactions = Object.entries(
+  async function refreshTransactionHistory() {
+    console.log(
+      "getClient().account!.getTransactions() :>> ",
       getClient().account!.getTransactions()
-    ).map((el) => el[1]);
+    );
+    myTransactionHistory.value = await (getClient()
+      .account! as any).getTransactionHistory();
 
-    console.log("transactions :>> ", transactions);
-
-    myTransactionHistory.value = transactions.map((tx: any) => {
-      console.log("tx", tx);
-      // resolveTransaction(getClient(), tx);
-    });
     console.log("transactionHistory.value :>> ", myTransactionHistory.value);
+
+    //     .map((tx: any) => {
+    //     console.log("tx", tx);
+    //     // resolveTransaction(getClient(), tx);
+    //   });
+    //   console.log("transactionHistory.value :>> ", myTransactionHistory.value);
   }
 
-  const transactionDisplay = (transaction: any) => {
-    console.log("transaction :>> ", transaction);
-    let txDisplay = "";
-    switch (transaction.transferDirection) {
-      case DIRECTION.SENT:
-        txDisplay = `Sent ${transaction.transferSatoshis} to ${transaction.remoteAddress}`;
+  // const transactionDisplay = (transaction: any) => {
+  //   console.log("transaction :>> ", transaction);
+  //   let txDisplay = "";
+  //   switch (transaction.transferDirection) {
+  //     case DIRECTION.SENT:
+  //       txDisplay = `Sent ${transaction.transferSatoshis} to ${transaction.remoteAddress}`;
 
-        if (transaction.remoteAddress === "false")
-          txDisplay = `Identity TopUp of ${transaction.transferSatoshis}`;
-        break;
-      case DIRECTION.RECEIVED:
-        txDisplay = `Received ${transaction.transferSatoshis} from ${transaction.remoteAddress}`;
-        break;
-      case DIRECTION.MOVED:
-        txDisplay = `Internal transfer of ${transaction.transferSatoshis}`;
-        break;
+  //       if (transaction.remoteAddress === "false")
+  //         txDisplay = `Identity TopUp of ${transaction.transferSatoshis}`;
+  //       break;
+  //     case DIRECTION.RECEIVED:
+  //       txDisplay = `Received ${transaction.transferSatoshis} from ${transaction.remoteAddress}`;
+  //       break;
+  //     case DIRECTION.MOVED:
+  //       txDisplay = `Internal transfer of ${transaction.transferSatoshis}`;
+  //       break;
 
-      default:
-        break;
-    }
+  //     default:
+  //       break;
+  //   }
 
-    return txDisplay;
-  };
+  // return myTransactionHistory;
+  // }
 
   async function refreshWalletDataLoop() {
     if (!isRefreshLoopActive) return;
@@ -99,7 +102,7 @@ export default function useWallet() {
   return {
     startRefreshWalletDataLoop,
     stopRefreshWalletDataLoop,
-    transactionDisplay,
+    // transactionDisplay,
     myTransactionHistory,
     myBalance,
     myDashBalance,

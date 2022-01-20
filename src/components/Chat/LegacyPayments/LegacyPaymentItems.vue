@@ -8,9 +8,10 @@
       </div>
 
       <ion-grid class="ion-no-padding">
+        <!-- TODO replace idx with tx hash -->
         <ion-row
-          v-for="(transaction, idx) in myTransactionHistory"
-          :key="idx"
+          v-for="transaction in myTransactionHistory"
+          :key="transaction.txId"
           class="row_padding"
         >
           <ion-col class="ion-padding-horizontal"
@@ -39,13 +40,17 @@ export default {
     LegacyPaymentContent,
   },
   setup() {
-    const { transactionDisplay, myTransactionHistory, myBalance } = useWallet();
+    const {
+      //transactionDisplay,
+      myTransactionHistory,
+      myBalance,
+    } = useWallet();
 
     console.log("balance.value :>> ", myBalance.value);
     console.log("transactionHistory.value :>> ", myTransactionHistory.value);
     return {
       myTransactionHistory,
-      transactionDisplay,
+      // transactionDisplay,
     };
   },
 };

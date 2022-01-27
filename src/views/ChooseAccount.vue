@@ -86,6 +86,7 @@ import {
 } from "@/lib/DashClient";
 
 import { Client } from "dash/dist/src/SDK/Client/index";
+import LogRocket from "logrocket";
 
 import { arrowBack } from "ionicons/icons";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -138,6 +139,12 @@ export default {
       }
 
       selectedAccount.value = account;
+
+      // TODO remove evil logging for production
+      LogRocket.identify(account.id, {
+        label: account.accountDPNS.label,
+        accountDPNS: store.state.accountDPNS,
+      });
 
       console.log("selectedAccount.value :>> ", selectedAccount.value);
 
@@ -216,7 +223,7 @@ export default {
       selectedAccount.value = undefined;
     };
 
-    const decryptMnemonic = async function () {
+    const decryptMnemonic = async function() {
       showLoader.value = true;
       const mnemonic = decrypt(
         "aes",

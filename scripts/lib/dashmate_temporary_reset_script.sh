@@ -58,7 +58,7 @@ fi
 dashmate setup ${CONFIG_NAME} --verbose --debug-logs --miner-interval="${MINING_INTERVAL_IN_SECONDS}s" --node-count=${MASTERNODES_COUNT} | tee ${PROJECT_ROOT}/setup.log
 
 echo "Sending 1000 tDash to the ${FAUCET_ADDRESS} for tests"
-dashmate wallet:mint 1000 --config=${CONFIG_NAME}_seed --address=${FAUCET_ADDRESS} --verbose
+# dashmate wallet:mint 1000 --config=${CONFIG_NAME}_seed --address=${FAUCET_ADDRESS} --verbose
 
 # if [ $BUILD_DAPI_AFTER_SETUP == true ]
 # then

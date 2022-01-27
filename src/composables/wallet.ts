@@ -40,8 +40,12 @@ export default function useWallet() {
       "getClient().account!.getTransactions() :>> ",
       getClient().account!.getTransactions()
     );
-    myTransactionHistory.value = await (getClient()
-      .account! as any).getTransactionHistory();
+    myTransactionHistory.value = (
+      await (getClient().account! as any).getTransactionHistory()
+    ).map((tx: any) => {
+      if (tx.time === -1) tx.time = 999999999; // TODO remove this hack when unconfirmed time correction is merged upstream
+      return tx;
+    });
 
     console.log("transactionHistory.value :>> ", myTransactionHistory.value);
 
@@ -81,7 +85,7 @@ export default function useWallet() {
     console.log("refreshWalletDataLoop");
     refreshBalance();
     refreshTransactionHistory();
-    await sleep(10000);
+    await sleep(2000);
     refreshWalletDataLoop();
   }
 

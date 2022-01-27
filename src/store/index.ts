@@ -2,6 +2,8 @@ import { createStore } from "vuex";
 import { getClient } from "@/lib/DashClient";
 import { Storage } from "@capacitor/storage";
 import { msgDate } from "@/lib/helpers/Date";
+import useWallet from "@/composables/wallet";
+const { myTransactionHistory } = useWallet();
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -42,7 +44,7 @@ const getDefaultState = () => {
 
 const state = getDefaultState();
 interface SetLastSeenTimestampByOwnerIdMutation {
-  friendOwnerId: string;
+  friendOwnerId: string; // identityId or String("legacy")
   lastTimestamp: number;
 }
 
@@ -104,19 +106,20 @@ const mutations = {
     state: any,
     { friendOwnerId, lastTimestamp }: SetLastSeenTimestampByOwnerIdMutation
   ) {
+    console.log("lastTimestamp :>> ", lastTimestamp);
     state.chats.lastSeenTimestampByOwnerId[friendOwnerId] = lastTimestamp;
   },
   sortChatList(state: any) {
     const chatList: any = [];
 
-    interface ChatListItem {
-      direction: string;
-      contactRequestReceived: any;
-      contactRequestSent: any;
-      friendshipState: string;
-      searchLabel: string;
-      searchDisplayName: string;
-    }
+    // interface ChatListItem {
+    //   direction: string;
+    //   contactRequestReceived: any;
+    //   contactRequestSent: any;
+    //   friendshipState: string;
+    //   searchLabel: string;
+    //   searchDisplayName: string;
+    // }
 
     interface ChatListItemsOptions {
       friendOwnerId: string;
@@ -218,15 +221,26 @@ const mutations = {
       chatList.push(chatListItem);
     });
 
+    // Add an item for legacy payments
+    // TODO sort legacy payment item by most recent payment date
+    console.log(
+      "sortchatlist yTransactionHistory.value :>> ",
+      myTransactionHistory.value
+    );
+    chatList.push({
+      id: "legacy",
+      sortDate: new Date(myTransactionHistory.value[0].time * 1000),
+      direction: myTransactionHistory.value[0].type.toUpperCase(),
+      lastMessage: {
+        data: { amount: myTransactionHistory.value[0].to[0].satoshis },
+      },
+    });
+
     // Sort the mixed msg and contact items
     // TODO sort contact items by payment dates
     const chatListSorted = chatList.sort(
       (a: any, b: any) => b.sortDate - a.sortDate
     );
-
-    // Add an item for legacy payments
-    // TODO sort legacy payment item by most recent payment date
-    chatListSorted.push({ id: "legacy" });
 
     state.chatList = chatListSorted;
   },
@@ -644,6 +658,10 @@ const actions = {
 };
 
 const getters = {
+  getTxHistory: async () => {
+    const { myTransactionHistory } = useWallet();
+    return myTransactionHistory.value;
+  },
   name: (state: any) => state.accountDPNS?.label, // TODO deprecated, remove and refactor
   myLabel: (state: any) => state.accountDPNS?.label,
   myOwnerId: (state: any) => state.accountDPNS?.$ownerId,
@@ -710,6 +728,20 @@ const getters = {
           chat.createdAt > lastTimestamp &&
           chat.ownerId.toString() === friendOwnerId
       ).length;
+  },
+  getLegacyTxCount: async (state: any, getters: any) => {
+    const lastTimestamp = state.chats.lastSeenTimestampByOwnerId["legacy"] || 0;
+    console.log(" getLegacyTxCount lastTimestamp :>> ", lastTimestamp);
+
+    // const { myTransactionHistory } = useWallet();
+
+    const tx = await getters.getTxHistory;
+    console.log("getLegacyTxCount tx :>> ", tx);
+
+    if (!tx) return 0;
+
+    return tx.filter((transaction: any) => transaction.time > lastTimestamp)
+      .length;
   },
   getHasNewTx: (state: any) => (friendOwnerId: string) => {
     const lastTimestamp = new Date(

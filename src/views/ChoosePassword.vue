@@ -81,6 +81,9 @@ import { storeAccount, createAccountId } from "@/lib/helpers/AccountStorage";
 
 import { closeOutline } from "ionicons/icons";
 
+// TODO remove for production
+import LogRocket from "logrocket";
+
 export default {
   name: "ChoosePassword",
   components: {
@@ -141,8 +144,16 @@ export default {
       );
 
       const accountId = createAccountId(
-        getClient().wallet!.exportWallet().toString()
+        getClient()
+          .wallet!.exportWallet()
+          .toString()
       );
+
+      // TODO remove evil logging for production
+      LogRocket.identify(accountId, {
+        wishName: store.state.wishName,
+        accountDPNS: store.state.accountDPNS,
+      });
 
       await storeAccount({
         wishName: store.state.wishName,

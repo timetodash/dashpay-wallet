@@ -8,12 +8,12 @@
     </ion-avatar>
     <ion-label
       :class="{
-        messageBold: chatListItem.direction === 'Received',
+        messageBold: true,
       }"
     >
       <h1>
         Legacy Payments
-        <div class="messageTime">{{ chatListItem.createdAt }}</div>
+        <!-- <div class="messageTime">{{ chatListItem.sortDate }}</div> -->
       </h1>
       <p>
         <ion-chip
@@ -22,24 +22,26 @@
             received: true,
             sent: false,
           }"
-          >{{ chatListItem.amount }} Dash
+          >{{ dashReceived }} Dash
           <ion-icon
             class="sentReceiveIcon"
-            v-if="true"
+            v-if="chatListItem.direction === 'RECEIVED'"
             :src="require('/public/assets/icons/receiveDash.svg')"
           />
+          <!-- v-if="chatListItem.direction === 'SENT'" -->
           <ion-icon
-            v-if="false"
+            v-else
             class="sentReceiveIcon"
             :src="require('/public/assets/icons/sendDash.svg')"
           />
+          <!-- TODO support internal_transfer -->
         </ion-chip>
-        <ion-badge>1</ion-badge>
-        <ion-icon
+        <ion-badge v-if="newTxCount > 0">{{ newTxCount }}</ion-badge>
+        <!-- <ion-icon
           v-if="true"
           class="dashViewed"
           :src="require('/public/assets/icons/D.svg')"
-        />
+        /> -->
       </p>
     </ion-label>
   </ion-item>
@@ -56,6 +58,11 @@ import {
 } from "@ionic/vue";
 
 import { useStore } from "vuex";
+import { ref, computed } from "vue";
+import useWallet from "@/composables/wallet";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Dashcore = require("@dashevo/dashcore-lib");
+const Unit = Dashcore.Unit;
 
 export default {
   components: {
@@ -67,10 +74,38 @@ export default {
     IonIcon,
   },
   props: ["chatListItem"],
-  setup() {
+  setup(props) {
     const store = useStore();
+    const { myTransactionHistory } = useWallet();
 
-    return { getUserLabel: store.getters.getUserLabel };
+    const duffsInDash = function(duffs) {
+      return Unit.fromSatoshis(duffs).toBTC();
+    };
+
+    const dashReceived = computed(() => {
+      duffsInDash(props.chatListItem.lastMessage?.data.amount);
+      const txs = myTransactionHistory.value;
+      if (!txs) return 0;
+      return duffsInDash(txs[0].to[0].satoshis);
+    });
+
+    const newTxCount = computed(() => {
+      const txs = myTransactionHistory.value;
+      if (!txs) return 0;
+      const filteredTx = txs.filter(
+        (transaction) =>
+          transaction.time >
+            store.state.chats.lastSeenTimestampByOwnerId["legacy"] || 0
+      );
+
+      return filteredTx.length;
+    });
+
+    return {
+      getUserLabel: store.getters.getUserLabel,
+      dashReceived,
+      newTxCount,
+    };
   },
 };
 </script>

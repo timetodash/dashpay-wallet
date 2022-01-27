@@ -2,13 +2,13 @@
   <div class="scroll_container">
     <div>
       <div class="flex ion-justify-content-center">
-        <ion-chip class="timestamp_chip"
-          ><ion-label class="timestamp_label">Aug 12</ion-label></ion-chip
+        <ion-chip class="timestamp_chip">
+          <!-- @timetodash implement dynamic timestamp chips -->
+          <ion-label class="timestamp_label">Aug 12</ion-label></ion-chip
         >
       </div>
 
       <ion-grid class="ion-no-padding">
-        <!-- TODO replace idx with tx hash -->
         <ion-row
           v-for="transaction in myTransactionHistory"
           :key="transaction.txId"
@@ -29,6 +29,8 @@
 import { IonChip, IonLabel, IonGrid, IonRow, IonCol } from "@ionic/vue";
 import LegacyPaymentContent from "@/components/Chat/LegacyPayments/LegacyPaymentContent.vue";
 import useWallet from "@/composables/wallet";
+import { watchEffect } from "vue";
+import { useStore } from "vuex";
 
 export default {
   components: {
@@ -40,6 +42,7 @@ export default {
     LegacyPaymentContent,
   },
   setup() {
+    const store = useStore();
     const {
       //transactionDisplay,
       myTransactionHistory,
@@ -48,9 +51,30 @@ export default {
 
     console.log("balance.value :>> ", myBalance.value);
     console.log("transactionHistory.value :>> ", myTransactionHistory.value);
+
+    // Mark msgs as read
+    watchEffect(() => {
+      if (!myTransactionHistory.value.length > 0) return;
+
+      const lastTimestamp = myTransactionHistory.value[0].time;
+
+      console.log(
+        "watch effect loop myTransactionHistory.value[0].time :>> ",
+        myTransactionHistory.value[0].time
+      );
+
+      // TODO loop through to txs and find first confirmed time
+      if (myTransactionHistory.value[0].time === "999999999") return;
+
+      store.commit("setLastSeenChatTimestampByOwnerId", {
+        lastTimestamp,
+        friendOwnerId: "legacy",
+      });
+
+      store.dispatch("saveLastSeenChatTimestamps");
+    });
     return {
       myTransactionHistory,
-      // transactionDisplay,
     };
   },
 };

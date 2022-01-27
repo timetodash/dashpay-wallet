@@ -27,8 +27,9 @@ import "./theme/core.css";
 
 import { defineCustomElements } from "@ionic/pwa-elements/loader";
 
-// import LogRocket from "logrocket"; // TODO remove logrocket for production
-// LogRocket.init("6e9pgr/dashpay");
+// TODO remove logrocket for production
+import LogRocket from "logrocket";
+LogRocket.init("6e9pgr/dashpay");
 
 const app = createApp(App)
   .use(IonicVue)

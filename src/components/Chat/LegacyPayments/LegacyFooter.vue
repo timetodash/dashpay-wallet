@@ -1,6 +1,6 @@
 <template>
   <ion-buttons class="ion-justify-content-center">
-    <ion-button class="receive" @click="router.push('/receivedash')"
+    <ion-button class="receive" @click="router.push(`/receivedash`)"
       ><ion-icon
         class="send_receive_icon"
         :src="require('/public/assets/icons/receive.svg')"
@@ -9,8 +9,8 @@
         Receive</ion-label
       ></ion-button
     >
-    <ion-button class="send" @click="router.push('/senddash')"
-      ><ion-icon
+    <ion-button class="send" @click="router.push(`/senddash`)">
+      <ion-icon
         class="send_receive_icon"
         :src="require('/public/assets/icons/send.svg')"
       ></ion-icon
@@ -27,7 +27,12 @@ import { useRouter } from "vue-router";
 import { IonIcon, IonLabel, IonButton, IonButtons } from "@ionic/vue";
 
 export default defineComponent({
-  components: { IonIcon, IonLabel, IonButton, IonButtons },
+  components: {
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonLabel,
+  },
   setup() {
     const router = useRouter();
     return {
@@ -56,7 +61,6 @@ ion-button {
   border-radius: 10px;
 }
 .send_receive {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 500;
   font-size: 16px;

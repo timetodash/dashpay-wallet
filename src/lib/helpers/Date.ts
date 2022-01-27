@@ -1,4 +1,5 @@
-const msgDate = function(timestamp: number) {
+//timestamp parameter in ms
+const msgDate = function (timestamp: number) {
   const date = new Date(timestamp);
   const months = [
     "Jan",

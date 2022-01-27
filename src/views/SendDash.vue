@@ -17,6 +17,13 @@
         </div>
       </div>
 
+      <div class="transaction" @click="switchSendRequest">
+        <MySelf
+          :sendRequestDirection="sendRequestDirection"
+          :newDashBalance="newDashBalance"
+        ></MySelf>
+      </div>
+
       <span class="funds" v-if="newDashBalance < 0"
         >Not enough funds to send this transaction.</span
       >
@@ -50,59 +57,38 @@
       </div>
 
       <div class="message-text">Recipient Dash Address</div>
-      <ion-input class="message-input" v-model="recipient"></ion-input>
-
-      <!-- <ion-item>
-        <ion-label position="floating">Amount</ion-label>
-        <ion-input v-model="amount"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="floating">Address</ion-label>
-        <ion-input v-model="recipient"></ion-input>
-      </ion-item>
-    </ion-content>
-    <ion-footer class="ion-no-border">
-      <ion-button expand="block" @click="sendDash()">Send</ion-button>
-      <ion-button
-        color="secondary"
-        fill="outline"
-        expand="block"
-        router-link="/home"
-        >Done</ion-button
-      >
-    </ion-footer> -->
+      <ion-textarea class="message-input" v-model="recipient"></ion-textarea>
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <!-- TODO disable button if the balance is too low -->
       <ion-chip
+        v-if="newDashBalance >= 0"
         expand="block"
         shape="round"
-        class="nextbutton send_color"
-        @click="sendDash()"
+        class="nextbutton next-color"
+        @click="sendDash() && router.push('/home')"
+        ><span class="next-text">Send</span></ion-chip
+      >
+      <ion-chip
+        v-if="newDashBalance < 0"
+        expand="block"
+        shape="round"
+        class="nextbutton next-color"
+        disabled="true"
         ><span class="next-text">Send</span></ion-chip
       >
     </ion-footer>
-
-    <ion-toast
-      :is-open="isOpenRef"
-      color="success"
-      position="middle"
-      :message="`Success: Your transaction Id is ${transactionId}`"
-      :duration="2000"
-      @didDismiss="setOpen(false)"
-    >
-    </ion-toast>
   </ion-page>
 </template>
 
 <script lang="ts">
 import DashCurrency from "@/components/TransactionModals/DashCurrency.vue";
 import FiatCurrency from "@/components/TransactionModals/FiatCurrency.vue";
+import MySelf from "@/components/TransactionModals/MySelf.vue";
 
 import { ref, computed, defineComponent, watchEffect } from "vue";
 import { useRouter } from "vue-router";
-// import { useStore } from "vuex";
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { Unit } = require("@dashevo/dashcore-lib");
 
@@ -111,10 +97,11 @@ import {
   IonFooter,
   IonContent,
   IonIcon,
-  IonInput,
-  IonToast,
+  IonTextarea,
+  IonChip,
   modalController,
 } from "@ionic/vue";
+import { useStore } from "vuex";
 
 import {
   chevronDownOutline,
@@ -134,14 +121,16 @@ export default defineComponent({
     IonPage,
     IonContent,
     IonIcon,
-    IonInput,
-    IonToast,
+    IonTextarea,
+    IonChip,
+    // IonToast,
     DashCurrency,
     FiatCurrency,
+    MySelf,
   },
   setup() {
     const router = useRouter();
-    // const store = useStore(); //FIXME store type
+    const store = useStore(); //FIXME store type
 
     const amount = ref(0);
     const fiatAmount = ref(0);
@@ -165,9 +154,18 @@ export default defineComponent({
 
     const isOpenRef = ref(false);
 
+    const sendRequestDirection = ref("send");
+
+    const switchSendRequest = () => {
+      sendRequestDirection.value =
+        sendRequestDirection.value === "send"
+          ? (sendRequestDirection.value = "request")
+          : (sendRequestDirection.value = "send");
+    };
+
     const setOpen = (state: boolean) => (isOpenRef.value = state);
 
-    const sendDash = async function() {
+    const sendDash = async function () {
       const satoshis = Unit.fromBTC(amount.value).toSatoshis();
 
       const transaction = account.createTransaction({
@@ -183,6 +181,13 @@ export default defineComponent({
       console.log("transactionId :>> ", transactionId);
 
       setOpen(true);
+
+      store.dispatch("showToast", {
+        text: `Your transaction has been successfully sent.`,
+        // text: `Your transaction has been successfully sent (Id: ${transactionId.value})`,
+        type: "transactiontoast",
+        icon: "transactionIcon",
+      });
     };
 
     const currency = ref("dash");
@@ -233,12 +238,21 @@ export default defineComponent({
       fiatRate,
       currency,
       router,
+      store,
+      switchSendRequest,
+      sendRequestDirection,
     };
   },
 });
 </script>
 
 <style scoped>
+.transaction {
+  border-radius: 10px;
+  padding-top: 25px;
+  margin-left: -10px;
+  background-color: linear-gradient(266.73deg, #f2f8fd 0%, #ebfff8 98.09%);
+}
 .title {
   position: fixed;
   left: 50%;

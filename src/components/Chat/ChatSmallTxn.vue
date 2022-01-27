@@ -31,15 +31,13 @@
       </div>
     </div>
     <div class="alignrow">
-      <div class="chat_timestamp">
-        {{ msg.createdAt.getHours() }}:{{ mins }}
-      </div>
-      <!-- <ion-icon
-        class="align_checkmark checkmark_color"
-        :icon="checkmarkDoneOutline"
-      > -->
+      <div class="chat_timestamp">{{ hours }}:{{ mins }}</div>
+      <!-- prop passed from LegacyPaymentContent, show checkmark if transaction is instant locked -->
       <ion-icon
-        v-if="msg._direction === 'SENT' && msg._state != 'sending'"
+        v-if="
+          (msg._direction === 'SENT' && msg._state != 'sending') ||
+          msg._state != 'false'
+        "
         class="align_checkmark checkmark_color"
         :icon="checkmarkDoneOutline"
       >
@@ -101,6 +99,8 @@ export default {
       isViewRequestModalOpen.value = state;
     };
 
+    const hours = computed(() => props.msg.createdAt.getHours());
+
     const mins = computed(() =>
       ("0" + props.msg.createdAt.getMinutes()).slice(-2)
     );
@@ -114,6 +114,7 @@ export default {
       getFiatSymbol,
       hover,
       store,
+      hours,
       mins,
     };
   },

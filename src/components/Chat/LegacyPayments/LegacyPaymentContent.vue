@@ -6,7 +6,7 @@
   >
     You received
     <div class="dash">
-      {{ receivedDash(transaction) }}
+      {{ receivedDash }}
     </div>
     on
     <div class="address">
@@ -21,7 +21,7 @@
   >
     You sent
     <div class="dash">
-      {{ sentDash(transaction) }}
+      {{ sentDash }}
     </div>
     to
     <div class="address">
@@ -30,23 +30,29 @@
   </div>
 
   <!-- Received and sent transaction chat bubbles -->
-  <!-- <chat-small-txn
+  <chat-small-txn
     v-if="
       transaction.type === 'received' ||
-        (transaction.type === 'sent' && transaction.to[0].address != 'false')
+      (transaction.type === 'sent' && transaction.to[0].address != 'false')
     "
-    :direction="transaction.type"
-    :amount="duffsToDash(transaction.to[0].satoshis)"
-    :hours="new Date().getHours()"
-    :minutes="new Date().getMinutes(2)"
-  ></chat-small-txn> -->
+    :msg="{
+      _direction: transaction.type,
+      createdAt: new Date(transaction.time * 1000),
+      data: {
+        amount: transaction.to[0].satoshis,
+        fiatAmount: duffsInDash(transaction.to[0].satoshis) * fiatRate,
+        fiatSymbol: fiatSymbol,
+      },
+      state: transaction.isInstantLocked,
+    }"
+  ></chat-small-txn>
 
   <!-- Internal transfer or Topup  -->
   <div class="flex ion-justify-content-center">
     <div
       v-if="
         transaction.type === 'address_transfer' ||
-          (transaction.type === 'sent' && transaction.to[0].address === 'false')
+        (transaction.type === 'sent' && transaction.to[0].address === 'false')
       "
       class="internal"
     >
@@ -61,7 +67,7 @@
         }"
       >
         <div v-if="transaction.type === 'address_transfer'">
-          Internal Transfer of {{ sentDash(transaction) }}
+          Internal Transfer of {{ internalTransferText }}
         </div>
 
         <!-- Identity TopUp -->
@@ -70,13 +76,12 @@
             transaction.type === 'sent' && transaction.to[0].address === 'false'
           "
         >
-          Identity TopUp of {{ sentDash(transaction) }}
+          Identity TopUp of {{ internalTransferText }}
         </div>
         <span class="space_between">
           <!-- TODO -->
-          <!-- {{ internalTransferText(transaction.internal) }} -->
         </span>
-        {{ new Date().getHours() }}:{{ new Date().getMinutes() }}
+        {{ hours }}:{{ mins }}
       </div>
     </div>
   </div>
@@ -87,18 +92,25 @@
 const Dashcore = require("@dashevo/dashcore-lib");
 const Unit = Dashcore.Unit;
 
-// import ChatSmallTxn from "@/components/Chat/ChatSmallTxn.vue";
+import ChatSmallTxn from "@/components/Chat/ChatSmallTxn.vue";
+import useRates from "@/composables/rates";
 import useWallet from "@/composables/wallet";
+import { ref, computed } from "vue";
 
 export default {
   name: "ChatLegacyPayment",
   components: {
-    // ChatSmallTxn,
+    ChatSmallTxn,
   },
   props: ["transaction"],
-  setup() {
-    const truncatedAddress = function(address) {
-      console.log("address :>> ", address);
+  setup(props) {
+    const { fetchRate, getFiatSymbol, getFiatRate, duffsInDash, dashInDuffs } =
+      useRates();
+
+    const fiatSymbol = ref(getFiatSymbol.value);
+    const fiatRate = ref(getFiatRate.value(getFiatSymbol.value).price);
+
+    const truncatedAddress = function (address) {
       return (
         address.substring(0, 6) +
         "..." +
@@ -106,33 +118,45 @@ export default {
       );
     };
 
-    const duffsToDash = function(duffs) {
-      return Unit.fromSatoshis(duffs).toBTC();
-    };
+    const sentDash = computed(() => {
+      return Unit.fromSatoshis(props.transaction.to[0].satoshis).toBTC();
+    });
 
-    const sentDash = function(transaction) {
-      return Unit.fromSatoshis(transaction.to[0].satoshis).toBTC();
-    };
+    const receivedDash = computed(() => {
+      return Unit.fromSatoshis(props.transaction.to[0].satoshis).toBTC();
+    });
 
-    const receivedDash = function(transaction) {
-      return Unit.fromSatoshis(transaction.to[0].satoshis).toBTC();
-    };
-
-    const internalTransferText = function(amount) {
-      return (
-        duffsToDash(amount) +
-        "Dash (" +
-        (duffsToDash(amount) * 175).toFixed(2) + // TODO USD rate
-        ") USD"
+    const internalTransferText = computed(() => {
+      const dash = ref(duffsInDash.value(props.transaction.to[0].satoshis));
+      const fiat = ref(
+        (
+          duffsInDash.value(props.transaction.to[0].satoshis) * fiatRate.value
+        ).toFixed(2)
       );
-    };
+      return (
+        dash.value + " Dash (~" + fiat.value + " " + fiatSymbol.value + ")"
+      );
+    });
+
+    const hours = computed(() =>
+      new Date(props.transaction.time * 1000).getHours()
+    );
+
+    const mins = computed(() => {
+      const time = ref(new Date(props.transaction.time * 1000));
+      return ("0" + time.value.getMinutes()).slice(-2);
+    });
 
     return {
       truncatedAddress,
       internalTransferText,
-      duffsToDash,
       sentDash,
       receivedDash,
+      duffsInDash,
+      fiatSymbol,
+      fiatRate,
+      mins,
+      hours,
     };
   },
 };
@@ -140,7 +164,6 @@ export default {
 
 <style scoped>
 .sent_txn {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 600;
   font-size: 10px;
@@ -149,7 +172,6 @@ export default {
   margin: 6px 2px 6px 0px;
 }
 .received_txn {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 600;
   font-size: 10px;
@@ -177,7 +199,6 @@ export default {
   margin: 6px 0px;
 }
 .internal_text {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 500;
   line-height: 13px;
@@ -190,7 +211,6 @@ export default {
   margin: 0px 13px;
 }
 .topup_text {
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 500;
   line-height: 12px;

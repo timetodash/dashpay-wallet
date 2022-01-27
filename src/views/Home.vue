@@ -293,7 +293,7 @@ ion-searchbar {
 .progress {
   position: fixed;
   top: 62px;
-  left: 25px;
+  left: 17px;
   width: 180px;
 }
 .profile-banner {
@@ -304,7 +304,7 @@ ion-searchbar {
 .profile-completed {
   position: fixed;
   top: 39px;
-  left: 25px;
+  left: 17px;
   z-index: 1;
   font-style: normal;
   font-weight: bold;

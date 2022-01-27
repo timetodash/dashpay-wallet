@@ -1,7 +1,12 @@
 <template>
-  <ion-buttons slot="start"
-    ><ion-back-button default-href="/home" :icon="arrowBack"></ion-back-button
-  ></ion-buttons>
+  <ion-buttons slot="start">
+    <ion-icon
+      @click="router.push('/home')"
+      class="back"
+      :icon="arrowBack"
+    ></ion-icon>
+    <!-- <ion-back-button default-href="/home" :icon="arrowBack"></ion-back-button> -->
+  </ion-buttons>
   <ion-avatar slot="start" class="useravatar"
     ><img
       class="squareborder"
@@ -19,37 +24,46 @@
 import {
   IonAvatar,
   IonButtons,
-  IonBackButton,
   IonButton,
   IonIcon,
+  // IonBackButton,
 } from "@ionic/vue";
 import { arrowBack, ellipsisVertical } from "ionicons/icons";
-
+import { useRouter } from "vue-router";
 export default {
   props: ["friendOwnerId"],
   components: {
     IonAvatar,
     IonButtons,
-    IonBackButton,
     IonButton,
     IonIcon,
+    // IonBackButton,
     // chats,
   },
 
   setup() {
+    const router = useRouter();
     return {
       arrowBack,
       ellipsisVertical,
+      router,
     };
   },
 };
 </script>
 
 <style scoped>
-ion-back-button {
+/* ion-back-button {
   color: rgba(0, 0, 0, 0.5);
   font-weight: 100;
   --ionicon-stroke-width: 10px;
+} */
+
+.back {
+  margin-left: 16px;
+  width: 22px;
+  height: 22px;
+  color: #6c69fc;
 }
 .useravatar {
   display: flex;
@@ -59,19 +73,19 @@ ion-back-button {
 }
 .squareborder {
   border-radius: 10px;
+  margin-left: 16px;
 }
 .useravatar > img {
   height: 30px;
   width: 30px;
 }
 .username {
-  /* font-family: Inter; */
   font-style: normal;
   font-size: 16px;
   font-weight: 600;
   line-height: 19px;
   color: #000000;
-  margin-left: -21px;
+  margin-left: -6px;
 }
 .ellipsis_color {
   color: rgba(0, 0, 0, 0.61);

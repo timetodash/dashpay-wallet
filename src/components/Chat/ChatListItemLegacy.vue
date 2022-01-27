@@ -124,7 +124,6 @@ export default {
   color: #000000;
 }
 .sc-ion-label-md-s p {
-  /* font-family: Inter; */
   font-weight: 500;
   font-size: 13px important!;
   line-height: 18px; /* identical to box height, or 138% */
@@ -164,7 +163,6 @@ export default {
   align-items: center;
   padding: 4px 11px;
   height: 23px;
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 500;
   font-size: 12px;
@@ -180,7 +178,6 @@ export default {
   align-items: center;
   padding: 4px 11px;
   height: 23px;
-  /* font-family: Inter; */
   font-style: normal;
   font-weight: 500;
   font-size: 12px;

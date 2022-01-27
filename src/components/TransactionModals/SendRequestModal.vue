@@ -34,7 +34,6 @@
     >
       <MySelf
         v-if="sendRequestDirection === 'send'"
-        :amount="amount"
         :sendRequestDirection="sendRequestDirection"
         :newDashBalance="newDashBalance"
       ></MySelf>
@@ -63,7 +62,7 @@
 
       <MySelf
         v-if="sendRequestDirection === 'request'"
-        :amount="amount"
+        :newDashBalance="newDashBalance"
         :sendRequestDirection="sendRequestDirection"
       ></MySelf>
       <MyFriend
@@ -199,7 +198,6 @@ export default defineComponent({
       useRates();
 
     const amount = ref(0);
-
     const fiatAmount = ref(0);
     const fiatSymbol = ref(getFiatSymbol.value);
     const fiatRate = ref(getFiatRate.value(getFiatSymbol.value).price);
@@ -251,8 +249,15 @@ export default defineComponent({
 
     // send transaction will always be deducted from myBalance
     const newDashBalance = computed(() => {
-      const balance = myBalance.value - dashInDuffs.value(amount.value);
-      return duffsInDash.value(balance);
+      const balance = ref(0);
+      if (sendRequestDirection.value === "send") {
+        balance.value = myBalance.value - dashInDuffs.value(amount.value);
+        // console.log("balance", balance.value);
+      } else if (sendRequestDirection.value === "request") {
+        balance.value = myBalance.value + dashInDuffs.value(amount.value);
+        // console.log("balance", balance.value);
+      }
+      return duffsInDash.value(balance.value);
     });
 
     const handleSendRequest = () => {

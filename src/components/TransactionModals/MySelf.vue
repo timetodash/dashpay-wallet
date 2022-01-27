@@ -30,7 +30,7 @@ import { defineComponent } from "vue";
 import { IonItem, IonAvatar, IonLabel } from "@ionic/vue";
 
 export default defineComponent({
-  props: ["amount", "sendRequestDirection", "newDashBalance"],
+  props: ["sendRequestDirection", "newDashBalance"],
   components: {
     IonItem,
     IonAvatar,

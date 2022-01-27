@@ -1,80 +1,311 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Receive</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content :fullscreen="true">
-      <ion-item>
-        <ion-label position="floating">Address</ion-label>
-        <ion-input :value="unusedAddress" readonly></ion-input>
-      </ion-item>
+    <ion-content class="ion-padding">
+      <div class="flex ion-nowrap ion-padding-bottom">
+        <ion-icon
+          :icon="closeOutline"
+          class="close"
+          @click="router.push(`/legacy`)"
+        ></ion-icon>
+        <!-- <ion-icon :icon="closeOutline" class="close" @click="cancel"></ion-icon> -->
+        <div class="title green flex ion-nowrap">
+          <ion-icon
+            class="header-icon"
+            :src="require('/public/assets/icons/requestHeader.svg')"
+          />
+          Receive Dash
+        </div>
+      </div>
+
+      <div class="transaction" @click="switchSendRequest">
+        <MySelf
+          :sendRequestDirection="sendRequestDirection"
+          :newDashBalance="newDashBalance"
+        ></MySelf>
+      </div>
+
+      <div class="swap-container">
+        <dash-currency
+          @newFiatSymbol="fiatSymbol = $event"
+          @newFiatRate="fiatRate = $event"
+          v-if="currency === 'dash'"
+          v-model:amount="amount"
+          :amount="amount"
+          :fiatAmount="fiatAmount"
+          :fiatSymbol="fiatSymbol"
+        >
+        </dash-currency>
+        <fiat-currency
+          @newFiatSymbol="fiatSymbol = $event"
+          @newFiatRate="fiatRate = $event"
+          v-if="currency === 'fiat'"
+          v-model:fiatAmount="fiatAmount"
+          :fiatAmount="fiatAmount"
+          :amount="amount"
+          :fiatSymbol="fiatSymbol"
+        ></fiat-currency>
+
+        <ion-icon
+          class="swap"
+          @click="swapCurrency"
+          :src="require('/public/assets/icons/swap_currency.svg')"
+        ></ion-icon>
+      </div>
+
+      <qrcode-vue
+        :value="`${unusedAddress}?amount=${amount}`"
+        size="280"
+        level="H"
+        class="center"
+        @click="copyToClipboard()"
+      />
+      <div class="message-text">
+        My Dash Address
+        <ion-textarea
+          :value="
+            amount == 0 ? unusedAddress : `${unusedAddress}?amount=${amount}`
+          "
+          readonly
+        ></ion-textarea>
+      </div>
     </ion-content>
-    <ion-footer class="ion-no-border">
-      <ion-button
-        color="secondary"
-        fill="outline"
-        expand="block"
-        router-link="/home"
-        >Done</ion-button
-      >
-    </ion-footer>
   </ion-page>
 </template>
 
+
 <script lang="ts">
-import { onMounted, ref, unref, computed } from "vue";
-import { useRouter } from "vue-router";
+import useContacts from "@/composables/contacts";
+import useWallet from "@/composables/wallet";
+import { getClient } from "@/lib/DashClient";
 import { useStore } from "vuex";
+import QrcodeVue from "qrcode.vue";
+import { useRouter } from "vue-router";
 
-import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonButton,
-  IonInput,
-  IonFooter,
-  IonLabel,
-  IonTextarea,
-  IonItem,
-} from "@ionic/vue";
+import DashCurrency from "@/components/TransactionModals/DashCurrency.vue";
+import FiatCurrency from "@/components/TransactionModals/FiatCurrency.vue";
+import MySelf from "@/components/TransactionModals/MySelf.vue";
 
-import { initClient, getClient } from "@/lib/DashClient";
+// import { IonContent, IonIcon, modalController } from "@ionic/vue";
+import { IonPage, IonContent, IonIcon, IonTextarea } from "@ionic/vue";
+import { defineComponent, ref, watchEffect, computed } from "vue";
+
+import useRates from "@/composables/rates";
+
 import { Client } from "dash/dist/src/SDK/Client/index";
 
-export default {
-  name: "ReceiveDash",
+import {
+  chevronDownOutline,
+  arrowDownOutline,
+  closeOutline,
+} from "ionicons/icons";
+
+export default defineComponent({
   components: {
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonContent,
     IonPage,
-    IonButton,
-    IonInput,
-    IonFooter,
-    IonLabel,
-    // IonTextarea,
-    IonItem,
+    IonIcon,
+    IonContent,
+    DashCurrency,
+    FiatCurrency,
+    QrcodeVue,
+    IonTextarea,
+    MySelf,
   },
   setup() {
-    // const router = useRouter();
-    const store = useStore(); //FIXME store type
+    const store = useStore();
+    const router = useRouter();
+
+    const { getFiatSymbol, getFiatRate, duffsInDash, dashInDuffs } = useRates();
 
     const client: Client = getClient();
-
     const account = client.account as any;
+
+    const amount = ref(0);
+
+    const fiatAmount = ref(0);
+    const fiatSymbol = ref(getFiatSymbol.value);
+    const fiatRate = ref(getFiatRate.value(getFiatSymbol.value).price);
 
     const unusedAddress = ref<number>(account?.getUnusedAddress().address);
 
-    // onMounted(async () => {});
+    console.log("fiat symbol", fiatSymbol.value);
+
+    const sendRequestDirection = ref("request");
+
+    function copyToClipboard() {
+      navigator.clipboard.writeText("unusedAddress").then(
+        function () {
+          store.dispatch("showToast", {
+            text: "Copied address",
+            type: "copiedtoast",
+            icon: "copyIcon",
+          });
+        },
+        function (err) {
+          console.error("Could not copy text: ", err);
+        }
+      );
+    }
+
+    const {
+      getUserLabel,
+      getUserAvatar,
+      getUserDisplayName,
+      getUserPublicMessage,
+      myLabel,
+      myAvatar,
+      myOwnerId,
+    } = useContacts();
+
+    const { myBalance } = useWallet();
+
+    const switchSendRequest = () => {
+      sendRequestDirection.value =
+        sendRequestDirection.value === "send"
+          ? (sendRequestDirection.value = "request")
+          : (sendRequestDirection.value = "send");
+    };
+
+    const currency = ref("dash");
+    const swapCurrency = () => {
+      currency.value =
+        currency.value === "dash"
+          ? (currency.value = "fiat")
+          : (currency.value = "dash");
+      console.log("show currency", currency.value);
+    };
+
+    watchEffect(() => {
+      if (currency.value === "dash") {
+        return (fiatAmount.value = amount.value * fiatRate.value);
+      }
+      if (currency.value === "fiat") {
+        return (amount.value = fiatAmount.value / fiatRate.value);
+      }
+    });
+
+    const newDashBalance = computed(() => {
+      const balance = ref(0);
+      balance.value = myBalance.value + dashInDuffs.value(amount.value);
+      return duffsInDash.value(balance.value);
+    });
+
+    // const cancel = () => {
+    //   modalController.dismiss();
+    // };
 
     return {
+      getUserLabel,
+      getUserAvatar,
+      getUserDisplayName,
+      getUserPublicMessage,
+      myLabel,
+      myAvatar,
+      myOwnerId,
+      myBalance,
+      switchSendRequest,
+      swapCurrency,
+      amount,
+      fiatAmount,
+      fiatRate,
+      currency,
+      sendRequestDirection,
+      chevronDownOutline,
+      arrowDownOutline,
+      closeOutline,
+      fiatSymbol,
+      newDashBalance,
+      balanceDash: computed(() => duffsInDash.value(myBalance.value)),
+      copyToClipboard,
       unusedAddress,
+      router,
+      // cancel,
     };
   },
-};
+});
 </script>
+
+
+<style scoped>
+.transaction {
+  border-radius: 10px;
+  padding-left: 10px;
+  padding-top: 25px;
+  /* background: white; */
+}
+.inflow {
+  background: linear-gradient(266.73deg, #f2f8fd 0%, #ebfff8 98.09%);
+  margin: auto;
+}
+.title {
+  position: fixed;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin-top: 14px;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 19px;
+  text-transform: capitalize;
+  display: flex;
+  align-items: center;
+}
+.header-icon {
+  /* order: 0; */
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: flex-start;
+  margin-right: 8px;
+}
+.swap-container {
+  position: relative;
+  margin-top: 36px;
+}
+.message-text {
+  margin: 340px 0px 8px 24px;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 18px;
+  color: #a3a3a3;
+}
+.message-input {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  min-height: 44px;
+
+  background: #f5f5f7;
+
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  /* box-sizing: border-box; */
+  border-radius: 10px;
+}
+.swap {
+  width: 35px;
+  height: 35px;
+  position: absolute;
+  top: 50%;
+  right: 35px;
+  transform: translate(0%, -50%);
+}
+.new-balance {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 15px;
+  color: #a3a3a3;
+}
+.red {
+  color: #ff627e;
+}
+.center {
+  position: fixed;
+  left: 50%;
+  transform: translate(-50%, 10%);
+}
+ion-textarea {
+  padding: 0;
+  width: 272px;
+}
+</style>

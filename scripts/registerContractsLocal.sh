@@ -2,8 +2,7 @@
 source ~/.evoenv
 
 export VUE_APP_ENV_RUN="local"
-
-pwd
+printenv | grep VU
 rm env/registeredContracts_local.json
 
 

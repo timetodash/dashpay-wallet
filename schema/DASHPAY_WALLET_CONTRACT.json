@@ -63,7 +63,7 @@
       "txId": {
         "type": "string",
         "pattern": "^$|^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{42,44}$",
-        "maxLength": 44,
+        "maxLength": 64,
         "minLength": 0
       },
       "amount": {

@@ -2,30 +2,30 @@
 /* eslint-disable max-len */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-bitwise */
-const CryptoJS = require('crypto-js');
-// const secp256k1 = require('secp256k1-native');
-const dashcore = require('@dashevo/dashcore-lib');
+const CryptoJS = require("crypto-js");
+const dashcore = require("@dashevo/dashcore-lib");
+const secp256k1 = require("secp256k1/elliptic");
 
-// const ecdhSharedKey = (senderPrivateKey, receiverPublicKey) => {
-//   const ctx = secp256k1.secp256k1_context_create(secp256k1.secp256k1_context_SIGN);
+const ecdhSharedKey = (senderPrivateKey, receiverPublicKey) => {
+  const point = Buffer.from(receiverPublicKey, "base64");
+  console.log("receiverPublicKey :>> ", receiverPublicKey);
 
-//   const sharedSecrect = Buffer.alloc(32);
+  const scalar = Buffer.from(senderPrivateKey, "hex");
+  console.log("senderPrivateKey :>> ", senderPrivateKey);
 
-//   const point = Buffer.from(receiverPublicKey, 'base64');
+  // get X point of ecdh
+  const sharedSecret = secp256k1.ecdh(point, scalar, {}, Buffer.alloc(32));
 
-//   const scalar = Buffer.from(senderPrivateKey, 'hex');
+  console.log(
+    'sharedSecret.toString("hex") :>> ',
+    sharedSecret.toString("hex")
+  );
 
-//   const pubkey64 = Buffer.alloc(64);
-
-//   secp256k1.secp256k1_ec_pubkey_parse(ctx, pubkey64, point);
-
-//   secp256k1.secp256k1_ecdh(ctx, sharedSecrect, pubkey64, scalar, null);
-
-//   return sharedSecrect.toString('hex');
-// };
+  return sharedSecret;
+};
 
 const encryptCBCAES256 = (data, secret) => {
-  const key = CryptoJS.enc.Hex.parse(secret);
+  const key = CryptoJS.enc.Hex.parse(secret.toString("hex"));
 
   const cipher = CryptoJS.AES.encrypt(data, key, {
     // iv: CryptoJS.enc.Hex.parse('a2b46306d0474332b28c0e247017bcc5'),
@@ -37,18 +37,31 @@ const encryptCBCAES256 = (data, secret) => {
   return cipher;
 };
 
-const decryptCBCAES256 = (encrypted, secret) => {
-  const key = CryptoJS.enc.Hex.parse(secret);
+const decryptCBCAES256 = (encrypted, secret, enc) => {
+  const encodings = {
+    hex: CryptoJS.enc.Hex,
+    utf8: CryptoJS.enc.Utf8,
+    base64: CryptoJS.enc.Base64,
+  };
 
-  const iv = CryptoJS.enc.Hex.parse(encrypted.slice(0, 16).toString('hex'));
+  const key = CryptoJS.enc.Hex.parse(secret.toString("hex"));
 
-  const ciphertext = CryptoJS.enc.Hex.parse(encrypted.slice(16, encrypted.length).toString('hex'));
+  const iv = CryptoJS.enc.Hex.parse(encrypted.slice(0, 16).toString("hex"));
+
+  const ciphertext = CryptoJS.enc.Hex.parse(
+    encrypted.slice(16, encrypted.length).toString("hex")
+  );
 
   const encryptedCP = CryptoJS.lib.CipherParams.create({
     ciphertext,
+    formatter: CryptoJS.format.OpenSSL, // Optional, but required for encryptedCP.toString()
   });
 
-  return CryptoJS.AES.decrypt(encryptedCP, key, { iv });
+  const decryptedWA = CryptoJS.AES.decrypt(encryptedCP, key, { iv });
+
+  const decrypted = decryptedWA.toString(encodings[enc]);
+
+  return decrypted;
 };
 
 const encryptPublicKey = (publicKey, sharedSecrect) => {
@@ -58,110 +71,163 @@ const encryptPublicKey = (publicKey, sharedSecrect) => {
 
   const ciphertext = cipher.ciphertext.toString(CryptoJS.enc.Hex);
 
-  console.log('ciphertext :>> ', ciphertext, Buffer.from(ciphertext, 'hex').length);
+  console.log(
+    "ciphertext :>> ",
+    ciphertext,
+    Buffer.from(ciphertext, "hex").length
+  );
 
   const iv = cipher.iv.toString(CryptoJS.enc.Hex);
 
-  console.log('iv :>> ', iv);
+  console.log("iv :>> ", iv);
 
-  const ciphertextBuffer = Buffer.from(ciphertext, 'hex');
+  const ciphertextBuffer = Buffer.from(ciphertext, "hex");
 
-  const ivBuffer = Buffer.from(iv, 'hex');
+  const ivBuffer = Buffer.from(iv, "hex");
 
-  return Buffer.concat([ivBuffer, ciphertextBuffer]).toString('hex');
+  return Buffer.concat([ivBuffer, ciphertextBuffer]).toString("hex");
 };
 
-const decryptPublicKey = (encryptedPublicKey, sharedSecrect) => decryptCBCAES256(Buffer.from(encryptedPublicKey, 'hex'), sharedSecrect).toString(CryptoJS.enc.Hex);
+const decryptPublicKey = (encryptedPublicKey, sharedSecrect) =>
+  decryptCBCAES256(
+    Buffer.from(encryptedPublicKey, "hex"),
+    sharedSecrect
+  ).toString(CryptoJS.enc.Hex);
 
 const encryptAccountLabel = (label, sharedSecrect) => {
-  const labelBuffer = Buffer.from(label, 'utf8');
+  const labelBuffer = Buffer.from(label, "utf8");
 
-  console.log('labelBuffer.length :>> ', labelBuffer.length);
+  console.log("labelBuffer.length :>> ", labelBuffer.length);
 
-  const paddingBuffer = 31 - labelBuffer.length > 0 ? Buffer.alloc(31 - labelBuffer.length) : Buffer.alloc(0);
+  const paddingBuffer =
+    31 - labelBuffer.length > 0
+      ? Buffer.alloc(31 - labelBuffer.length)
+      : Buffer.alloc(0);
 
   const paddedLabelBuffer = Buffer.concat([paddingBuffer, labelBuffer]);
 
-  const cipher = encryptCBCAES256(paddedLabelBuffer.toString('utf8'), sharedSecrect);
+  const cipher = encryptCBCAES256(
+    paddedLabelBuffer.toString("utf8"),
+    sharedSecrect
+  );
 
-  console.log('paddedLabelBuffer.length :>> ', paddedLabelBuffer.length, 'utf8', paddedLabelBuffer.toString('utf8'));
+  console.log(
+    "paddedLabelBuffer.length :>> ",
+    paddedLabelBuffer.length,
+    "utf8",
+    paddedLabelBuffer.toString("utf8")
+  );
 
   const ciphertext = cipher.ciphertext.toString(CryptoJS.enc.Hex);
 
-  console.log('ciphertext :>> ', ciphertext, Buffer.from(ciphertext, 'hex').length);
+  console.log(
+    "ciphertext :>> ",
+    ciphertext,
+    Buffer.from(ciphertext, "hex").length
+  );
 
   const iv = cipher.iv.toString(CryptoJS.enc.Hex);
 
-  console.log('iv :>> ', iv);
+  console.log("iv :>> ", iv);
 
-  const ciphertextBuffer = Buffer.from(ciphertext, 'hex');
+  const ciphertextBuffer = Buffer.from(ciphertext, "hex");
 
-  const ivBuffer = Buffer.from(iv, 'hex');
+  const ivBuffer = Buffer.from(iv, "hex");
 
-  return Buffer.concat([ivBuffer, ciphertextBuffer]).toString('base64');
+  return Buffer.concat([ivBuffer, ciphertextBuffer]).toString("base64");
 };
 
-const decryptAccountLabel = (encryptedAccountLabel, sharedSecrect) => decryptCBCAES256(Buffer.from(encryptedAccountLabel, 'base64'), sharedSecrect).toString(CryptoJS.enc.Utf8);
+const decryptAccountLabel = (encryptedAccountLabel, sharedSecrect) =>
+  decryptCBCAES256(
+    Buffer.from(encryptedAccountLabel, "base64"),
+    sharedSecrect
+  ).toString(CryptoJS.enc.Utf8);
 
-const createAccountReference = (senderPrivateKey, extendedPublicKey, accountIndex = 0, version = 0) => {
-  const senderPrivateKeyBuffer = Buffer.from(senderPrivateKey, 'hex');
+const createAccountReference = (
+  senderPrivateKey,
+  extendedPublicKey,
+  accountIndex = 0,
+  version = 0
+) => {
+  const senderPrivateKeyBuffer = Buffer.from(senderPrivateKey, "hex");
 
-  const extendedPublicKeyBuffer = Buffer.from(extendedPublicKey, 'hex');
+  const extendedPublicKeyBuffer = Buffer.from(extendedPublicKey, "hex");
 
-  const ASK = dashcore.crypto.Hash.sha256hmac(senderPrivateKeyBuffer, extendedPublicKeyBuffer);
+  const ASK = dashcore.crypto.Hash.sha256hmac(
+    senderPrivateKeyBuffer,
+    extendedPublicKeyBuffer
+  );
 
-  console.log('ASK :>> ', ASK);
+  console.log("ASK :>> ", ASK);
 
   const ASK32 = ASK.slice(0, 4);
 
-  console.log('ASK32 :>> ', ASK32.toString('hex'));
+  console.log("ASK32 :>> ", ASK32.toString("hex"));
 
-  const ASK28 = parseInt(ASK32.toString('hex'), 16) >> 4;
+  const ASK28 = parseInt(ASK32.toString("hex"), 16) >> 4;
 
-  console.log('ASK28 :>> ', ASK28);
+  console.log("ASK28 :>> ", ASK28);
 
-  const shortenedAccountBits = accountIndex & 0x0FFFFFFF;
+  const shortenedAccountBits = accountIndex & 0x0fffffff;
 
-  console.log('shortenedAccountBits :>> ', shortenedAccountBits);
+  console.log("shortenedAccountBits :>> ", shortenedAccountBits);
 
   const versionBits = version << 28;
 
-  console.log('versionBits :>> ', versionBits);
+  console.log("versionBits :>> ", versionBits);
 
   const accountReference = versionBits | (ASK28 ^ shortenedAccountBits);
 
-  console.log('accountReference :>> ', accountReference);
+  console.log("accountReference :>> ", accountReference);
 
   return accountReference;
 };
 
-const deriveExtendedPublicKeyDIP15 = (senderHDPrivateKey, senderIdentityId, receiverIdentityId) => {
+const deriveExtendedPublicKeyDIP15 = (
+  senderHDPrivateKey,
+  senderIdentityId,
+  receiverIdentityId
+) => {
   // TODO re enable 256bit derivation
-  const senderIdentityIdHex = 1 //dashcore.encoding.Base58.decode(senderIdentityId).toString('hex');
+  const senderIdentityIdHex = 1; //dashcore.encoding.Base58.decode(senderIdentityId).toString('hex');
   // const senderIdentityIdHex = dashcore.crypto.Hash.sha256(Buffer.from('01', 'hex')).toString('hex');
 
-  const receiverIdentityIdHex = 1 //dashcore.encoding.Base58.decode(receiverIdentityId).toString('hex'); // receiverIdentity.id.toString('hex');
+  const receiverIdentityIdHex = 1; //dashcore.encoding.Base58.decode(receiverIdentityId).toString('hex'); // receiverIdentity.id.toString('hex');
   // const receiverIdentityIdHex = dashcore.crypto.Hash.sha256(Buffer.from('02', 'hex')).toString('hex');
 
-  const extendedPublicKey = senderHDPrivateKey.deriveChild(`m/9'/5'/15'/0'/0x${senderIdentityIdHex}/0x${receiverIdentityIdHex}`).hdPublicKey;
+  const extendedPublicKey = senderHDPrivateKey.deriveChild(
+    `m/9'/5'/15'/0'/0x${senderIdentityIdHex}/0x${receiverIdentityIdHex}`
+  ).hdPublicKey;
 
-  const receivingAddress = dashcore.Address(extendedPublicKey.publicKey, 'testnet').toString();
+  const receivingAddress = dashcore
+    .Address(extendedPublicKey.publicKey, "testnet")
+    .toString();
 
-  console.log('receivingAddress :>> ', receivingAddress);
+  console.log("receivingAddress :>> ", receivingAddress);
 
-  const extendedPublicKeyDIP15Buffers = Buffer.concat([extendedPublicKey._buffers.parentFingerPrint, extendedPublicKey._buffers.chainCode, extendedPublicKey._buffers.publicKey]);
+  const extendedPublicKeyDIP15Buffers = Buffer.concat([
+    extendedPublicKey._buffers.parentFingerPrint,
+    extendedPublicKey._buffers.chainCode,
+    extendedPublicKey._buffers.publicKey,
+  ]);
 
-  console.log('extendedPublicKeyDIP15Buffers.toString(hex) :>> ', extendedPublicKeyDIP15Buffers.toString('hex'));
+  console.log(
+    "extendedPublicKeyDIP15Buffers.toString(hex) :>> ",
+    extendedPublicKeyDIP15Buffers.toString("hex")
+  );
 
-  return extendedPublicKeyDIP15Buffers.toString('hex');
+  return extendedPublicKeyDIP15Buffers.toString("hex");
 };
 
 const createContactRequest = async (client, clientIdentity, toUserId) => {
   const senderIdentityId = clientIdentity.getId();
 
   const senderIdentity = clientIdentity;
-  
-  const senderHdPrivateKey = client.account.identities.getIdentityHDKeyByIndex(0,0);
+
+  const senderHdPrivateKey = client.account.identities.getIdentityHDKeyByIndex(
+    0,
+    0
+  );
 
   const senderPrivateKey = senderHdPrivateKey.privateKey.toString();
 
@@ -171,12 +237,9 @@ const createContactRequest = async (client, clientIdentity, toUserId) => {
 
   // ECDH Shared Key / Diffie-Hellman Key Exchange
   // https://github.com/dashpay/dips/blob/feat/dashpay/dip-0015.md#ecdh-shared-key-senderkeyindex-and-recipientkeyindex
-  // const sharedSecret = dashpaycrypto.ecdhSharedKey(
-  //   senderPrivateKey,
-  //   receiverPublicKey
-  // );
+  const sharedSecret = ecdhSharedKey(senderPrivateKey, receiverPublicKey);
 
-  const sharedSecret = "0";
+  // const sharedSecret = "0";
 
   // DashPay Incoming Funds Derivation Path
   // https://github.com/dashpay/dips/blob/feat/dashpay/dip-0015.md#dashpay-incoming-funds-derivation-path
@@ -195,7 +258,7 @@ const createContactRequest = async (client, clientIdentity, toUserId) => {
     toUserId: receiverIdentity.id,
     senderKeyIndex: 0,
     accountReference: 1,
-    //dashpaycrypto.createAccountReference(
+    //dashpaycrypto.createAccountReference( // TODO reenable this
     // senderPrivateKey,
     // publicKeyDIP15
     // ),
@@ -208,7 +271,6 @@ const createContactRequest = async (client, clientIdentity, toUserId) => {
       encryptAccountLabel("Default Account", sharedSecret),
       "base64"
     ),
-
   };
 
   return await client.platform.documents.create(
@@ -216,11 +278,16 @@ const createContactRequest = async (client, clientIdentity, toUserId) => {
     clientIdentity,
     contactRequest
   );
-  
-  
-}
+};
 module.exports = {
-  encryptCBCAES256, decryptCBCAES256, encryptPublicKey, decryptPublicKey, encryptAccountLabel, decryptAccountLabel,
-  createAccountReference, deriveExtendedPublicKeyDIP15,createContactRequest
-  // ecdhSharedKey,
+  encryptCBCAES256,
+  decryptCBCAES256,
+  encryptPublicKey,
+  decryptPublicKey,
+  encryptAccountLabel,
+  decryptAccountLabel,
+  createAccountReference,
+  deriveExtendedPublicKeyDIP15,
+  createContactRequest,
+  ecdhSharedKey,
 };

@@ -66,6 +66,7 @@ import ChatHeader from "@/components/Chat/ChatHeader.vue";
 import ChatFooter from "@/components/Chat/ChatFooter.vue";
 import SendRequestModal from "@/components/TransactionModals/SendRequestModal.vue";
 import SendRequestPopup from "@/components/TransactionModals/SendRequestPopup.vue";
+import { getClient } from "@/lib/DashClient";
 
 // import { Client } from "dash/dist/src/SDK/Client/index";
 
@@ -87,10 +88,6 @@ export default {
     IonFooter,
   },
   setup() {
-    // const client = getClient();
-
-    // const clientIdentity = getClientIdentity();
-
     const route = useRoute();
 
     const store = useStore();

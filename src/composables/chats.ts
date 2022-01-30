@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { ref, computed } from "vue";
 import { strict as assert } from "assert";
 import { getClient, getClientIdentity } from "../lib/DashClient";
 import { useStore } from "vuex";
 import useRates from "@/composables/rates";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { createContactRequest } = require("../lib/crypto/dashpay-crypto");
+const {
+  sendDashToContactRequest,
+} = require("../lib/crypto/dashpay-send-to-contactrequest");
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -73,9 +76,17 @@ export default function useChats() {
 
     const duffs = dashInDuffs.value(amount);
 
+    let txId = "";
+    if (duffs > 0)
+      txId = await sendDashToContactRequest(
+        getClient(),
+        store.getters.getReceivedContactRequest(friendOwnerId),
+        duffs
+      );
+
     const docProperties = {
       text: chatText,
-      txId: "",
+      txId,
       replyToChatId,
       toOwnerId: friendOwnerId,
       amount: amount ? duffs : undefined,
